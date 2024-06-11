@@ -1,11 +1,9 @@
-# FUNC-PARSING.R
-# 6/10/24
-# custom functions to parse JSON data requested from LegiScan
-# all code written by Andrew Pantazi, then modularized/adapted by RR
+# all code originally written by Andrew Pantazi
+# 6/10/24 RR modularized and adapted
 
-#######################################################################################
-#Extracts session information and people metadata from given JSON file paths.
-#It adds session details to each person's metadata.
+# might want to put some of the libraries from etl.R in here to get this to work
+
+# custom functions ####
 parse_people_session <- function (people_json_paths) {
   pb <- progress::progress_bar$new(format = "  parsing people [:bar] :percent in :elapsed.", 
                                    total = length(people_json_paths), clear = FALSE, width = 60)
@@ -30,12 +28,7 @@ parse_people_session <- function (people_json_paths) {
   output_df <- data.table::rbindlist(output_list, fill = TRUE)
   output_df <- tibble::as_tibble(data.table::setDF(output_df))
   output_df
-}
-
-
-#######################################################################################
-#Extracts vote information and session details from given JSON file paths.
-#It includes session information for each vote record.
+} #Extracts session information and people metadata from given JSON file paths. It adds session details to each person's metadata.
 parse_person_vote_session <- function (vote_json_paths) {
   pb <- progress::progress_bar$new(format = "  parsing person-vote [:bar] :percent in :elapsed.", 
                                    total = length(vote_json_paths), clear = FALSE, width = 60)
@@ -57,11 +50,7 @@ parse_person_vote_session <- function (vote_json_paths) {
   output_df <- data.table::rbindlist(output_list, fill = TRUE)
   output_df <- tibble::as_tibble(data.table::setDF(output_df))
   output_df
-} 
-
-
-#######################################################################################
-#Extracts roll call information and session details from given JSON file paths, including session info for each roll call.
+} #Extracts vote information and session details from given JSON file paths. It includes session information for each vote record.
 parse_rollcall_vote_session <- function (vote_json_paths) {
   pb <- progress::progress_bar$new(format = "  parsing roll call [:bar] :percent in :elapsed.", 
                                    total = length(vote_json_paths), clear = FALSE, width = 60)
@@ -84,11 +73,7 @@ parse_rollcall_vote_session <- function (vote_json_paths) {
   output_df <- data.table::rbindlist(output_list, fill = TRUE)
   output_df <- tibble::as_tibble(data.table::setDF(output_df))
   output_df
-} 
-
-
-#######################################################################################
-#Extracts bill metadata including session information, progress, history, sponsors, and other related attributes from given JSON file paths.
+} #Extracts roll call information and session details from given JSON file paths, including session info for each roll call.
 parse_bill_session <- function(bill_json_paths) {
   pb <- progress::progress_bar$new(format = "  parsing bills [:bar] :percent in :elapsed.",
                                    total = length(bill_json_paths), clear = FALSE, width = 60)
@@ -145,11 +130,7 @@ parse_bill_session <- function(bill_json_paths) {
   output_df <- do.call(rbind, output_list)
   
   return(output_df)
-} 
-
-
-#######################################################################################
-#A combined approach to parsing bill metadata, including sponsors and progress, from given JSON file paths. This function compiles data into simplified vectors or lists.
+} #Extracts bill metadata including session information, progress, history, sponsors, and other related attributes from given JSON file paths.
 parse_bill_combined <- function(bill_json_paths) {
   pb <- progress::progress_bar$new(format = "  parsing bills [:bar] :percent in :elapsed.", 
                                    total = length(bill_json_paths), clear = FALSE, width = 60)
@@ -208,11 +189,7 @@ parse_bill_combined <- function(bill_json_paths) {
   output_df <- do.call(rbind, output_list)
   
   return(output_df)
-} 
-
-
-#######################################################################################
-#Parses multiple JSON paths for bill data, extracting detailed bill information, sponsors, amendments, referrals, history, votes, and supplements. It combines results into a single list.
+} #A combined approach to parsing bill metadata, including sponsors and progress, from given JSON file paths. This function compiles data into simplified vectors or lists.
 parse_bill_jsons <- function(json_paths){
   parse_single_json  <- function(json_path) {
     bill_data <- fromJSON(json_path, simplifyVector = FALSE)
@@ -286,4 +263,4 @@ parse_bill_jsons <- function(json_paths){
   )
   
   return(combined_results)
-} 
+} #Parses multiple JSON paths for bill data, extracting detailed bill information, sponsors, amendments, referrals, history, votes, and supplements. It combines results into a single list.
