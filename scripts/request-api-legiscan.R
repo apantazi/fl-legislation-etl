@@ -1,12 +1,17 @@
+# REQUEST-API-LEGISCAN.R
+#
+# 6/11/24
+# This module would request *all* Florida datasets from LegiScan via API
+# It hasn't been run yet. For now we're piloting with 2023-2024 data only.
+
 library(legiscanrr) # Interface with the LegiScan API for accessing legislative data / devtools::install_github("fanghuiz/legiscanrr")
 
 #requires user to enter their api key
 legiscan_api_key(set_new=TRUE)
 
-# RR commenting this out for now, don't want to retrieve data here for performance and concern over API limits
+#get list of datasets
+list_datasets_fl <- legiscanrr::get_dataset_list("fl") 
+
 ## download every session, ??but warning about API limits. #### 
-# dataset <- legiscanrr::get_dataset_list("fl") #get all datasets
-# purrr::walk(dataset, get_dataset, save_to_dir = "data_json") #get all datasets and put it in subdir of 'data_json'
-# text_paths <- find_json_path(base_dir = "data_json/fl/..", file_type = "vote")
-# text_paths_bills <- find_json_path(base_dir = "data_json/fl/..", file_type = "bill")
-# text_paths_leg <- find_json_path(base_dir = "data_json/FL/..",file_type = "people")
+# put all datasets in data-raw
+purrr::walk(dataset, get_dataset, save_to_dir = "data-raw/legiscan") 

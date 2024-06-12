@@ -1,3 +1,8 @@
+# INSTALL-PACKAGES.R
+# 6/11/24
+# only need to run this once for initial R setup on my local computer
+# may need to recreate as a requirements file once pushing this database onto Azure
+
 install.packages(c(
   "tidyverse",
   "tidytext",
@@ -6,7 +11,8 @@ install.packages(c(
   "oc",
   "jsonlite",
   "SnowballC",
-  "future.apply"
+  "future.apply,"
+  "RPostgres"
 ))
 # Install legiscanrr, which needs devtools
 if (!requireNamespace("devtools", quietly = TRUE)) install.packages("devtools")

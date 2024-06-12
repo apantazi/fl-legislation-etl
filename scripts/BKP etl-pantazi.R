@@ -1,3 +1,7 @@
+# 6/11/24
+# Andrew's original code from pull-in-process-all-legiscan.R at https://github.com/apantazi/legislator_dashboard
+# prior to modularization
+
 # libraries & options ####
 library(tidyverse)  # A collection of R packages for data science
 library(tidytext)   # Text mining using tidy data principles

@@ -5,11 +5,12 @@
 # I modularized this based on Andrew Pantazi's code
 # See pull-in-process-all-legiscan.R at https://github.com/apantazi/legislator_dashboard for the original script
 
-################################
-#                              #  
-# import libraries & functions #
-#                              #
-################################
+#################################
+#                               #  
+# loading libraries & functions #
+#                               #
+#################################
+# these libraries need to be installed prior to loading (see install-packages.R)
 
 library(tidyverse)  # A collection of R packages for data science
 library(tidytext)   # Text mining using tidy data principles
@@ -21,6 +22,10 @@ library(dwnominate) # Dynamic Weighted NOMINATE for analyzing changes in voting 
 library(jsonlite)   # Tools for parsing, generating, and manipulating JSON data
 library(SnowballC)  # Snowball stemmers for text preprocessing and stemming in natural language processing
 library(future.apply)
+
+#additional libraries for database interaction
+library(DBI)
+library(RPostgres)
 
 #set working directory to the location of current script
 setwd(script_dir <- dirname(rstudioapi::getActiveDocumentContext()$path))
@@ -37,9 +42,9 @@ options(scipen = 999) # numeric values in precise format
 
 # RR I haven't re-run Andrew's api request (request-api-legiscan) yet
 # ...only manually downloaded 2024 session data and renamed folder to 2023-2024_Regular_Session
-text_paths <- find_json_path(base_dir = "../data-raw/2023-2024_Regular_Session/..", file_type = "vote")
-text_paths_bills <- find_json_path(base_dir = "../data-raw/2023-2024_Regular_Session/..", file_type = "bill")
-text_paths_leg <- find_json_path(base_dir = "../data-raw/2023-2024_Regular_Session/..",file_type = "people")
+text_paths <- find_json_path(base_dir = "../data-raw/legiscan/2023-2024_Regular_Session/..", file_type = "vote")
+text_paths_bills <- find_json_path(base_dir = "../data-raw/legiscan/2023-2024_Regular_Session/..", file_type = "bill")
+text_paths_leg <- find_json_path(base_dir = "../data-raw/legiscan/2023-2024_Regular_Session/..",file_type = "people")
 
 
 ####################################
@@ -79,9 +84,10 @@ bill_vote_all <- inner_join(bills_all,votes_all,by=c("bill_id","number","title",
 primary_sponsors_votes <- primary_sponsors %>% left_join(votes_all,by="bill_id") %>% mutate(total_vote = (yea+nay),true_pct = yea/total_vote) %>% arrange(true_pct)
 
 #new column $session combines name and year. this happens after constructing primary_sponsor_votes, so that field is not in the latter frame
-##### !temporary hardcode session year as 2023!
-#bill_vote_all$session <- paste0(bill_vote_all$session_year,"-",gsub(" ","_", bill_vote_all$session_name))
-bill_vote_all$session <- paste0("2023-",gsub(" ","_", bill_vote_all$session_name))
+#### RR from original code, this may not have worked as intended, b/c session names were duplicating the year e.g. 2023-2023_Regular_Session
+# which made joins fail
+# bill_vote_all$session <- paste0(bill_vote_all$session_year,"-",gsub(" ","_", bill_vote_all$session_name))
+bill_vote_all$session <- bill_vote_all$session_string
 
 #convert roll call id to character (not sure why)
 votes_by_legislator <- votes_by_legislator %>% mutate(roll_call_id = as.character(roll_call_id))
@@ -187,10 +193,6 @@ party_majority_votes <- leg_votes_with2 %>% filter(party!=""& !is.na(party)) %>%
   summarize(majority_vote = if_else(sum(vote_text == "Yea") > sum(vote_text == "Nay"), "Yea", "Nay"), .groups = 'drop') %>% 
   pivot_wider(names_from = party,values_from = majority_vote,id_cols = roll_call_id,values_fill = "NA",names_prefix = "vote_")
 
-# RR test1
-#print(head(leg_votes_with2))
-#str(leg_votes_with2)
-
 heatmap_data <- leg_votes_with2 %>%
   left_join(party_majority_votes, by = c("roll_call_id")) %>%
   filter(!is.na(party)&party!="" & !grepl("2010",session_name,ignore.case=TRUE)& !is.na(session_name)) %>% 
@@ -268,3 +270,86 @@ heatmap_data$final <- "N"
 heatmap_data$final[grepl("third",heatmap_data$desc,ignore.case=TRUE)] <- "Y"
 
 heatmap_data$ballotpedia2 <- paste0("http://ballotpedia.org/",heatmap_data$ballotpedia)
+
+########################################
+#                                      #  
+# 4a) connect to Postgres              #
+#                                      #
+########################################
+# 6/11/24 RR added this section
+
+attempt_connection <- function() {
+  # Prompt for password
+  password_db <- readline(prompt="What be the secret code to yer treasure chest o' data?: ")
+  
+  # Attempt to connect to Postgres database
+  con <- tryCatch(
+    dbConnect(RPostgres::Postgres(), 
+              dbname = "fl_leg_votes", 
+              host = "localhost", 
+              port = 5432, 
+              user = "postgres", 
+              password = password_db),
+    error = function(e) {
+      message("Connection failed: ", e$message)
+      return(NULL)
+    }
+  )
+  
+  return(con)
+}
+
+# Loop until successful connection
+repeat {
+  con <- attempt_connection()
+  
+  if (!is.null(con) && dbIsValid(con)) {
+    print("Successfully connected to the database!")
+    break
+  } else {
+    message("Failed to connect to the database. Please try again.")
+  }
+}
+
+########################################
+#                                      #  
+# 4b) export dataframes to Postgres    #
+#                                      #
+########################################
+# create a schema for the Shiny app currently at https://shiny.jaxtrib.org/.
+schema_name <- "app_shiny"
+dbExecute(con, paste0("CREATE SCHEMA IF NOT EXISTS ", schema_name))
+
+# Create tables from dataframes
+dbWriteTable(con, SQL(paste0(schema_name, ".", "d_partisan_votes")), as.data.frame(d_partisan_votes), row.names = FALSE, overwrite = TRUE)
+dbWriteTable(con, SQL(paste0(schema_name, ".", "d_votes")), as.data.frame(d_votes), row.names = FALSE, overwrite = TRUE)
+dbWriteTable(con, SQL(paste0(schema_name, ".", "heatmap_data")), as.data.frame(heatmap_data), row.names = FALSE, overwrite = TRUE)
+dbWriteTable(con, SQL(paste0(schema_name, ".", "priority_votes")), as.data.frame(priority_votes), row.names = FALSE, overwrite = TRUE)
+dbWriteTable(con, SQL(paste0(schema_name, ".", "r_partisan_votes")), as.data.frame(r_partisan_votes), row.names = FALSE, overwrite = TRUE)
+dbWriteTable(con, SQL(paste0(schema_name, ".", "r_votes")), as.data.frame(r_votes), row.names = FALSE, overwrite = TRUE)
+
+# create configuration table, if necessary
+# then insert values y_labels into configuration table
+dbExecute(con, paste0("
+  CREATE TABLE IF NOT EXISTS ", schema_name, ".config (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+  )
+"))
+dbExecute(con, paste0("INSERT INTO ", schema_name, ".config (key, value) VALUES ('y_labels', '", y_labels, "') ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value"))
+
+########################################
+#                                      #  
+# 5) verify data storage in Postgres   #
+#                                      #
+########################################
+dbGetQuery(con, paste0("SELECT * FROM ", schema_name, ".", "d_partisan_votes LIMIT 5"))
+dbGetQuery(con, paste0("SELECT * FROM ", schema_name, ".", "d_votes LIMIT 5"))
+dbGetQuery(con, paste0("SELECT * FROM ", schema_name, ".", "heatmap_data LIMIT 5"))
+dbGetQuery(con, paste0("SELECT * FROM ", schema_name, ".", "priority_votes LIMIT 5"))
+dbGetQuery(con, paste0("SELECT * FROM ", schema_name, ".", "r_partisan_votes LIMIT 5"))
+dbGetQuery(con, paste0("SELECT * FROM ", schema_name, ".", "r_votes LIMIT 5"))
+dbGetQuery(con, paste0("SELECT value FROM ", schema_name, ".config WHERE key = 'y_labels'"))$value
+
+# Close the connection
+dbDisconnect(con)
