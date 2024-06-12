@@ -12,7 +12,9 @@ install.packages(c(
   "jsonlite",
   "SnowballC",
   "future.apply,"
-  "RPostgres"
+  "RPostgres,"
+  "progress",
+  "dplyr"
 ))
 # Install legiscanrr, which needs devtools
 if (!requireNamespace("devtools", quietly = TRUE)) install.packages("devtools")
@@ -23,3 +25,6 @@ devtools::install_github("fanghuiz/legiscanrr")
 if (!requireNamespace("remotes", quietly = TRUE)) install.packages("remotes")
 install.packages("https://cran.r-project.org/src/contrib/Archive/basicspace/basicspace_0.24.tar.gz", repos = NULL, type = "source")
 remotes::install_github('wmay/dwnominate')
+
+# to install an individual package:
+# install.packages("dplyr")

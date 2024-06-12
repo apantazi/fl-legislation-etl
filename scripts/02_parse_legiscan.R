@@ -3,6 +3,12 @@
 # custom functions to parse JSON data requested from LegiScan
 # all code written by Andrew Pantazi, then modularized/adapted by RR
 
+################################
+#                              #  
+# define parsing functions     #
+#                              #
+################################
+
 #######################################################################################
 #Extracts session information and people metadata from given JSON file paths.
 #It adds session details to each person's metadata.
@@ -287,3 +293,41 @@ parse_bill_jsons <- function(json_paths){
   
   return(combined_results)
 } 
+
+
+################################
+#                              #  
+# set options and local vars   #
+#                              #
+################################
+options(scipen = 999) # numeric values in precise format
+
+
+# RR I haven't re-run Andrew's api request (request-api-legiscan) yet
+# ...only manually downloaded 2024 session data and renamed folder to 2023-2024_Regular_Session
+text_paths <- find_json_path(base_dir = "../data-raw/legiscan/2023-2024_Regular_Session/..", file_type = "vote")
+text_paths_bills <- find_json_path(base_dir = "../data-raw/legiscan/2023-2024_Regular_Session/..", file_type = "bill")
+text_paths_leg <- find_json_path(base_dir = "../data-raw/legiscan/2023-2024_Regular_Session/..",file_type = "people")
+
+####################################
+#                                  #  
+# 1) parse from json files         #
+#                                  #
+####################################
+#this relies on custom functions defined in func-parsing.R
+legislators <- parse_people_session(text_paths_leg) #we use session so we don't have the wrong roles
+bills_all_sponsor <- parse_bill_sponsor(text_paths_bills)
+primary_sponsors <- bills_all_sponsor %>% filter(sponsor_type_id == 1 & committee_sponsor == 0)
+bills_all <- parse_bill_session(text_paths_bills) %>%
+  mutate(
+    session_year = as.numeric(str_extract(session_name, "\\d{4}")), # Extract year
+    two_year_period = case_when(
+      session_year < 2011 ~ "2010 or earlier",
+      session_year %% 2 == 0 ~ paste(session_year - 1, session_year, sep="-"),
+      TRUE ~ paste(session_year, session_year + 1, sep="-")
+    )
+  )
+bill_detailed <- parse_bill_jsons(text_paths_bills)
+
+#RR separated out this parse from the merge section, for clarity
+votes_by_legislator <- parse_person_vote_session(text_paths)
