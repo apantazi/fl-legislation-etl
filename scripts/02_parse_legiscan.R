@@ -5,7 +5,7 @@
 
 ################################
 #                              #  
-# define parsing functions     #
+# 1) define parsing functions  #
 #                              #
 ################################
 
@@ -295,11 +295,11 @@ parse_bill_jsons <- function(json_paths){
 } 
 
 
-################################
-#                              #  
-# set options and local vars   #
-#                              #
-################################
+###################################
+#                                 #  
+# 2) set options and local vars   #
+#                                 #
+###################################
 options(scipen = 999) # numeric values in precise format
 
 
@@ -311,10 +311,9 @@ text_paths_leg <- find_json_path(base_dir = "../data-raw/legiscan/2023-2024_Regu
 
 ####################################
 #                                  #  
-# 1) parse from json files         #
+# 3) parse from json files         #
 #                                  #
 ####################################
-#this relies on custom functions defined in func-parsing.R
 legislators <- parse_people_session(text_paths_leg) #we use session so we don't have the wrong roles
 bills_all_sponsor <- parse_bill_sponsor(text_paths_bills)
 primary_sponsors <- bills_all_sponsor %>% filter(sponsor_type_id == 1 & committee_sponsor == 0)

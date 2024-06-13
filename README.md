@@ -17,8 +17,11 @@
 |--------------------------|--------------------------|
 | 01_request_api_legiscan.R|requests data from LegiScan via API |
 | 02_parse_legiscan.R      |parses LegiScan JSON data |
-| 03_prep_legiscan.R       |prepares parsed data for deployment to the web app |
-| 04_write_postgres.R      |writes updated data to Postgres |
+| 03_load_views.R      |saves parsed LegiScan data into Postgres as the View layer|
+| 04_transform.R       |prepares parsed data for deployment to the web app |
+| 05_load_app_layer.R      |writes app queries to Postgres |
+| 00_install_packages.R      |installation script which should later be repackaged as requirements |
+| functions_database.R      |scripts to connect to Postgres, write tables, and test inputs |
 
  ## Debugging Notes
  This repo is currently being debugged. Some notes:

@@ -1,6 +1,6 @@
 ########################################
 #                                      #  
-# 2) merge tables and add calculations #
+# 1) merge tables and add calculations #
 #                                      #
 ########################################
 votes_all <- left_join(bill_detailed$votes,bill_detailed$bill_info_df) %>% mutate(pct = yea/total)

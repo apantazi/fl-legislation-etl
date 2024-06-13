@@ -44,31 +44,10 @@ library(dplyr) # allows excluding specific columns by name from sql commands (e.
 #set working directory to the location of current script
 setwd(script_dir <- dirname(rstudioapi::getActiveDocumentContext()$path))
 
-#############################################
-#                                           #  
-# 1) request LegiScan data from API         #
-#                                           #
-#############################################
+source("functions_database.R") # functions to write to Postgres database
 # 6/12/24 RR using only bulk downloaded data for now
-#source("01_request_api_legiscan.R")
-
-####################################
-#                                  #  
-# 2) parse from json files         #
-#                                  #
-####################################
-source("02_parse_legiscan.R")
-
-####################################
-#                                  #  
-# 3) merge, prep, analyze data     #
-#                                  #
-####################################
-source("03_prep_legiscan.R")
-
-########################################
-#                                      #  
-# 4) export dataframes to Postgres     #
-#                                      #
-########################################
-source("04_write-postgres.R")
+#source("01_request_api_legiscan.R") #request LegiScan data from API 
+source("02_parse_legiscan.R") # parse from json files
+source("03_load_views.R") # save parsed data to database
+source("04_transform.R") # merge, prep, analyze data
+source("04_load_app_layer.R") # export dataframes to Postgres
