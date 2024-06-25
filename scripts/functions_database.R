@@ -35,7 +35,7 @@ attempt_connection <- function() {
 write_table <- function(df, con, schema_name, table_name, chunk_size = 1000) {
   n <- nrow(df)
   pb <- progress_bar$new(
-    format = paste0("  writing ", table_name, " [:bar] :percent in :elapsed"),
+    format = paste0("  writing table ", schema_name, ".", table_name, " [:bar] :percent in :elapsed"),
     total = n,
     clear = FALSE,
     width = 60
@@ -58,7 +58,21 @@ write_table <- function(df, con, schema_name, table_name, chunk_size = 1000) {
 
 
 
-test_table <- function(con, schema_name, table_name) {
+# Function to check if the table exists
+table_exists <- function(con, schema_name, table_name) {
+  query <- paste0(
+    "SELECT EXISTS (",
+    "SELECT FROM information_schema.tables ",
+    "WHERE table_schema = '", schema_name, "' ",
+    "AND table_name = '", table_name, "')"
+  )
+  result <- dbGetQuery(con, query)
+  return(result$exists[1])
+}
+
+
+
+verify_table <- function(con, schema_name, table_name) {
   #display first five records, but it prints the same thing for every table
   print("first five records")
   print(dbGetQuery(con, paste0("SELECT * FROM ", schema_name, ".", table_name, " LIMIT 5")))
@@ -71,13 +85,21 @@ test_table <- function(con, schema_name, table_name) {
 }
   
 
-process_table_list <- function(con, schema_name, list_tables) {
+
+write_table_list <- function(con, schema_name, list_tables) {
   for (table_name in list_tables) {
     cat("\n","---------------------\n",toupper(table_name),"\n","---------------------\n")
     df <- get(table_name)
     df <- df
-    dbExecute(con, paste0("DROP TABLE IF EXISTS ", schema_name, ".", table_name, " CASCADE"))
+    
+    if (table_exists(con, schema_name, table_name)) {
+      dbExecute(con, paste0("DROP TABLE IF EXISTS ", schema_name, ".", table_name, " CASCADE"))
+      message("Dropping existing table ", schema_name, ".", table_name)
+    } else {
+      message("Adding new table ", schema_name, ".", table_name)
+    }
+    
     write_table(df, con, schema_name, table_name)
-    test_table(con, schema_name, table_name)
+    verify_table(con, schema_name, table_name)
   }
 }

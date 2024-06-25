@@ -40,22 +40,13 @@ schema_name <- "raw_legiscan"
 dbExecute(con, paste0("CREATE SCHEMA IF NOT EXISTS ", schema_name))
 
 list_tables <- c(
-  "legislator_history",
+  "legislator_sessions",
   "legislator_votes",
-  "bills"
+  "bills",
+  "bill_votes"
 )
 
-### not needed
-# bill_progress",
-#   "bill_history",
-#   "bill_sponsors",
-#   "bill_sasts",
-#   "bill_texts"
-# no longer included
-# "bills_all_sponsor"
-# "primary_sponsors"
-
-process_table_list(con, schema_name, list_tables)
+write_table_list(con, schema_name, list_tables)
 
 # Close the connection
 dbDisconnect(con)

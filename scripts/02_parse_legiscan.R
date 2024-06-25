@@ -23,32 +23,38 @@ setwd(script_dir <- dirname(rstudioapi::getActiveDocumentContext()$path))
 
 #######################################################################################
 #unpacks Legiscan's ls_people table from JSON into a dataframe
-# using jsonlite::fromJSON(input_people_json_path)
+
 #adds "session" field (e.g. "2023-2024_Regular_Session") based on file pathname
-parse_legislator_history <- function (people_json_paths) {
-  pb <- progress::progress_bar$new(format = "  parsing_legislator history [:bar] :percent in :elapsed.", 
+parse_legislator_sessions <- function (people_json_paths) {
+  #initialize progress bar
+  pb <- progress::progress_bar$new(format = "  parsing legislator-sessions [:bar] :percent in :elapsed.", 
                                    total = length(people_json_paths), clear = FALSE, width = 60)
   pb$tick(0)
   
+  # helper function: for each JSON file path, update the progress bar, determine session info from pathname, read JSON file
   extract_people_meta <- function(input_people_json_path) {
     pb$tick()
-    # Define a regex to match the session pattern in the file path
+    
+    # Extract session info from file path using a defined regex
     session_regex <- "(\\d{4}-\\d{4}_[^/]+_Session)"
-    # Extract session from the file path using the defined regex
     matches <- regmatches(input_people_json_path, regexpr(session_regex, input_people_json_path))
     session_info <- ifelse(length(matches) > 0, matches, NA)
     
     input_people_json <- jsonlite::fromJSON(input_people_json_path)
     people_meta <- input_people_json[["person"]]
+    
     # Append session info as a new column
     people_meta$session <- session_info
-    people_meta
+    
+    people_meta # return people_meta
   }
   
+  # run extract_people_meta for each file, combine results into output_df, then return output_df
   output_list <- lapply(people_json_paths, extract_people_meta)
   output_df <- data.table::rbindlist(output_list, fill = TRUE)
   output_df <- tibble::as_tibble(data.table::setDF(output_df))
-  output_df
+  
+  output_df # return output_df
 }
 
 
@@ -58,7 +64,7 @@ parse_legislator_history <- function (people_json_paths) {
 #?adds "roll call id" for each vote record?
 #?? Extracts vote information and session details from JSON file paths.
 parse_legislator_votes <- function (vote_json_paths) {
-  pb <- progress::progress_bar$new(format = "  parsing legislator_votes [:bar] :percent in :elapsed.", 
+  pb <- progress::progress_bar$new(format = "  parsing legislator votes jsons [:bar] :percent in :elapsed.", 
                                    total = length(vote_json_paths), clear = FALSE, width = 60)
   pb$tick(0)
   extract_vote <- function(input_vote_json_path) {
@@ -89,7 +95,7 @@ parse_legislator_votes <- function (vote_json_paths) {
 #Extracts bill metadata including session information, progress, history, sponsors, and other related attributes from given JSON file paths.
 parse_bills <- function(bill_json_paths) {
   pb <- progress::progress_bar$new(
-    format = "  parsing bill metadata [:bar] :percent in :elapsed.",
+    format = "  parsing bill metadata and bill-votes [:bar] :percent in :elapsed.",
     total = length(bill_json_paths), clear = FALSE, width = 60
   )
   
@@ -168,11 +174,21 @@ extract_votes <- function(votes, bill_id) {
 options(scipen = 999) # numeric values in precise format
 
 
-# RR I haven't re-run Andrew's api request (request-api-legiscan) yet
-# ...only manually downloaded 2024 session data and renamed folder to 2023-2024_Regular_Session
-text_paths <- find_json_path(base_dir = "../data-raw/legiscan/2023-2024_Regular_Session/..", file_type = "vote")
-text_paths_bills <- find_json_path(base_dir = "../data-raw/legiscan/2023-2024_Regular_Session/..", file_type = "bill")
-text_paths_leg <- find_json_path(base_dir = "../data-raw/legiscan/2023-2024_Regular_Session/..",file_type = "people")
+# For now, only working with folder data-raw/legiscan/2023-2024
+# to look at all years, work with 2010-2024
+base_dir <- "../data-raw/legiscan/2023-2024/"
+all_json_paths <- list.files(path = base_dir, pattern = "\\.json$", full.names = TRUE, recursive = TRUE)
+text_paths_bills <- all_json_paths[grepl("/bill/", all_json_paths, ignore.case = TRUE)]
+text_paths_legislators <- all_json_paths[grepl("/people/", all_json_paths, ignore.case = TRUE)]
+text_paths_votes <- all_json_paths[grepl("/vote/", all_json_paths, ignore.case = TRUE)]
+
+# Check the number of files found
+n_bills <- length(text_paths_bills)
+n_legislators <- length(text_paths_legislators)
+n_votes <- length(text_paths_votes)
+print(paste0("# of bill-sessions: ",n_bills))
+print(paste0("# of legislator-sessions: ",n_legislators))
+print(paste0("# of votes: ",n_votes))
 
 ####################################
 #                                  #  
@@ -181,23 +197,11 @@ text_paths_leg <- find_json_path(base_dir = "../data-raw/legiscan/2023-2024_Regu
 ####################################
 #updated on 6/14/24
 
-legislator_history <- parse_legislator_history(text_paths_leg) #adds session ID to potentially reflect changing roles
-legislator_votes <- parse_legislator_votes(text_paths) #RR separated out this parse from the merge section for clarity
-
-#6/17/24 original code no longer needed? 
-# bills_meta <- parse_bill_meta(text_paths_bills) %>%
-#   mutate(
-#     session_year = as.numeric(str_extract(session_name, "\\d{4}")), # Extract year
-#     two_year_period = case_when(
-#       session_year < 2011 ~ "2010 or earlier",
-#       session_year %% 2 == 0 ~ paste(session_year - 1, session_year, sep="-"),
-#       TRUE ~ paste(session_year, session_year + 1, sep="-")
-#     )
-#   )
+legislator_sessions <- parse_legislator_sessions(text_paths_legislators) #adds session ID to potentially reflect changing roles
+legislator_votes <- parse_legislator_votes(text_paths_votes) #RR separated out this parse from the merge section for clarity
 
 # parse bills json, storing related tables in a list of tables (meta, progress, history, sponsors, sasts, texts)
 bills_parsed <- parse_bills(text_paths_bills)
-
 # create a dataframe for each bill-related table returned in parse_bills
 bill_votes <- bills_parsed$votes
 # Add detail to bills dataframe (meta)

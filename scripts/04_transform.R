@@ -40,7 +40,7 @@ bill_vote_all <- bill_vote_all %>% mutate(roll_call_id = as.character(roll_call_
 ########################################
 #broke this 3-way join into 2, to help with debugging
 temp_join_votes_legislators <- legislator_votes %>%
-  inner_join(legislator_history, by = c("people_id", "session"))
+  inner_join(legislator_sessions, by = c("people_id", "session"))
 leg_votes_with2 <- temp_join_votes_legislators %>%
   inner_join(bill_vote_all, by = c("roll_call_id", "session"))
 

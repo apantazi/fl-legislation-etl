@@ -10,12 +10,9 @@
 # debugging notes 6/12/24       #
 #                               #
 #################################
-#parse-data-legiscan.R
+#02_parse-legiscan.R
 # hack to ensure two-year session (e.g. 2023-2024, vs. 2023-2023). not sure why i had to do this
 # bill_vote_all$session <- bill_vote_all$session_string
-
-#write-to-postgres.R
-#removed some columns from heatmap_data- e.g. lists and factors, which aren't intended for Postgres
 
 #################################
 #                               #  

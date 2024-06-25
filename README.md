@@ -3,7 +3,12 @@
  This repo creates a data pipeline for Florida legislative votes. The database is currently managed locally on my Windows machine, with intent to deploy to Azure in support of the Jacksonville Tributary's [Legislative Voting dashboard](https://shiny.jaxtrib.org/).
 
  ## Running the ETL Script
- You'll need to know the Postgres database password to complete the write operation. Prior to running the script, you also need to start the database server:
+ETL in the context of the legislative dashboard database is:
+* Extract: Retrieve data via API from Legiscan (and soon to be additional sources)
+* Transform: A.k.a. "mutate" in R, organize data and add calculations so it's more useful and easier to understand
+* Load: Writing the transformed data into the Postgres database
+
+ You'll need to know the Postgres database password to complete this write operation. Prior to running the script, you also need to start the database server:
 
 
  ```
