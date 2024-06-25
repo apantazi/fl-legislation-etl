@@ -3,13 +3,25 @@
 # 1) merge tables and add calculations #
 #                                      #
 ########################################
-votes_all <- left_join(bill_detailed$votes,bill_detailed$bill_info_df) %>% mutate(pct = yea/total)
+# not sure this is used- there is no function parse_bill_sponsor?!
+# bills_all_sponsor <- parse_bill_sponsor(text_paths_bills)
+# primary_sponsors <- bills_all_sponsor %>% filter(sponsor_type_id == 1 & committee_sponsor == 0)
 
-bill_vote_all <- inner_join(bills_all,votes_all,by=c("bill_id","number","title","session_id","session_name"
+# trying to get rid of bill_detailed
+# votes_all <- left_join(bill_detailed$votes,bill_detailed$bill_info_df) %>% mutate(pct = yea/total)
+votes_all <- left_join(bill_votes,bills) %>% mutate(pct = yea/total)
+
+bill_vote_all <- inner_join(bills,votes_all,by=c("bill_id","number","title","session_id","session_name"
 ),suffix=c("","_vote")) %>% mutate(total_vote = (yea+nay),true_pct = yea/total_vote) %>% arrange(true_pct) #bill_id is unique and not duplicated across sessions
 
+########################################
+#                                      #  
+# 2) calculations                      #
+#                                      #
+########################################
 #warning re: many-to-many relationship, set `relationship = "many-to-many"` to silence this warning
-primary_sponsors_votes <- primary_sponsors %>% left_join(votes_all,by="bill_id") %>% mutate(total_vote = (yea+nay),true_pct = yea/total_vote) %>% arrange(true_pct)
+# not sure this is even used
+# primary_sponsors_votes <- primary_sponsors %>% left_join(votes_all,by="bill_id") %>% mutate(total_vote = (yea+nay),true_pct = yea/total_vote) %>% arrange(true_pct)
 
 #new column $session combines name and year. this happens after constructing primary_sponsor_votes, so that field is not in the latter frame
 #### RR from original code, this may not have worked as intended, b/c session names were duplicating the year e.g. 2023-2023_Regular_Session
@@ -18,12 +30,17 @@ primary_sponsors_votes <- primary_sponsors %>% left_join(votes_all,by="bill_id")
 bill_vote_all$session <- bill_vote_all$session_string
 
 #convert roll call id to character (not sure why)
-votes_by_legislator <- votes_by_legislator %>% mutate(roll_call_id = as.character(roll_call_id))
+legislator_votes <- legislator_votes %>% mutate(roll_call_id = as.character(roll_call_id))
 bill_vote_all <- bill_vote_all %>% mutate(roll_call_id = as.character(roll_call_id))
 
+########################################
+#                                      #  
+# 1b) merge again                      #
+#                                      #
+########################################
 #broke this 3-way join into 2, to help with debugging
-temp_join_votes_legislators <- votes_by_legislator %>%
-  inner_join(legislators, by = c("people_id", "session"))
+temp_join_votes_legislators <- legislator_votes %>%
+  inner_join(legislator_history, by = c("people_id", "session"))
 leg_votes_with2 <- temp_join_votes_legislators %>%
   inner_join(bill_vote_all, by = c("roll_call_id", "session"))
 
@@ -198,3 +215,37 @@ heatmap_data$final <- "N"
 heatmap_data$final[grepl("third",heatmap_data$desc,ignore.case=TRUE)] <- "Y"
 
 heatmap_data$ballotpedia2 <- paste0("http://ballotpedia.org/",heatmap_data$ballotpedia)
+
+###########################################
+#                                         #  
+# 4) create and save views for Shiny app  #
+#                                         #
+###########################################
+#this view will be saved in app_shiny.vote_patterns, for use by the Shiny app Voting Patterns
+vote_patterns <- heatmap_data %>%
+  # Step 1: Calculate max partisan_metric2 for Democratic votes
+  group_by(roll_call_id) %>%
+  mutate(max_partisan_metric2 = if_else(party == "D", max(partisan_metric2, na.rm = TRUE), NA_real_)) %>%
+  ungroup() %>%
+  # Step 2: Mark roll_call_ids that meet the criteria for d_partisan_votes
+  mutate(in_d_partisan_votes = !is.na(max_partisan_metric2) & max_partisan_metric2 >= 1) %>%
+  # Step 3: Calculate y_pct and n_pct for Democratic votes
+  group_by(roll_call_id, vote_text) %>%
+  summarize(n = n(), .groups = 'drop') %>%
+  tidyr::pivot_wider(names_from = vote_text, values_from = n, values_fill = 0) %>%
+  mutate(
+    y_pct = Yea / (Yea + Nay),
+    n_pct = Nay / (Nay + Yea)
+  ) %>%
+  ungroup() %>%
+  # Step 4: Filter based on y_pct and n_pct, and add d_vote column
+  mutate(
+    d_vote = if_else(
+      party == "D" & in_d_partisan_votes & y_pct != 0 & y_pct != 1,
+      1, 0
+    )
+  )
+
+vote_patterns <- vote_patterns[,c("roll_call_id","partisan_metric2","hover_text","true_pct","year","role","final","party","name")]
+
+

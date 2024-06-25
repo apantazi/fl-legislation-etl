@@ -50,4 +50,4 @@ source("functions_database.R") # functions to write to Postgres database
 source("02_parse_legiscan.R") # parse from json files
 source("03_load_views.R") # save parsed data to database
 source("04_transform.R") # merge, prep, analyze data
-source("04_load_app_layer.R") # export dataframes to Postgres
+source("05_load_app_layer.R") # export dataframes to Postgres

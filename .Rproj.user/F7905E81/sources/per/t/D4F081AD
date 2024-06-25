@@ -1,0 +1,26 @@
+{
+    "id": "D4F081AD",
+    "path": "C:/Users/relia/jour/my_database_projects/fl-legislation-db/scripts/etl_main.R",
+    "project_path": "scripts/etl_main.R",
+    "type": "r_source",
+    "hash": "3022589388",
+    "contents": "",
+    "dirty": false,
+    "created": 1719281209479.0,
+    "source_on_save": false,
+    "relative_order": 4,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "50,14",
+        "scrollLine": "4"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1718630752,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1718630752,
+    "read_only": false,
+    "read_only_alternatives": []
+}

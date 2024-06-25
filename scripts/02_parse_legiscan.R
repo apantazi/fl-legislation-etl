@@ -1,7 +1,19 @@
+# 6/24/24
+# created this backup just before removing unneeded tables (progress, history, sasts, etc)
+
 # FUNC-PARSING.R
 # 6/10/24
 # custom functions to parse JSON data requested from LegiScan
 # all code written by Andrew Pantazi, then modularized/adapted by RR
+
+
+################################
+#                              #  
+# 0) for testing only          #
+#                              #
+################################
+#set working directory to the location of current script
+setwd(script_dir <- dirname(rstudioapi::getActiveDocumentContext()$path))
 
 ################################
 #                              #  
@@ -10,10 +22,11 @@
 ################################
 
 #######################################################################################
-#Extracts session information and people metadata from given JSON file paths.
-#It adds session details to each person's metadata.
-parse_people_session <- function (people_json_paths) {
-  pb <- progress::progress_bar$new(format = "  parsing people [:bar] :percent in :elapsed.", 
+#unpacks Legiscan's ls_people table from JSON into a dataframe
+# using jsonlite::fromJSON(input_people_json_path)
+#adds "session" field (e.g. "2023-2024_Regular_Session") based on file pathname
+parse_legislator_history <- function (people_json_paths) {
+  pb <- progress::progress_bar$new(format = "  parsing_legislator history [:bar] :percent in :elapsed.", 
                                    total = length(people_json_paths), clear = FALSE, width = 60)
   pb$tick(0)
   
@@ -40,10 +53,12 @@ parse_people_session <- function (people_json_paths) {
 
 
 #######################################################################################
-#Extracts vote information and session details from given JSON file paths.
-#It includes session information for each vote record.
-parse_person_vote_session <- function (vote_json_paths) {
-  pb <- progress::progress_bar$new(format = "  parsing person-vote [:bar] :percent in :elapsed.", 
+#unpacks Legiscan's ls_bill_vote_detail from JSON into a dataframe
+#adds "session" field (e.g. "2023-2024_Regular_Session") based on file pathname
+#?adds "roll call id" for each vote record?
+#?? Extracts vote information and session details from JSON file paths.
+parse_legislator_votes <- function (vote_json_paths) {
+  pb <- progress::progress_bar$new(format = "  parsing legislator_votes [:bar] :percent in :elapsed.", 
                                    total = length(vote_json_paths), clear = FALSE, width = 60)
   pb$tick(0)
   extract_vote <- function(input_vote_json_path) {
@@ -66,38 +81,17 @@ parse_person_vote_session <- function (vote_json_paths) {
 } 
 
 
-#######################################################################################
-#Extracts roll call information and session details from given JSON file paths, including session info for each roll call.
-parse_rollcall_vote_session <- function (vote_json_paths) {
-  pb <- progress::progress_bar$new(format = "  parsing roll call [:bar] :percent in :elapsed.", 
-                                   total = length(vote_json_paths), clear = FALSE, width = 60)
-  pb$tick(0)
-  extract_rollcall <- function(input_vote_json_path) {
-    pb$tick()
-    # Extract session
-    session_regex <- "(\\d{4}-\\d{4}_[^/]+_Session)"
-    session_info <- regmatches(input_vote_json_path, regexpr(session_regex, input_vote_json_path))
-    input_vote <- jsonlite::fromJSON(input_vote_json_path)
-    input_vote <- input_vote[["roll_call"]]
-    vote_info <- purrr::keep(input_vote, names(input_vote) %in% c("roll_call_id", "bill_id", "date", 
-                                                                  "desc", "yea", "nay", "nv", "absent", "total", "passed", 
-                                                                  "chamber", "chamber_id"))
-    # Append session info
-    vote_info$session <- session_info
-    vote_info
-  }
-  output_list <- lapply(vote_json_paths, extract_rollcall)
-  output_df <- data.table::rbindlist(output_list, fill = TRUE)
-  output_df <- tibble::as_tibble(data.table::setDF(output_df))
-  output_df
-} 
-
 
 #######################################################################################
+# unpacks Legiscan's ls_bill table from JSON into a dataframe
+# adds "session" field (e.g. "2023-2024_Regular_Session") based on file pathname input_bill_path
+
 #Extracts bill metadata including session information, progress, history, sponsors, and other related attributes from given JSON file paths.
-parse_bill_session <- function(bill_json_paths) {
-  pb <- progress::progress_bar$new(format = "  parsing bills [:bar] :percent in :elapsed.",
-                                   total = length(bill_json_paths), clear = FALSE, width = 60)
+parse_bills <- function(bill_json_paths) {
+  pb <- progress::progress_bar$new(
+    format = "  parsing bill metadata [:bar] :percent in :elapsed.",
+    total = length(bill_json_paths), clear = FALSE, width = 60
+  )
   
   extract_bill_meta <- function(input_bill_path) {
     pb$tick()
@@ -115,15 +109,13 @@ parse_bill_session <- function(bill_json_paths) {
     session_name <- ifelse(is.null(bill$session$session_name), NA, bill$session$session_name)
     url <- ifelse(is.null(bill$url), NA, bill$url)
     title <- ifelse(is.null(bill$title), NA, bill$title)
+    type <- ifelse(is.null(bill$type), NA, bill$type)
     description <- ifelse(is.null(bill$description), NA, bill$description)
     status <- ifelse(is.null(bill$status), NA, bill$status)
     status_date <- ifelse(is.null(bill$status_date), NA, bill$status_date)
     
-    progress_list <- lapply(bill$progress, function(x) c(x$date, x$event))
-    history_list <- lapply(bill$history, function(x) c(x$date, x$action, x$chamber, x$importance))
-    sponsors_list <- lapply(bill$sponsors, function(x) c(x$people_id, x$party, x$role, x$name, x$sponsor_order, x$sponsor_type_id))
-    sasts_list <- lapply(bill$sasts, function(x) c(x$type, x$sast_bill_number, x$sast_bill_id))
-    texts_list <- lapply(bill$texts, function(x) c(x$date, x$type, x$type_id, x$mime, x$mime_id, x$url, x$state_link, x$text_size))
+    # parse related tables
+    votes_df <- extract_votes(bill$votes, bill_id)
     
     df <- data.frame(
       number = number,
@@ -133,167 +125,40 @@ parse_bill_session <- function(bill_json_paths) {
       session_name = session_name,
       url = url,
       title = title,
+      type = type,
       description = description,
       status = status,
       status_date = status_date,
-      progress = I(list(progress_list)),
-      history = I(list(history_list)),
-      sponsors = I(list(sponsors_list)),
-      sasts = I(list(sasts_list)),
-      texts = I(list(texts_list)),
       stringsAsFactors = FALSE
     )
     
-    return(df)
+    return(list(meta = df, votes = votes_df))
   }
   
   output_list <- lapply(bill_json_paths, extract_bill_meta)
-  output_df <- do.call(rbind, output_list)
   
-  return(output_df)
-} 
+  meta_df <- do.call(rbind, lapply(output_list, `[[`, "meta"))
+  votes_df <- do.call(rbind, lapply(output_list, `[[`, "votes"))
+  
+  return(list(meta = meta_df, votes = votes_df))
+}
 
 
 #######################################################################################
-#A combined approach to parsing bill metadata, including sponsors and progress, from given JSON file paths. This function compiles data into simplified vectors or lists.
-parse_bill_combined <- function(bill_json_paths) {
-  pb <- progress::progress_bar$new(format = "  parsing bills [:bar] :percent in :elapsed.", 
-                                   total = length(bill_json_paths), clear = FALSE, width = 60)
-  
-  extract_combined_meta <- function(input_bill_path) {
-    pb$tick()
-    session_regex <- "(\\d{4}-\\d{4}_[^/]+_Session)"
-    session_matches <- regexpr(session_regex, input_bill_path)
-    session_string <- ifelse(session_matches != -1, regmatches(input_bill_path, session_matches), NA)
-    
-    if(file.exists(input_bill_path)) {
-      bill_data <- jsonlite::fromJSON(input_bill_path, simplifyVector = FALSE)
-    } else {
-      warning(paste("File not found:", input_bill_path))
-      return(NULL)
-    }
-    
-    bill <- bill_data$bill
-    session_name <- bill$session$session_name %||% NA
-    
-    # Simplify and compile desired attributes into vectors or lists
-    sponsors_list <- lapply(bill$sponsors %||% list(), function(x) c(x$people_id, x$party, x$role, x$name, x$sponsor_order, x$sponsor_type_id))
-    progress_list <- lapply(bill$progress %||% list(), function(x) c(x$date, x$event))
-    
-    # Construct the data frame
-    df <- data.frame(
-      bill_id = bill$bill_id,
-      change_hash = bill$change_hash,
-      url = bill$url,
-      state_link = bill$state_link,
-      status = bill$status,
-      status_date = bill$status_date,
-      state = bill$state,
-      state_id = bill$state_id,
-      bill_number = bill$bill_number,
-      bill_type = bill$bill_type,
-      bill_type_id = bill$bill_type_id,
-      body = bill$body,
-      body_id = bill$body_id,
-      current_body = bill$current_body,
-      current_body_id = bill$current_body_id,
-      title = bill$title,
-      description = bill$description,
-      pending_committee_id = bill$pending_committee_id,
-      session_name = session_name,
-      session_string = session_string,
-      sponsors = I(sponsors_list),
-      progress = I(progress_list),
-      stringsAsFactors = FALSE
-    )
-    
-    return(df)
-  }
-  
-  output_list <- lapply(bill_json_paths, extract_combined_meta)
-  output_df <- do.call(rbind, output_list)
-  
-  return(output_df)
-} 
+# helper functions to extract lists from within bills
 
-
-#######################################################################################
-#Parses multiple JSON paths for bill data, extracting detailed bill information, sponsors, amendments, referrals, history, votes, and supplements. It combines results into a single list.
-parse_bill_jsons <- function(json_paths){
-  parse_single_json  <- function(json_path) {
-    bill_data <- fromJSON(json_path, simplifyVector = FALSE)
-    bill <- bill_data$bill
+extract_votes <- function(votes, bill_id) {
+  if (is.null(votes)) return(NULL)
+  do.call(rbind, lapply(votes, function(vote) {
+    # Convert the vote list to a data frame
+    vote_df <- as.data.frame(vote, stringsAsFactors = FALSE)
     
-    # Extract flat information directly into a data frame
-    bill_info_df <- tibble(
-      number = bill$bill_number,
-      title = bill$title,
-      type = bill$bill_type,
-      bill_id = bill$bill_id,
-      description = bill$description,
-      session_id = bill$session$session_id,
-      session_name = bill$session$session_name,
-      year = bill$session$year_end
-      # Add more fields as needed
-    )
+    # Add the bill_id column
+    vote_df$bill_id <- bill_id
     
-    # Extract sponsors (assuming sponsors are a list of lists)
-    sponsors <- bind_rows(lapply(bill$sponsors, as_tibble), .id = bill$sponsor_id) %>%
-      mutate(bill_id = bill$bill_id) %>%
-      select(bill_id, everything())
-    
-    amendments <- bind_rows(lapply(bill$amendments, as_tibble), .id = bill$amendment_id) %>%
-      mutate(bill_id = bill$bill_id) %>%
-      select(bill_id, everything())
-    
-    referrals <- bind_rows(lapply(bill$referrals, as_tibble), .id = bill$committee_id) %>%
-      mutate(bill_id = bill$bill_id) %>%
-      select(bill_id, everything())
-    
-    history <- bind_rows(lapply(bill$history, as_tibble)) %>%
-      mutate(bill_id = bill$bill_id) %>%
-      select(bill_id, everything())
-    
-    votes <- bind_rows(lapply(bill$votes, as_tibble), .id = bill$roll_call_id) %>%
-      mutate(bill_id = bill$bill_id) %>%
-      select(bill_id, everything())
-    
-    supplements <- bind_rows(lapply(bill$supplements, as_tibble), .id = bill$supplement_id) %>%
-      mutate(bill_id = bill$bill_id) %>%
-      select(bill_id, everything())
-    
-    # Compile into a single list for this example
-    list(bill_info_df = bill_info_df,
-         sponsors = sponsors, 
-         amendments = amendments,
-         supplements=supplements,
-         votes=votes,
-         history=history,
-         referrals=referrals)
-  }
-  pb <- progress::progress_bar$new(
-    format = "  Parsing bills [:bar] :percent in :elapsed",
-    total = length(json_paths),
-    width = 60
-  )
-  parsed_results <- lapply(json_paths, function(path) {
-    pb$tick()
-    parse_single_json(path)
-  })
-  
-  combined_results <- list(
-    bill_info_df = bind_rows(lapply(parsed_results, `[[`, "bill_info_df")),
-    sponsors = bind_rows(lapply(parsed_results, `[[`, "sponsors")),
-    amendments = bind_rows(lapply(parsed_results, `[[`, "amendments")),
-    supplements = bind_rows(lapply(parsed_results, `[[`, "supplements")),
-    votes = bind_rows(lapply(parsed_results, `[[`, "votes")),
-    history = bind_rows(lapply(parsed_results, `[[`, "history")),
-    referrals = bind_rows(lapply(parsed_results, `[[`, "referrals"))
-  )
-  
-  return(combined_results)
-} 
-
+    return(vote_df)
+  }))
+}
 
 ###################################
 #                                 #  
@@ -314,10 +179,29 @@ text_paths_leg <- find_json_path(base_dir = "../data-raw/legiscan/2023-2024_Regu
 # 3) parse from json files         #
 #                                  #
 ####################################
-legislators <- parse_people_session(text_paths_leg) #we use session so we don't have the wrong roles
-bills_all_sponsor <- parse_bill_sponsor(text_paths_bills)
-primary_sponsors <- bills_all_sponsor %>% filter(sponsor_type_id == 1 & committee_sponsor == 0)
-bills_all <- parse_bill_session(text_paths_bills) %>%
+#updated on 6/14/24
+
+legislator_history <- parse_legislator_history(text_paths_leg) #adds session ID to potentially reflect changing roles
+legislator_votes <- parse_legislator_votes(text_paths) #RR separated out this parse from the merge section for clarity
+
+#6/17/24 original code no longer needed? 
+# bills_meta <- parse_bill_meta(text_paths_bills) %>%
+#   mutate(
+#     session_year = as.numeric(str_extract(session_name, "\\d{4}")), # Extract year
+#     two_year_period = case_when(
+#       session_year < 2011 ~ "2010 or earlier",
+#       session_year %% 2 == 0 ~ paste(session_year - 1, session_year, sep="-"),
+#       TRUE ~ paste(session_year, session_year + 1, sep="-")
+#     )
+#   )
+
+# parse bills json, storing related tables in a list of tables (meta, progress, history, sponsors, sasts, texts)
+bills_parsed <- parse_bills(text_paths_bills)
+
+# create a dataframe for each bill-related table returned in parse_bills
+bill_votes <- bills_parsed$votes
+# Add detail to bills dataframe (meta)
+bills <- bills_parsed$meta %>%
   mutate(
     session_year = as.numeric(str_extract(session_name, "\\d{4}")), # Extract year
     two_year_period = case_when(
@@ -326,7 +210,3 @@ bills_all <- parse_bill_session(text_paths_bills) %>%
       TRUE ~ paste(session_year, session_year + 1, sep="-")
     )
   )
-bill_detailed <- parse_bill_jsons(text_paths_bills)
-
-#RR separated out this parse from the merge section, for clarity
-votes_by_legislator <- parse_person_vote_session(text_paths)

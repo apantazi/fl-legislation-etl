@@ -40,7 +40,8 @@ list_tables <- c(
   "d_votes",
   "priority_votes",
   "r_partisan_votes",
-  "r_votes"
+  "r_votes",
+  "vote_patterns"
 )
 
 process_table_list(con, schema_name, list_tables)
