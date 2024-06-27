@@ -1,19 +1,35 @@
 # Florida Legislative Voting Database
-6/12/14
+6/27/24
  This repo creates a data pipeline for Florida legislative votes. The database is currently managed locally on my Windows machine, with intent to deploy to Azure in support of the Jacksonville Tributary's [Legislative Voting dashboard](https://shiny.jaxtrib.org/).
 
- ## Running the ETL Script
-ETL in the context of the legislative dashboard database is:
-* Extract: Retrieve data via API from Legiscan (and soon to be additional sources)
-* Transform: A.k.a. "mutate" in R, organize data and add calculations so it's more useful and easier to understand
-* Load: Writing the transformed data into the Postgres database
+## Overview of the database
+<img src="./diagrams/etl-schematic.png" width=100%>
 
- You'll need to know the Postgres database password to complete this write operation. Prior to running the script, you also need to start the database server:
+|Layer|Purpose|
+|---|---|
+|**Raw**|Raw data retrieved via API and parsed into tables.|
+|**Processed**|Cleaned and organized data including calculated fields. My intent is to also align data definitions between similar formats (e.g. LegiScan and LegiStar).|
+|**Application**|Data prepared for specific applications such as the Jacksonville Tributary's legislator dashboard (see [previous version](https://shiny.jaxtrib.org/)).|
+
+ETL in the context of the legislative dashboard database means:
+* **Extract** data via API from Legiscan, and parse it
+* **Transform** data by cleaning, organizing, calculating, and aligning data so it's more useful and easier to understand
+* **Load** the transformed data into the Postgres database
+
+ ## Running the ETL Script
+The following instructions describe the process of running the ETL scripts. If it's useful, I may develop a simple SQLite and/or folder-of-csvs exports to facilitate app development without relying on our Postgres database.
+
+To run these scripts, you'll need to know two passwords:
+* password for the Postgres database
+* API key for Legiscan
+
+ Prior to running the ETL scripts, you'll need to set up and open a Docker container with the database. Then, from the command line you'll need to start the Docker container, open an interactive postgres terminal, and start the database fl_leg_votes.
 
 
  ```
  docker start my_postgres
- docker exec -it my_postgres psql -U postgres -d fl_leg_votes
+ docker exec -it my_postgres
+ psql -U postgres -d fl_leg_votes
 ```
 
  Then, you'll need to run etl_main.R, which calls the following scripts in sequence:
@@ -28,12 +44,6 @@ ETL in the context of the legislative dashboard database is:
 | 00_install_packages.R      |installation script which should later be repackaged as requirements |
 | functions_database.R      |scripts to connect to Postgres, write tables, and test inputs |
 
- ## Debugging Notes
- This repo is currently being debugged. Some notes:
-
-**parse-data-legiscan.R**  
-hack to ensure two-year session (e.g. 2023-2024, vs. 2023-2023). not sure why i had to do this
-bill_vote_all$session <- bill_vote_all$session_string
-
-**write-to-postgres.R**  
-removed some columns from heatmap_data- e.g. lists and factors, which aren't intended for Postgres
+## Development workplan
+* Incorporate voting data for cities (e.g. Legistar data) and district data for context (e.g. Census data) 
+* Develop automated CSV and SQLite exports to support non-Postgres data access options

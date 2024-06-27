@@ -1,7 +1,6 @@
 # 6/24/24
 # created this backup just before removing unneeded tables (progress, history, sasts, etc)
 
-# FUNC-PARSING.R
 # 6/10/24
 # custom functions to parse JSON data requested from LegiScan
 # all code written by Andrew Pantazi, then modularized/adapted by RR

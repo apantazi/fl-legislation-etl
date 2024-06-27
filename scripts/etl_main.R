@@ -1,18 +1,12 @@
-# ETL.R
-# 6/11/24
-# This script transforms data that's already been requested or downloaded from LegiScan
-# and stored in the folder fl-regular-json (eventually will be in Postgres db) 
-# I modularized this based on Andrew Pantazi's code
-# See pull-in-process-all-legiscan.R at https://github.com/apantazi/legislator_dashboard for the original script
-
 #################################
 #                               #  
-# debugging notes 6/12/24       #
+# ETL_MAIN.R                    #
 #                               #
 #################################
-#02_parse-legiscan.R
-# hack to ensure two-year session (e.g. 2023-2024, vs. 2023-2023). not sure why i had to do this
-# bill_vote_all$session <- bill_vote_all$session_string
+# 6/11/24
+# This script transforms data that's already been requested or downloaded from LegiScan
+# and stored in the folder fl-regular-json (eventually will be in Postgres db)
+# remove comment on source("01_request_api_legiscan.R") below to renew API requests, but be wary of API limits
 
 #################################
 #                               #  
@@ -42,9 +36,8 @@ library(dplyr) # allows excluding specific columns by name from sql commands (e.
 setwd(script_dir <- dirname(rstudioapi::getActiveDocumentContext()$path))
 
 source("functions_database.R") # functions to write to Postgres database
-# 6/12/24 RR using only bulk downloaded data for now
 #source("01_request_api_legiscan.R") #request LegiScan data from API 
 source("02_parse_legiscan.R") # parse from json files
-source("03_load_views.R") # save parsed data to database
+source("03_load_raw_tables.R") # save parsed data to database
 source("04_transform.R") # merge, prep, analyze data
-source("05_load_app_layer.R") # export dataframes to Postgres
+source("05_load_views_and_app_layer.R") # export dataframes to Postgres

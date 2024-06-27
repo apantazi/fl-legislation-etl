@@ -4,6 +4,13 @@
 
 ########################################
 #                                      #  
+# debug notes                          #
+#                                      #
+########################################
+# progress bar doesn't render for first table in list
+
+########################################
+#                                      #  
 # define database write functions      #
 #                                      #
 ########################################
@@ -15,12 +22,25 @@ attempt_connection <- function() {
     Now, what be the secret code to yer treasure chest o' data?: ")
   
   # Attempt to connect to Postgres database
+  # tryCatch({
+  #   con <- dbConnect(
+  #     RPostgres::Postgres(),
+  #     dbname = "fl_leg_votes",
+  #     host = "localhost",
+  #     port = 5432,
+  #     user = "postgres",
+  #     password = password_db
+  #   )
+  #   return(con)
+  # }, error = function(e) {
+  #   return(NULL)
+  # })
   con <- tryCatch(
-    dbConnect(RPostgres::Postgres(), 
-              dbname = "fl_leg_votes", 
-              host = "localhost", 
-              port = 5432, 
-              user = "postgres", 
+    dbConnect(RPostgres::Postgres(),
+              dbname = "fl_leg_votes",
+              host = "localhost",
+              port = 5432,
+              user = "postgres",
               password = password_db),
     error = function(e) {
       message("Connection failed: ", e$message)
@@ -34,6 +54,7 @@ attempt_connection <- function() {
 
 write_table <- function(df, con, schema_name, table_name, chunk_size = 1000) {
   n <- nrow(df)
+  flush.console()  # Ensure immediate output
   pb <- progress_bar$new(
     format = paste0("  writing table ", schema_name, ".", table_name, " [:bar] :percent in :elapsed"),
     total = n,
@@ -54,6 +75,7 @@ write_table <- function(df, con, schema_name, table_name, chunk_size = 1000) {
     pb$tick(end - i + 1)
   }
   cat("Data successfully written to", paste0(schema_name, ".", table_name), "\n")
+  flush.console()  # Ensure immediate output
 }
 
 
@@ -86,19 +108,19 @@ verify_table <- function(con, schema_name, table_name) {
   
 
 
-write_table_list <- function(con, schema_name, list_tables) {
+write_tables_in_list <- function(con, schema_name, list_tables) {
   for (table_name in list_tables) {
     cat("\n","---------------------\n",toupper(table_name),"\n","---------------------\n")
     df <- get(table_name)
-    df <- df
     
     if (table_exists(con, schema_name, table_name)) {
       dbExecute(con, paste0("DROP TABLE IF EXISTS ", schema_name, ".", table_name, " CASCADE"))
-      message("Dropping existing table ", schema_name, ".", table_name)
+      message("Dropping table ", schema_name, ".", table_name)
     } else {
       message("Adding new table ", schema_name, ".", table_name)
     }
     
+    message("Adding new table ", schema_name, ".", table_name)
     write_table(df, con, schema_name, table_name)
     verify_table(con, schema_name, table_name)
   }

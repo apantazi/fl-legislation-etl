@@ -5,14 +5,6 @@
 
 ########################################
 #                                      #  
-# debug notes                          #
-#                                      #
-######################################## 
-# haven't yet saved "bills_all", "bills_detailed"
-# haven't yet updated later steps to read from Postgres database
-
-########################################
-#                                      #  
 # 1) connect to Postgres server        #
 #                                      #
 ########################################
@@ -40,13 +32,13 @@ schema_name <- "raw_legiscan"
 dbExecute(con, paste0("CREATE SCHEMA IF NOT EXISTS ", schema_name))
 
 list_tables <- c(
-  "legislator_sessions",
-  "legislator_votes",
-  "bills",
-  "bill_votes"
+  "t_legislator_sessions",
+  "t_legislator_votes",
+  "t_bills",
+  "t_roll_calls"
 )
 
-write_table_list(con, schema_name, list_tables)
+write_tables_in_list(con, schema_name, list_tables)
 
 # Close the connection
 dbDisconnect(con)
