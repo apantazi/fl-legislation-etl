@@ -42,7 +42,7 @@ To run these scripts, you'll need to know two passwords:
 
  | script                   | description              |
 |--------------------------|--------------------------|
-| [01_request_api_legiscan.R]("scripts/01_request_api_legiscan.R")|requests data from LegiScan via API |
+| [01_request_api_legiscan.R](scripts/01_request_api_legiscan.R)|requests data from LegiScan via API |
 | 02_parse_legiscan.R      |parses LegiScan JSON data |
 | 03_load_views.R      |saves parsed LegiScan data into Postgres as the View layer|
 | 04_transform.R       |prepares parsed data for deployment to the web app |
