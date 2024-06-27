@@ -1,6 +1,8 @@
 # Florida Legislative Voting Database
 6/27/24
- This repo creates a data pipeline for Florida legislative votes. The database is currently managed locally on my Windows machine, with intent to deploy to Azure in support of the Jacksonville Tributary's [Legislative Voting dashboard](https://shiny.jaxtrib.org/).
+ This repo creates a data pipeline supporting the [Jacksonville Tributary's](https://jaxtrib.org/) legislative voting dashboard ([see prior version](https://shiny.jaxtrib.org/)). The ETL scripts are adapted from an R script originally created by **[apantazi](https://github.com/topics/legislative-dashboard)**. My intent is to make it easier for others to maintain/develop the app, quickly adapt it to different jurisdictions, and create new apps from the same processed data using any programming language. The database is currently managed locally on my Windows machine, with intent to deploy to Azure and possibly enable export to SQLite or csv.
+
+ See also my repo for front-end application development **[legislator dashboard](https://github.com/reliablerascal/fl-legislation-app-postgres)**.
 
 ## Overview of the database
 <img src="./diagrams/etl-schematic.png" width=100%>
