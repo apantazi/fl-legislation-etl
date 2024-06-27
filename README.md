@@ -43,12 +43,12 @@ To run these scripts, you'll need to know two passwords:
  | script                   | description              |
 |--------------------------|--------------------------|
 | [01_request_api_legiscan.R](scripts/01_request_api_legiscan.R)|requests data from LegiScan via API |
-| 02_parse_legiscan.R      |parses LegiScan JSON data |
-| 03_load_views.R      |saves parsed LegiScan data into Postgres as the View layer|
-| 04_transform.R       |prepares parsed data for deployment to the web app |
-| 05_load_app_layer.R      |writes app queries to Postgres |
-| 00_install_packages.R      |installation script which should later be repackaged as requirements |
-| functions_database.R      |scripts to connect to Postgres, write tables, and test inputs |
+| [02_parse_legiscan.R](scripts/02_parse_legiscan.R)|parses LegiScan JSON data |
+| [03_load_raw_tables.R](scripts/03_load_raw_tables.R)|saves parsed LegiScan data into Postgres as the View layer|
+| [04_transform.R](scripts/04_transform.R)|prepares parsed data for deployment to the web app |
+| [05_load_views_and_app_layer.R](scripts/05_load_views_and_app_layer.R)|writes app queries to Postgres |
+| [00_install_packages.R](scripts/00_install_packages.R)|installation script which should later be repackaged as requirements |
+| [functions_database.R](scripts/functions_database.R)|scripts to connect to Postgres, write tables, and test inputs |
 
 ## Development workplan
 * Incorporate voting data for cities (e.g. Legistar data) and district data for context (e.g. Census data) 
