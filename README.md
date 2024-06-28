@@ -38,7 +38,7 @@ Clear and consistent naming conventions are essential to code maintainability. F
 
 
 <br><br>
-## Overview of Raw Data Schema (work in progress)
+## Overview of Raw Data Schema
 This database acquires only a portion of LegiScan data (see LegiScan's [entity relationship diagram](https://api.legiscan.com/dl/Database_ERD.png) and [API user manual](https://legiscan.com/misc/LegiScan_API_User_Manual.pdf) for info on all available data). LegiScan's data is provided as three folders of JSON files- votes (which are really roll calls, with individual votes nested within), people (i.e. legislators), and bills (with lots of related info nested within).
 
 The raw data schema of this database stores data parsed from the original JSON files but otherwise unaltered from the source format. It's organized as follows, with one row of data per unique combination of the primary key listed below.
