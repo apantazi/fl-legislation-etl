@@ -28,7 +28,7 @@ ETL in the context of this legislative dashboard database means:
 ## Naming Conventions
 Clear and consistent naming conventions are essential to code maintainability. Following are naming conventions used within this data pipeline.
 
-|Prefix|Saved in<br>Schema|Purpose|
+|Prefix|Saved in Schema|Purpose|
 |---|---|---|
 |t_|raw|**T**ables of raw data kept intact in their original source format.|
 |calc_|---|Performs intermediate **calc**ulations (e.g., partisanship metrics).|
@@ -38,13 +38,25 @@ Clear and consistent naming conventions are essential to code maintainability. F
 
 
 <br><br>
-## Data Dictionaries by Schema (work in progress)
-The following data dictionaries describe all data elements in each database table. This is intended to help ETL developers align new data sources to a common data model, and help app developers understand the data elements they can use.
+## Overview of Raw Data Schema (work in progress)
+This database acquires only a portion of LegiScan data (see LegiScan's [entity relationship diagram](https://api.legiscan.com/dl/Database_ERD.png) and [API user manual](https://legiscan.com/misc/LegiScan_API_User_Manual.pdf) for info on all available data). LegiScan's data is provided as three folders of JSON files- votes (which are really roll calls, with individual votes nested within), people (i.e. legislators), and bills (with lots of related info nested within).
 
-* [raw_legiscan](diagrams/data-dictionary-raw-legiscan.xlsx)
-* proc
-* app_voting_patterns
+The raw data schema of this database stores data parsed from the original JSON files but otherwise unaltered from the source format. It's organized as follows, with one row of data per unique combination of the primary key listed below.
 
+|Table|Primary Key|Description and Notes|
+|---|---|---|
+|t_bills|bill_id|One record per bill. Note that bills can persist across multiple legislative sessions.|
+|t_legislator_sessions|person_id, session|Because legislators can change roles (i.e. move from the House to the Senate), one record is tracked per legislator per legislative session.|
+|t_roll_calls|roll_call_id|One record per roll call. Includes summary data on roll calls (e.g. how many voted aye vs. nay, etc.)|
+|t_legislator_votes|person_id, roll_call_id|One record per legislator per roll call vote. Including data on how the legislator voted (aye, nay, absent, no vote).|
+
+Note that this schema tracks data related to the voting patterns analysis dashboard, but not (yet) the legislative activity dashboard.
+
+For more info on data within each table, see the [data dictionary for the raw_legiscan schema](diagrams/data-dictionary-raw-legiscan.xlsx).
+
+
+<br><br>
+## Overview of Processed Data Schema (placeholder)
 
 
 <br><br>
@@ -60,7 +72,7 @@ To run these scripts, you'll need to know two passwords:
 
  ```
  docker start my_postgres
- docker exec -it my_postgres
+ docker exec -it my_postgres bash
  psql -U postgres -d fl_leg_votes
 ```
 
