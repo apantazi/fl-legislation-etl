@@ -14,11 +14,11 @@ Note that the database currently integrates data from only LegiScan, supporting 
 |Layer|Purpose|
 |---|---|
 |**Raw**|Raw data retrieved via API and parsed into tables.|
-|**Processed**|Cleaned and organized data including calculated fields. My intent is to also align data definitions between similar formats (e.g. LegiScan and LegiStar).|
-|**Application**|Data prepared for specific applications such as the Jacksonville Tributary's legislator dashboard (see [previous version](https://shiny.jaxtrib.org/)).|
+|**Processed**|Cleaned and organized data including calculated fields. My intent is to also to align and integrate data between similar formats (e.g. LegiScan and LegiStar).|
+|**Application**|Data prepared for specific applications such as the Jacksonville Tributary's legislator dashboard.|
 
-ETL in the context of the legislative dashboard database means:
-* **Extract** data via API from Legiscan, and parse it
+ETL in the context of this legislative dashboard database means:
+* **Extract** data via API from Legiscan, then parse it
 * **Transform** data by cleaning, organizing, calculating, and aligning data so it's more useful and easier to understand
 * **Load** the transformed data into the Postgres database
 
@@ -26,13 +26,13 @@ ETL in the context of the legislative dashboard database means:
 
 <br><br>
 ## Naming Conventions
-Clear and consistent naming conventions are essential to code maintainability. Following are naming conventions used within this data pipline. Following are naming conventions for dataframes in the R script.
+Clear and consistent naming conventions are essential to code maintainability. Following are naming conventions used within this data pipeline.
 
 |Prefix|Saved in<br>Schema|Purpose|
 |---|---|---|
 |t_|raw|**T**ables of raw data kept intact in their original source format.|
-|calc_|Performs intermediate **calc**ulations (e.g., partisanship metrics).|---|
-|p_|proc|**P**rocessed data, which has been cleaned and organized from original tables. This includes newly introduced calculated fields.|
+|calc_|---|Performs intermediate **calc**ulations (e.g., partisanship metrics).|
+|p_|proc|**P**rocessed data, which has been cleaned and organized from original tables. This includes newly-introduced calculated fields.|
 |app_|app|**App**lication data, which has been filtered and organized from processed data. It's intended to support specific web applications but could also support data visualizations.|
 
 
@@ -49,7 +49,7 @@ The following data dictionaries describe all data elements in each database tabl
 
 <br><br>
 ## Running the ETL Script
-The following instructions describe the process of running the ETL scripts. If it's useful, I may develop a simple SQLite and/or folder-of-csvs exports to facilitate app development without relying on our Postgres database.
+The following instructions describe the process of running the ETL scripts. I hope to develop a SQLite and folder-of-csvs exports to facilitate app development for those who don't want to interact with our Postgres database.
 
 To run these scripts, you'll need to know two passwords:
 * password for the Postgres database
