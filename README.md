@@ -1,6 +1,6 @@
 # Florida Legislative Voting Database
 6/27/24
- This repo creates a data pipeline supporting the [Jacksonville Tributary's](https://jaxtrib.org/) legislative voting dashboard ([see prior version](https://shiny.jaxtrib.org/)). The ETL scripts are adapted from an [R script originally created by apantazi](https://github.com/apantazi/legislator_dashboard/blob/main/pull-in-process-all-legiscan.R). My intent is to make it easier for others to maintain/develop the app, quickly adapt it to different jurisdictions, and create new apps from the same processed data using any programming language.
+ This repo creates a data pipeline supporting the [Jacksonville Tributary's](https://jaxtrib.org/) legislative voting dashboard (see [prior version of demo app](https://shiny.jaxtrib.org/)). The ETL scripts are adapted from an [R script originally created by apantazi](https://github.com/apantazi/legislator_dashboard/blob/main/pull-in-process-all-legiscan.R). My intent is to make it easier for others to maintain/develop the app, quickly adapt it to different jurisdictions, and create new apps from the same processed data using any programming language.
  
  Part of this work has involved reshaping nested lists (from API-acquired JSONs) into relational database format, which enables storage in Postgres as well as easy export to csv or (theoretically) SQLite. The Postgres database is currently managed locally on my Windows machine, with intent to deploy to the Tributary's Azure platform.
 
@@ -22,7 +22,33 @@ ETL in the context of the legislative dashboard database means:
 * **Transform** data by cleaning, organizing, calculating, and aligning data so it's more useful and easier to understand
 * **Load** the transformed data into the Postgres database
 
- ## Running the ETL Script
+
+
+<br><br>
+## Naming Conventions
+Clear and consistent naming conventions are essential to code maintainability. Following are naming conventions used within this data pipline. Following are naming conventions for dataframes in the R script.
+
+|Prefix|Saved in<br>Schema|Purpose|
+|---|---|---|
+|t_|raw|**T**ables of raw data kept intact in their original source format.|
+|calc_|Performs intermediate **calc**ulations (e.g., partisanship metrics).|---|
+|p_|proc|**P**rocessed data, which has been cleaned and organized from original tables. This includes newly introduced calculated fields.|
+|app_|app|**App**lication data, which has been filtered and organized from processed data. It's intended to support specific web applications but could also support data visualizations.|
+
+
+
+<br><br>
+## Data Dictionaries by Schema (work in progress)
+The following data dictionaries describe all data elements in each database table. This is intended to help ETL developers align new data sources to a common data model, and help app developers understand the data elements they can use.
+
+* [raw_legiscan](diagrams/data-dictionary-raw-legiscan.xlsx)
+* proc
+* app_voting_patterns
+
+
+
+<br><br>
+## Running the ETL Script
 The following instructions describe the process of running the ETL scripts. If it's useful, I may develop a simple SQLite and/or folder-of-csvs exports to facilitate app development without relying on our Postgres database.
 
 To run these scripts, you'll need to know two passwords:
@@ -50,6 +76,13 @@ To run these scripts, you'll need to know two passwords:
 | [00_install_packages.R](scripts/00_install_packages.R)|installation script which should later be repackaged as requirements |
 | [functions_database.R](scripts/functions_database.R)|scripts to connect to Postgres, write tables, and test inputs |
 
+
+
+<br><br>
 ## Development workplan
-* Incorporate voting data for cities (e.g. Legistar data) and district data for context (e.g. Census data) 
-* Develop automated CSV and SQLite exports to support non-Postgres data access options
+Following are some key goals for developing this data pipeline.
+* Incorporate LegiStar voting data for Jacksonville and align this with state data, so it can be visualized with existing web apps
+* Incorporate district data (e.g. census demographics and partisan leanings of the electorate) to provide context
+* Develop automated CSV and SQLite exports to support non-Postgres access for data visualization and web app development
+* Automate API requests via Github actions to keep legislative voting data up-to-date
+* Deploy Postgres app on Azure to enable online connectivity

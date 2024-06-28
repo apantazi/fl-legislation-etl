@@ -1,9 +1,11 @@
-# 02_parse_legiscan.R
+################################
+#                              #  
+# 02_parse_legiscan.R          #
+#                              #
+################################
 # parses JSON data requested from LegiScan
 # adapted from code originally written by Andrew Pantazi
-# 6/10/24
-# hack to ensure two-year session (e.g. 2023-2024, vs. 2023-2023). not sure why i had to do this
-# bill_vote_all$session <- bill_vote_all$session_string
+# June 2024
 
 #for testing phase only? set working directory to the location of current script
 setwd(script_dir <- dirname(rstudioapi::getActiveDocumentContext()$path))
@@ -14,10 +16,9 @@ setwd(script_dir <- dirname(rstudioapi::getActiveDocumentContext()$path))
 #                              #
 ################################
 
-# unpacks Legiscan's ls_bill table from JSON into two dataframes
-# 1) bills$meta (from ls_bill_vote_detail)
-# 2) bills$votes
+# unpacks Legiscan's ls_bill table from JSON into bills$meta
 # adds "session" field (e.g. "2023-2024_Regular_Session") based on file pathname input_bill_path
+# this is set up to return a list, in case I later want to unpack the many related tables for bills (amendments, sasts, etc.)
 parse_bills <- function(bill_json_paths) {
   pb <- progress::progress_bar$new(
     format = "  parsing bill metadata and bill-votes [:bar] :percent in :elapsed.",
@@ -28,12 +29,12 @@ parse_bills <- function(bill_json_paths) {
   output_list <- lapply(bill_json_paths, extract_bill, pb)
   
   meta_list <- lapply(output_list, `[[`, "meta")
-  votes_list <- lapply(output_list, `[[`, "votes")
+  xx_list <- lapply(output_list, `[[`, "xx")
   
   meta_df <- tibble::as_tibble(data.table::rbindlist(meta_list, fill = TRUE))
-  votes_df <- tibble::as_tibble(data.table::rbindlist(votes_list, fill = TRUE))
+  xx_df <- tibble::as_tibble(data.table::rbindlist(xx_list, fill = TRUE))
   
-  return(list(meta = meta_df, votes = votes_df))
+  return(list(meta = meta_df, xx = xx_df))
 }
 
 #####
@@ -65,10 +66,7 @@ extract_bill <- function(input_bill_path, pb) {
     status_date = safe_get(bill$status_date)
   )
   
-  #roll_calls_df <- extract_bill_roll_calls(bill$votes, bill$bill_id, pb)
-  
   return (list(meta = bill_meta))
-  #return(list(meta = bill_meta, roll_calls = roll_calls_df))
 }
 
 
@@ -201,7 +199,8 @@ extract_votes <- function(votes, roll_call_id, session_info, pb) {
 options(scipen = 999) # numeric values in precise format
 
 # For now, only working with folder data-raw/legiscan/2023-2024
-# For all years, work with folder data-raw/legiscan/2010-2024
+# To look at all years:
+# base_dir <- "../data-raw/legiscan/2010-2024/
 base_dir <- "../data-raw/legiscan/2023-2024/"
 all_json_paths <- list.files(path = base_dir, pattern = "\\.json$", full.names = TRUE, recursive = TRUE)
 text_paths_bills <- all_json_paths[grepl("/bill/", all_json_paths, ignore.case = TRUE)]
@@ -216,13 +215,9 @@ text_paths_votes <- all_json_paths[grepl("/vote/", all_json_paths, ignore.case =
 #                                      #
 ########################################
 
-# parse bills json, storing related tables in a list of tables (meta, progress, history, sponsors, sasts, texts)
-# create a dataframe for each bill-related table returned in parse_bills- MIGHT NOT NEED THIS
-# Add detail to bills dataframe (meta)
-temp_bills_parsed <- parse_bills(text_paths_bills)
-#OLD_bill_roll_calls <- temp_bills_parsed$roll_calls
-t_bills <- temp_bills_parsed$meta %>%
-  #need to get session_year in a subsequent stage AFTER session_name has already been determined
+# parse bill jsons as "bills" (pk = bill_id)
+#need to get session_year in a subsequent stage AFTER session_name has already been determined
+t_bills <- parse_bills(text_paths_bills)$meta %>%
   mutate(
     session_year = as.numeric(str_extract(session_name, "\\d{4}")), # Extract year
     two_year_period = case_when(
@@ -231,19 +226,12 @@ t_bills <- temp_bills_parsed$meta %>%
       TRUE ~ paste(session_year, session_year + 1, sep="-")
     )
   )
-rm("temp_bills_parsed")
 
-
-
-# parse people json as "legislators"
+# parse people jsons as "legislator_sessions" (pk = people_id, session)
 t_legislator_sessions <- parse_legislator_sessions(text_paths_legislators) # one record per legislator per session, to reflect potentially changing roles
 
-
-
-# parse votes json as "roll calls"
+# parse vote jsons as "roll calls" (pk = roll_call_id) and "legislator votes" (pk = roll_call_id, people_id)
 temp_roll_calls_parsed <- parse_roll_calls(text_paths_votes)
-t_roll_calls <- temp_roll_calls_parsed$meta
-summary(roll_calls$date)
-
+t_roll_calls <- parse_roll_calls(text_paths_votes)$meta
 t_legislator_votes <- temp_roll_calls_parsed$votes
 rm("temp_roll_calls_parsed")
