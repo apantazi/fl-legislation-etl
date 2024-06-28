@@ -6,7 +6,7 @@
 
 ########################################
 #                                      #  
-# 0) read tables from postgres           #
+# 0) read tables from postgres         #
 #                                      #
 ########################################
 # placeholder- could add a SQL read operation here
@@ -17,28 +17,33 @@
 # 1B) create views version 2           #
 #                                      #
 ########################################
-# SEE 6/27 5:58am backup for version 1 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-# including title and number of bills for legibility and debugging, but could possibly remove them
-# 6/27/24 RR added suffix
-#p_roll_calls_w_calc <- roll_calls %>%
-#  left_join(bills %>% select(bill_id, title, number, session_year), by = "bill_id", suffix=c("","_vote"))
 p_roll_calls_w_calc <- t_roll_calls %>%
-  left_join(t_bills %>% select(bill_id, title, number, session_year, description, url), by = "bill_id")
-p_roll_calls_w_calc <- p_roll_calls_w_calc %>% mutate(
-  pct_of_total = yea/total,
-  n_present = yea+nay,
-  pct_of_present = yea/n_present
-)
-p_roll_calls_w_calc <- p_roll_calls_w_calc %>% arrange(pct_of_present)
+  left_join(t_bills %>% select(bill_id, title, number, session_year, description, url), by = "bill_id") %>%
+  mutate(
+    pct_of_total = yea/total,
+    n_present = yea+nay,
+    pct_of_present = yea/n_present
+  ) %>%
+  rename(
+    bill_desc = description,
+    bill_number = number,
+    bill_title = title,
+    bill_url = url,
+    roll_call_date = date,
+    roll_call_desc = desc,
+  ) %>%
+  arrange(pct_of_present)
 
 #convert roll call id to character (not sure why)
 t_legislator_votes <- t_legislator_votes %>% mutate(roll_call_id = as.character(roll_call_id))
 p_roll_calls_w_calc <- p_roll_calls_w_calc %>% mutate(roll_call_id = as.character(roll_call_id))
 
 calc_legislator_votes <- t_legislator_votes %>%
-  inner_join(t_legislator_sessions %>% select(people_id, session, party, name, ballotpedia, role), by = c("people_id", "session"))
-calc_legislator_votes <- calc_legislator_votes %>%
-  inner_join(p_roll_calls_w_calc, by = c("roll_call_id", "session"))
+  inner_join(t_legislator_sessions %>% select(people_id, session, party, name, ballotpedia, role), by = c("people_id", "session")) %>%
+  inner_join(p_roll_calls_w_calc, by = c("roll_call_id", "session")) %>%
+  rename(
+    legislator_name = name
+  ) 
 
 ################################
 #                              #  
@@ -49,11 +54,11 @@ calc_legislator_votes <- calc_legislator_votes %>%
 # primary key should at least be roll_call_id and party, so 2x the number of roll_calls minus anything filtered out
 #temp_analyze_bill <- temp_legislator_votes_detailed %>% group_by(party,roll_call_id,title,vote_text,number) %>% summarize(n=n()) %>% arrange(desc(n)) %>% pivot_wider(values_from = n,names_from = vote_text,values_fill = 0) %>% mutate(total=sum(Yea,NV,Absent,Nay,na.rm = TRUE),total2=sum(Yea,Nay)) %>% filter(total>0 & total2 >0) %>% mutate(y_pct = Yea/total,n_pct=Nay/total,nv_pct=NV/total, absent_pct=Absent/total,NV_A=(NV+Absent)/total,y_pct2 = Yea/(Yea+Nay),n_pct2 = Nay/(Yea+Nay),margin=y_pct2-n_pct2)
 
-calc_analyze_bill <- calc_legislator_votes %>% group_by(party,roll_call_id,title,vote_text,number) %>% summarize(n=n()) %>% arrange(desc(n)) %>% pivot_wider(values_from = n,names_from = vote_text,values_fill = 0) %>% mutate(total=sum(Yea,NV,Absent,Nay,na.rm = TRUE),total2=sum(Yea,Nay)) %>% filter(total>0 & total2 >0) %>% mutate(y_pct = Yea/total,n_pct=Nay/total,nv_pct=NV/total, absent_pct=Absent/total,NV_A=(NV+Absent)/total,y_pct2 = Yea/(Yea+Nay),n_pct2 = Nay/(Yea+Nay),margin=y_pct2-n_pct2)
+calc_analyze_bill <- calc_legislator_votes %>% group_by(party,roll_call_id,bill_title,vote_text,bill_number) %>% summarize(n=n()) %>% arrange(desc(n)) %>% pivot_wider(values_from = n,names_from = vote_text,values_fill = 0) %>% mutate(total=sum(Yea,NV,Absent,Nay,na.rm = TRUE),total2=sum(Yea,Nay)) %>% filter(total>0 & total2 >0) %>% mutate(y_pct = Yea/total,n_pct=Nay/total,nv_pct=NV/total, absent_pct=Absent/total,NV_A=(NV+Absent)/total,y_pct2 = Yea/(Yea+Nay),n_pct2 = Nay/(Yea+Nay),margin=y_pct2-n_pct2)
 
 # create partisanship variables 
-calc_partisanbillvotes <- calc_analyze_bill %>%   select(party,roll_call_id,title,y_pct2,number) %>% 
-  pivot_wider(names_from = party,values_from=y_pct2,values_fill = NA,id_cols = c(roll_call_id,title,number)) %>% 
+calc_partisanbillvotes <- calc_analyze_bill %>%   select(party,roll_call_id,bill_title,y_pct2,bill_number) %>% 
+  pivot_wider(names_from = party,values_from=y_pct2,values_fill = NA,id_cols = c(roll_call_id,bill_title,bill_number)) %>% 
   mutate(
     DminusR = D - R,
     Partisan = NA_character_,
@@ -108,7 +113,7 @@ calc_partisanbillvotes <- calc_partisanbillvotes %>%
 ###########################################
 # join detailed legislative votes with partisanship analysis, removing nulls, initialize and set defaults for calculated fields
 calc_votes_partisanship <- calc_legislator_votes %>%
-  filter(!is.na(date)&total>0)
+  filter(!is.na(roll_call_date)&total>0)
 # %>% # select(roll_call_id, R, D, DminusR, Partisan, GOP, DEM), 
 calc_votes_partisanship <- calc_votes_partisanship %>%
   left_join(
@@ -185,33 +190,33 @@ p_partisanship <- calc_votes_partisanship %>%
          diff_d_not_r=if_else(diff_party_vote_d==1 & diff_party_vote_r==0,1,0),
          diff_r_not_d=if_else(diff_party_vote_d==0&diff_party_vote_r==1,1,0),
          partisan_metric = ifelse(party=="R",diff_r_not_d,ifelse(party=="D",diff_d_not_r,NA)),
-         pct_format = scales::percent(pct_of_total)) %>% arrange(desc(partisan_metric)) %>% distinct()
+         pct_voted_for = scales::percent(pct_of_total)) %>% arrange(desc(partisan_metric)) %>% distinct()
 
 # re-order data for better visualization
 p_partisanship$roll_call_id = with(p_partisanship, reorder(roll_call_id, partisan_metric, sum))
-p_partisanship$name = with(p_partisanship, reorder(name, partisan_metric, sum))
+p_partisanship$legislator_name = with(p_partisanship, reorder(legislator_name, partisan_metric, sum))
 
 # creates an overall partisanship metric for each legislator, filters for dates >= 11/10/12?
 # this is used later to sort the dataframe
-calc_legislator_mean_partisanship <- p_partisanship %>% group_by(name) %>% filter(date >= as.Date("11/10/2012")) %>% summarize(partisan_metric=mean(partisan_metric)) %>% arrange(partisan_metric,name) #create the sort based on partisan metric
+calc_legislator_mean_partisanship <- p_partisanship %>% group_by(legislator_name) %>% filter(roll_call_date >= as.Date("11/10/2012")) %>% summarize(partisan_metric=mean(partisan_metric)) %>% arrange(partisan_metric,legislator_name) #create the sort based on partisan metric
 
 ###########################################
 #                                         #  
 # 3) STOPGAP HARDCODING                   #
 #                                         #
 ###########################################
-p_partisanship$number = p_partisanship$number.x
-p_partisanship$title = p_partisanship$title.x
+#6/28/24 this works fine, but should debug and find the problem upstream
+p_partisanship$bill_number = p_partisanship$bill_number.x
+p_partisanship$bill_title = p_partisanship$bill_title.x
 p_partisanship <- p_partisanship %>%
-  select(-title.x,-title.y,-number.x,-number.y)
+ select(-bill_title.x,-bill_title.y,-bill_number.x,-bill_number.y)
 
 ###########################################
 #                                         #  
-# 3) build app layer                      #
+# 3) build app layer  (general)           #
 #                                         #
 ###########################################
 app_data <- p_partisanship
-#HOVER TEXT WAS HERE
 
 #was partisan_metric2
 app_data$partisan_metric <- ifelse(app_data$vote_with_neither == 1, 1,
@@ -228,54 +233,61 @@ calc_d_votes <- app_data %>% filter(party=="D") %>% group_by(roll_call_id,vote_t
 calc_r_votes <- app_data %>% filter(party=="R") %>% group_by(roll_call_id,vote_text) %>% summarize(n=n()) %>%  pivot_wider(names_from=vote_text,values_from=n,values_fill = 0) %>% mutate(y_pct = Yea/(Yea+Nay),n_pct = Nay/(Nay+Yea)) %>% filter(y_pct != 0 & y_pct != 1) %>% filter(as.character(roll_call_id) %in% as.character(calc_r_partisan_votes$roll_call_id))
 
 calc_roll_call_to_number <- app_data %>%
-  select(roll_call_id, year=session_year,number) %>%
+  select(roll_call_id, year=session_year,bill_number) %>%
   distinct() %>%
-  arrange(desc(year),number,roll_call_id)
+  arrange(desc(year),bill_number,roll_call_id)
 
-calc_roll_call_to_number$number_year <- paste(calc_roll_call_to_number$number,"-",calc_roll_call_to_number$year)
+calc_roll_call_to_number$number_year <- paste(calc_roll_call_to_number$bill_number,"-",calc_roll_call_to_number$year)
 
 app_data$roll_call_id <- factor(app_data$roll_call_id, levels = calc_roll_call_to_number$roll_call_id)
-app_data$name <- factor(app_data$name, levels = calc_legislator_mean_partisanship$name)
+app_data$legislator_name <- factor(app_data$legislator_name, levels = calc_legislator_mean_partisanship$legislator_name)
 
 y_labels <- setNames(calc_roll_call_to_number$number_year, calc_roll_call_to_number$roll_call_id)
 
-app_data$final <- "N"
-app_data$final[grepl("third",app_data$desc,ignore.case=TRUE)] <- "Y"
+app_data$final_vote <- "N"
+app_data$final_vote[grepl("third",app_data$roll_call_desc,ignore.case=TRUE)] <- "Y"
 
 app_data$ballotpedia2 <- paste0("http://ballotpedia.org/",app_data$ballotpedia)
 
 ### create the text to be displayed in the javascript interactive when hovering over votes ####
-createHoverText <- function(numbers, descriptions, urls, pcts, vote_texts,descs,title,date, names, width = 100) {
-  # Wrap the description text at the specified width
-  wrapped_descriptions <- sapply(descriptions, function(desc) paste(strwrap(desc, width = width), collapse = "<br>"))
-  
-  # Combine the elements into a single string
-  paste(
-    names, " voted ", vote_texts, " on ", descs, " for bill ",numbers," - ",title," on ",date,"<br>",
-    "Description: ", wrapped_descriptions, "<br>",
-    "URL: ", urls, "<br>",
-    pcts, " voted for this bill",
-    sep = ""
-  )
-}
+# Wrap the description text at the specified width
 
-app_data$hover_text <- mapply(
-  createHoverText,
-  numbers = app_data$number,
-  descs = app_data$desc,
-  title=app_data$title,date=app_data$date,
-  descriptions = app_data$description,
-  urls = app_data$url,
-  pcts = app_data$pct_format,
-  vote_texts = app_data$vote_text,
-  names = app_data$name,
-  SIMPLIFY = FALSE  # Keep it as a list
-)
-#app_data$hover_text <- sapply(app_data$hover_text, paste, collapse = " ")  # Collapse the list into a single string
 
+
+
+# createHoverText <- function(numbers, descriptions, urls, pcts, vote_texts,descs,title,date, names, width = 100) {
+#   wrapped_descriptions <- sapply(descriptions, function(desc) paste(strwrap(desc, width = width), collapse = "<br>"))
+#   paste(
+#     names, " voted ", vote_texts, " on ", descs, " for bill ",numbers," - ",title," on ",date,"<br>",
+#     "Description: ", wrapped_descriptions, "<br>",
+#     "URL: ", urls, "<br>",
+#     pcts, " voted for this bill",
+#     sep = ""
+#   )
+# }
+# 
+# app_data$hover_text <- mapply(
+#   createHoverText,
+#   numbers = app_data$number,
+#   descs = app_data$desc,
+#   title=app_data$title,date=app_data$date,
+#   descriptions = app_data$description,
+#   urls = app_data$url,
+#   pcts = app_data$pct_voted_for,
+#   vote_texts = app_data$vote_text,
+#   names = app_data$name,
+#   SIMPLIFY = FALSE  # Keep it as a list
+# )
+
+
+
+###########################################
+#                                         #  
+# 3b) build app1 view- legislative dash   #
+#                                         #
+###########################################
 #stopgap
-app_data$hover_text <- "DEBUG"
-app_vote_patterns <- app_data
+# app_data$hover_text <- "DEBUG"
 
 #this view will be saved in app_shiny.vote_patterns, for use by the Shiny app Voting Patterns
 # app_vote_patterns <- app_data %>%
@@ -302,11 +314,12 @@ app_vote_patterns <- app_data
 #     )
 #   )
 
-#pre-filter this here instead of in app
-app_vote_patterns <- app_vote_patterns %>%
-  filter(pct_of_present != 0 & pct_of_present != 1)
-app_vote_patterns <- app_vote_patterns[,c("roll_call_id","partisan_metric","hover_text","session_year","role","final","party","name")]
-
 # app tables for now, though I should embed d_votes and r_votes within the primary app_vote_patterns table
 app_d_votes <- calc_d_votes
 app_r_votes <- calc_r_votes
+
+app_vote_patterns <- app_data %>%
+  filter(pct_of_present != 0 & pct_of_present != 1) %>%
+  select(roll_call_id, legislator_name, partisan_metric, session_year, role, final_vote, party, bill_number, roll_call_desc, bill_title, roll_call_date, bill_desc, bill_url, pct_voted_for, vote_text, legislator_name)
+
+
