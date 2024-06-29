@@ -7,18 +7,18 @@
  See also my repo for front-end application development **[legislator dashboard](https://github.com/reliablerascal/fl-legislation-app-postgres)**.
 
 ## Overview of the database
-<img src="./diagrams/etl-schematic.png" width=100%>
+<img src="./docs/etl-schematic.png" width=100%>
 
 Note that the database currently integrates data from only LegiScan, supporting a single Shiny app.
 
 |Layer|Purpose|
 |---|---|
-|**Raw**|Raw data retrieved via API and parsed into tables.|
+|**Raw**|Raw data retrieved as JSON via API, then parsed into tables. Data elements are retained without modification.|
 |**Processed**|Cleaned and organized data including calculated fields. My intent is to also to align and integrate data between similar formats (e.g. LegiScan and LegiStar).|
 |**Application**|Data prepared for specific applications such as the Jacksonville Tributary's legislator dashboard.|
 
 ETL in the context of this legislative dashboard database means:
-* **Extract** data via API from Legiscan, then parse it
+* **Extract** data via API from Legiscan, then parse it into tables in the raw layer.
 * **Transform** data by cleaning, organizing, calculating, and aligning data so it's more useful and easier to understand
 * **Load** the transformed data into the Postgres database
 
@@ -38,7 +38,8 @@ Clear and consistent naming conventions are essential to code maintainability. F
 
 
 <br><br>
-## Overview of Raw Data Schema
+## Overview of Raw Layer
+### Raw_LegiScan schema ###
 This database acquires only a portion of LegiScan data (see LegiScan's [entity relationship diagram](https://api.legiscan.com/dl/Database_ERD.png) and [API user manual](https://legiscan.com/misc/LegiScan_API_User_Manual.pdf) for info on all available data). LegiScan's data is provided as three folders of JSON files- votes (which are really roll calls, with individual votes nested within), people (i.e. legislators), and bills (with lots of related info nested within).
 
 The raw data schema of this database stores data parsed from the original JSON files but otherwise unaltered from the source format. It's organized as follows, with one row of data per unique combination of the primary key listed below.
@@ -50,13 +51,28 @@ The raw data schema of this database stores data parsed from the original JSON f
 |t_roll_calls|roll_call_id|One record per roll call. Includes summary data on roll calls (e.g. how many voted aye vs. nay, etc.)|
 |t_legislator_votes|person_id, roll_call_id|One record per legislator per roll call vote. Including data on how the legislator voted (aye, nay, absent, no vote).|
 
-Note that this schema tracks data related to the voting patterns analysis dashboard, but not (yet) the legislative activity dashboard.
-
-For more info on data within each table, see the [data dictionary for the raw_legiscan schema](diagrams/data-dictionary-raw-legiscan.xlsx).
+<br>
+Documentation for raw_legiscan schema:
+* [data dictionary](docs/data-dictionary-raw-legiscan.xlsx).
 
 
 <br><br>
-## Overview of Processed Data Schema (placeholder)
+## Overview of Processed Layer (placeholder)
+
+
+<br><br>
+## Overview of App Layer (placeholder)
+
+
+<br><br>
+## Guide to the Repository
+Following is an overview of files in this repository:
+
+* [data-raw](data-raw/)- raw data in JSON format, as bulk downloaded from LegiScan's API
+* [docs](docs/)- data dictionaries and diagrams
+* [notebooks](notebooks/)- API exploration using Jupyter Notebook and Python
+* [scripts](scripts/)- ETL scripts
+
 
 
 <br><br>
@@ -76,15 +92,15 @@ To run these scripts, you'll need to know two passwords:
  psql -U postgres -d fl_leg_votes
 ```
 
- Then, you'll need to run etl_main.R, which calls the following scripts in sequence:
+ Then, you'll need to run [scripts/etl_main.R](scripts/etl_main.R), which calls the following scripts in sequence:
 
  | script                   | description              |
 |--------------------------|--------------------------|
 | [01_request_api_legiscan.R](scripts/01_request_api_legiscan.R)|requests data from LegiScan via API |
 | [02_parse_legiscan.R](scripts/02_parse_legiscan.R)|parses LegiScan JSON data |
-| [03_load_raw_tables.R](scripts/03_load_raw_tables.R)|saves parsed LegiScan data into Postgres as the View layer|
-| [04_transform.R](scripts/04_transform.R)|prepares parsed data for deployment to the web app |
-| [05_load_views_and_app_layer.R](scripts/05_load_views_and_app_layer.R)|writes app queries to Postgres |
+| [03_load_raw_tables.R](scripts/03_load_raw_tables.R)|saves parsed LegiScan data into Postgres as the raw layer|
+| [04_transform.R](scripts/04_transform.R)|organizes parsed data and adds calculations, then prepares data for web apps |
+| [05_load_views_and_app_layer.R](scripts/05_load_views_and_app_layer.R)|writes organized data frames (processed layer) and web app data frames (app layer) to Postgres |
 | [00_install_packages.R](scripts/00_install_packages.R)|installation script which should later be repackaged as requirements |
 | [functions_database.R](scripts/functions_database.R)|scripts to connect to Postgres, write tables, and test inputs |
 
