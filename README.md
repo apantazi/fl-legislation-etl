@@ -24,16 +24,6 @@ ETL in the context of this legislative dashboard database means:
 
 
 
-<br><br>
-## Naming Conventions
-Clear and consistent naming conventions are essential to code maintainability. Following are naming conventions used within this data pipeline.
-
-|Prefix|Saved in Schema|Purpose|
-|---|---|---|
-|t_|raw|**T**ables of raw data kept intact in their original source format.|
-|calc_|---|Performs intermediate **calc**ulations (e.g., partisanship metrics).|
-|p_|proc|**P**rocessed data, which has been cleaned and organized from original tables. This includes newly-introduced calculated fields.|
-|app_|app|**App**lication data, which has been filtered and organized from processed data. It's intended to support specific web applications but could also support data visualizations.|
 
 
 
@@ -51,14 +41,13 @@ The raw data schema of this database stores data parsed from the original JSON f
 |t_roll_calls|roll_call_id|One record per roll call. Includes summary data on roll calls (e.g. how many voted aye vs. nay, etc.)|
 |t_legislator_votes|person_id, roll_call_id|One record per legislator per roll call vote. Including data on how the legislator voted (aye, nay, absent, no vote).|
 
-<br>
-Documentation for raw_legiscan schema:
-* [data dictionary](docs/data-dictionary-raw-legiscan.xlsx).
 
 
 <br><br>
 ## Overview of Processed Layer (placeholder)
-
+<!-- The processed layer is intended to integrate data from multiple sources, organized as follows:
+* Legislator data (name, party, district identifier etc.)
+* Demographic data (by state/house/city council district)--->
 
 <br><br>
 ## Overview of App Layer (placeholder)
@@ -68,11 +57,25 @@ Documentation for raw_legiscan schema:
 ## Guide to the Repository
 Following is an overview of files in this repository:
 
-* [data-raw](data-raw/)- raw data in JSON format, as bulk downloaded from LegiScan's API
-* [docs](docs/)- data dictionaries and diagrams
-* [notebooks](notebooks/)- API exploration using Jupyter Notebook and Python
-* [scripts](scripts/)- ETL scripts
+* **data-raw**- raw data in JSON format, as bulk downloaded from LegiScan's API
+* **[docs](docs/)**- data dictionaries and diagrams
+* **[notebooks](notebooks/)**- API exploration using Jupyter Notebook and Python
+* **[scripts](scripts/)**- ETL scripts
 
+### Data Dictionaries ###
+
+* [raw_legiscan](docs/data-dictionary-raw-legiscan.xlsx)
+* [app_voting_patterns](data-dictionary-app-shiny.xlsx)
+
+### Naming Conventions
+Clear and consistent naming conventions are essential to code maintainability. Following are naming conventions used within this data pipeline.
+
+|Prefix|Saved in Schema|Purpose|
+|---|---|---|
+|t_|raw|**T**ables of raw data kept intact in their original source format.|
+|calc_|---|Performs intermediate **calc**ulations (e.g., partisanship metrics).|
+|p_|proc|**P**rocessed data, which has been cleaned and organized from original tables. This includes newly-introduced calculated fields.|
+|app_|app|**App**lication data, which has been filtered and organized from processed data. It's intended to support specific web applications but could also support data visualizations.|
 
 
 <br><br>
