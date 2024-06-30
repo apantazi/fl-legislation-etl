@@ -1,10 +1,11 @@
 # Florida Legislative Voting Database
 6/30/24
- This repo creates a data pipeline supporting the [Jacksonville Tributary's](https://jaxtrib.org/) legislative voting dashboard (see [prior version of demo app](https://shiny.jaxtrib.org/)). The ETL scripts are adapted from an [R script originally created by apantazi](https://github.com/apantazi/legislator_dashboard/blob/main/pull-in-process-all-legiscan.R). My intent is to make it easier for others to maintain/develop the app, quickly adapt it to different jurisdictions, and create new apps from the same processed data using any programming language.
+
+ This repo creates a data pipeline supporting the  ongoing development of the [Jacksonville Tributary's](https://jaxtrib.org/) legislative voting dashboard (see [prior version of demo app](https://shiny.jaxtrib.org/)). I created the ETL scripts by adapting an [R script originally created by apantazi](https://github.com/apantazi/legislator_dashboard/blob/main/pull-in-process-all-legiscan.R). My intent is to make it easier for others to maintain and develop the app, quickly adapt it to different jurisdictions, and create new apps or visualizations from the same processed data using any programming language.
  
  Part of this work has involved reshaping nested lists (from API-acquired JSONs) into relational database format, which enables storage in Postgres as well as easy export to csv or (theoretically) SQLite. The Postgres database is currently managed locally on my Windows machine, with intent to deploy to the Tributary's Azure platform.
 
- See also my repo for front-end application development **[legislator dashboard](https://github.com/reliablerascal/fl-legislation-app-postgres)**.
+ <!---See also my repo for front-end application development **[legislator dashboard](https://github.com/reliablerascal/fl-legislation-app-postgres)**.--->
 
 ## Overview of the database
 <img src="./docs/etl-schematic.png" width=100%>
@@ -15,7 +16,7 @@ Note that the database currently integrates data from only LegiScan, supporting 
 |---|---|
 |**Raw**|Raw data retrieved as JSON via API, then parsed into tables. Data elements are retained without modification.|
 |**Processed**|Cleaned and organized data including calculated fields. My intent is to also to align and integrate data between similar formats (e.g. LegiScan and LegiStar).|
-|**Application**|Data prepared for specific applications such as the Jacksonville Tributary's legislator dashboard.|
+|**Application**|Data prepared for specific applications such as the legislator dashboard.|
 
 ETL in the context of this legislative dashboard database means:
 * **Extract** data via API from Legiscan, then parse it into tables in the raw layer.
@@ -42,7 +43,7 @@ The raw data schema of this database stores data parsed from the original JSON f
 |Table|Primary Key|Status|Description and Notes|
 |---|---|---|---|
 |p_districts|district_id, district_type, year|blueprint TBD |One record per legislative district (Senate, House, City Council, etc.) summarizing Census demographics, electoral results, etc.|
-|p_legislators|person_id, session|blueprint TBD |Because legislators can change roles (i.e. move from the House to the Senate), one record is tracked per legislator per legislative session.|
+|p_legislators|person_id, session_year|blueprint TBD |Because legislators can change roles (i.e. move from the House to the Senate), one record is tracked per legislator per legislative session.|
 |p_roll_calls|roll_call_id|blueprint TBD |One record per roll call. Includes summary data on roll calls (e.g. how many voted aye vs. nay, etc.)|
 |p_legislator_votes|person_id, roll_call_id|active|One record per legislator per roll call vote. Includes data on how the legislator voted (aye, nay, absent, no vote) and calculated partisan metrics (with their party, against their party, against both parties, etc.).|
 <!-- The processed layer is intended to integrate data from multiple sources, organized as follows:
@@ -54,8 +55,8 @@ This repo currently supports the legislative voting patterns Shiny app (see [pri
 
 Data is prepared to facilitate non-Shiny app development, and includes three types of fields:
 * plot data (x = legislator_name, y= roll_call_id, values = partisan metric)
-* context data (bill number, title, url, and description; roll call description and date, roll call vote and overall vote summary)
-* filter data (party, chamber, session year)
+* context data (bill number, title, url, and description; roll call description and date, roll call vote and overall vote summary) currently rendered as a pop-up box when hovering over individual legislator votes
+* app filter data (party, chamber, session year)
 
 See [Data Dictionary for app_voting_patterns](data-dictionary-app-shiny.xlsx).
 
@@ -111,14 +112,14 @@ To run these scripts, you'll need to know two passwords:
 <br><br>
 # Ongoing Development Process
 ## Data Quirks and Other E-Varmints Standing in My Righteous Path
-* A key focusing constraint is the short-term duration of my internship. This motivates an upfront emphasis on clear documentation and future-proofing my work.
-* LegiScan data is originally tracked within a [relational database](https://api.legiscan.com/dl/Database_ERD.png), but API requests are returned as [nested JSONs](https://legiscan.com/misc/LegiScan_API_User_Manual.pdf). These nested JSONs are sometimes redundant and can lead to messy/bloated/error-prone data frames. In my opinion, long-term scalability is best ensured by restoring data to a relational database format with well-defined primary keys.
+* The short-term duration of my internship motivates an upfront emphasis on future-proofing my work through clear documentation.
+* While LegiScan data is originally tracked within a [relational database](https://api.legiscan.com/dl/Database_ERD.png), API requests are returned as [nested JSONs](https://legiscan.com/misc/LegiScan_API_User_Manual.pdf). These nested JSONs are sometimes redundant and can lead to messy/bloated/error-prone data frames. In my opinion, long-term scalability is best ensured by restoring data to a relational database format with well-defined primary keys.
 * The jury's still out for me regarding the usefulness of **Shiny** as a web application framework. I'm an old-school hand coder, so I may not find the tradeoffs in development speed vs. customizatability to be worthwhile. I'm developing the pipeline to facilitate future non-Shiny development.
 
 ## What I'm Learning
 I'm continuing to re-tool from commercial database design tools (esp. Microsoft) to open source tools.
-* This is my first **Postgres** database and my first **R** project, but I'm finding both very easy to pick up based on existing SQL Server and Python experience
-* I'm really learning to appreciate working within an IDE with **R Studio**- particularly the ability to view entire dataframes and see a quick summary view of the number of rows and columns in each dataframe. I may likewise look for an IDE in developing future Python projects.  
+* This is my first **Postgres** database and my first **R** project, but I'm finding both very easy to pick up based on my SQL Server and Python experience
+* I'm really learning to appreciate working within an IDE with **R Studio**- particularly the ability to view entire dataframes and see a quick summary view of the number of rows and columns in each dataframe. I may likewise look for an IDE when developing future Python projects.  
 * Other tools I'm picking up include **draw.io** for database diagramming and **Docker** for containerization.
 
 
