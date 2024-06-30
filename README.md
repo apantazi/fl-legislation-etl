@@ -112,7 +112,7 @@ To run these scripts, you'll need to know two passwords:
 # Ongoing Development Process
 ## Data Quirks and Other E-Varmints Standing in My Righteous Path
 * A key focusing constraint is the short-term duration of my internship. This motivates an upfront emphasis on clear documentation and future-proofing my work.
-* LegiScan data is originally tracked within a [relational database](https://api.legiscan.com/dl/Database_ERD.png), API requests are returned as [nested JSONs](https://legiscan.com/misc/LegiScan_API_User_Manual.pdf). These nested JSONs are sometimes redundant and can lead to messy/bloated data frames. Given the need for long-term scalability, my opinion is that this is best managed by restoring data to a relational database format with well-defined primary keys.
+* LegiScan data is originally tracked within a [relational database](https://api.legiscan.com/dl/Database_ERD.png), but API requests are returned as [nested JSONs](https://legiscan.com/misc/LegiScan_API_User_Manual.pdf). These nested JSONs are sometimes redundant and can lead to messy/bloated/error-prone data frames. In my opinion, long-term scalability is best ensured by restoring data to a relational database format with well-defined primary keys.
 * The jury's still out for me regarding the usefulness of **Shiny** as a web application framework. I'm an old-school hand coder, so I may not find the tradeoffs in development speed vs. customizatability to be worthwhile. I'm developing the pipeline to facilitate future non-Shiny development.
 
 ## What I'm Learning
