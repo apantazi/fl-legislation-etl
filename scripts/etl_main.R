@@ -37,7 +37,16 @@ setwd(script_dir <- dirname(rstudioapi::getActiveDocumentContext()$path))
 
 source("functions_database.R") # functions to write to Postgres database
 #source("01_request_api_legiscan.R") #request LegiScan data from API 
-source("02_parse_legiscan.R") # parse from json files
-source("03_load_raw_tables.R") # save parsed data to database
-source("04_transform.R") # merge, prep, analyze data
-source("05_load_views_and_app_layer.R") # export dataframes to Postgres
+
+#ETL for raw layer
+source("02_parse_legiscan.R")
+source("02z_load_raw.R")
+
+#ETL for processed layer
+source("03_transform.R")
+source("03a_categorize_bills.R")
+source("03z_load_processed.R")
+
+#ETL for app layer
+source("04_prep_app.R") # merge, prep, analyze data
+source("04z_load_app.R") # export dataframes to Postgres

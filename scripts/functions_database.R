@@ -1,6 +1,6 @@
 # FUNCTIONS_DATABASE.R
 # 6/11/24 RR
-# separated these functions b/c they're used at both the parse and the transform layers
+# separated these functions b/c they're used at parse, transform, and app creation
 
 ########################################
 #                                      #  
@@ -21,20 +21,6 @@ attempt_connection <- function() {
     prompt="Make sure ye've fired up the Postgres server and hooked up to the database.
     Now, what be the secret code to yer treasure chest o' data?: ")
   
-  # Attempt to connect to Postgres database
-  # tryCatch({
-  #   con <- dbConnect(
-  #     RPostgres::Postgres(),
-  #     dbname = "fl_leg_votes",
-  #     host = "localhost",
-  #     port = 5432,
-  #     user = "postgres",
-  #     password = password_db
-  #   )
-  #   return(con)
-  # }, error = function(e) {
-  #   return(NULL)
-  # })
   con <- tryCatch(
     dbConnect(RPostgres::Postgres(),
               dbname = "fl_leg_votes",
@@ -49,6 +35,21 @@ attempt_connection <- function() {
   )
   return(con)
 }
+
+
+# Loop until successful connection
+# retry_connect <- function() {
+#   repeat {
+#     con <- attempt_connection()
+#     
+#     if (!is.null(con) && dbIsValid(con)) {
+#       print("Successfully connected to the database!")
+#       break
+#     } else {
+#       message("Failed to connect to the database. Please try again.")
+#     }
+#   }
+# }
 
 
 

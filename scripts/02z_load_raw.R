@@ -11,7 +11,7 @@
 # Loop until successful connection
 repeat {
   con <- attempt_connection()
-  
+
   if (!is.null(con) && dbIsValid(con)) {
     print("Successfully connected to the database!")
     break
@@ -27,7 +27,9 @@ repeat {
 # 2) write dataframes to Postgres and test  #
 #                                           #
 #############################################
-# db schema for Andrew's Shiny app legislative dashboard currently at https://shiny.jaxtrib.org/.
+
+# con <- retry_connect()
+
 schema_name <- "raw_legiscan"
 dbExecute(con, paste0("CREATE SCHEMA IF NOT EXISTS ", schema_name))
 

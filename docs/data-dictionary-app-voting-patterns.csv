@@ -1,0 +1,23 @@
+field_name,data_type,description,format,constraints,allowed_values,example_value,notes
+roll_call_id,text,x axis,,,,0.92,percent of those who voted (vs. overall # of legislators)
+legislator_name,text,y axis,,,,"""Vicki Lopez""",
+partisan_metric,double precision,heatmap value,,,,2,
+session_year,double precision,filter,,,,2023,
+role,text,filter,,,,"""Rep""",
+final_vote,text,filter,,,,"""Y""",
+party,text,filter,,,,"""R""",
+is_include_d,number,filter,,,"0,1",1,"determines which roll calls to display for Democratic legislators. 0 = exclude, 1 = include"
+is_include_r,number,filter,,,"0,1",1,determines which roll calls to display for Republican legislators
+bill_number,text,hover text,,,,"""S1718""",
+bill_title,text,hover text,,,,"""Immigration""",
+bill_desc,text,hover text,,,,"""Prohibiting counties and municipalities, respectively, from providing funds to any person, entity, or organization to issue identification documents...""",
+bill_url,text,hover text,,,,"""https://legiscan.com/FL/bill/H0731/2023""",
+roll_call_desc,text,hover text,,,,"""House: Third Reading RCS#376""",
+roll_call_date,text,hover text,,,,"""2023-05-02""",
+pct_voted_for,text,hover text,,,,"""66.6667%""",
+vote_text,text,hover text,,,,"yea, nay",
+,,,,,,,
+notes,,,,,,,
+last updated 7/1/24,,,,,,,
+"next steps: update data types (e.g. roll_call_id as number, partisan_metric as integer)",,,,,,,
+add fields for sorting,,,,,,,

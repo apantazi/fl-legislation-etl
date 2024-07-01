@@ -58,7 +58,7 @@ Data is prepared to facilitate non-Shiny app development, and includes three typ
 * context data (bill number, title, url, and description; roll call description and date, roll call vote and overall vote summary) currently rendered as a pop-up box when hovering over individual legislator votes
 * app filter data (party, chamber, session year)
 
-See [Data Dictionary for app_voting_patterns](data-dictionary-app-shiny.xlsx).
+See [Data Dictionary for app_voting_patterns](docs/data-dictionary-app-voting-patterns.csv).
 
 
 <br><br>
@@ -79,6 +79,7 @@ Clear and consistent naming conventions are essential to code maintainability. F
 |t_|raw|**T**ables of raw data kept intact in their original source format.|
 |calc_|---|Performs intermediate **calc**ulations (e.g., partisanship metrics).|
 |p_|proc|**P**rocessed data, which has been cleaned and organized from original tables. This includes newly-introduced calculated fields.|
+|jct_|proc|**J**unction table, for example jct_bill_categories cross-references which categories (e.g. education, environment) each bill belongs to.|
 |app_|app|**App**lication data, which has been filtered and organized from processed data. It's intended to support specific web applications but could also support data visualizations.|
 
 ## Running the ETL Script
@@ -103,9 +104,12 @@ To run these scripts, you'll need to know two passwords:
 |--------------------------|--------------------------|
 | [01_request_api_legiscan.R](scripts/01_request_api_legiscan.R)|requests data from LegiScan via API |
 | [02_parse_legiscan.R](scripts/02_parse_legiscan.R)|parses LegiScan JSON data |
-| [03_load_raw_tables.R](scripts/03_load_raw_tables.R)|saves parsed LegiScan data into Postgres as the raw layer|
-| [04_transform.R](scripts/04_transform.R)|organizes parsed data and adds calculations, then prepares data for web apps |
-| [05_load_views_and_app_layer.R](scripts/05_load_views_and_app_layer.R)|writes organized data frames (processed layer) and web app data frames (app layer) to Postgres |
+| [02z_load_raw.R](scripts/02z_load_raw.R)|saves parsed LegiScan data into Postgres as the raw layer|
+| [03_transform.R](scripts/03_transform.R)|organizes parsed data and adds calculations, then prepares data for web apps |
+| [03a_categorize_bills.R](scripts/03a_categorize_bills.R)|placeholder for categorizing bills in a junction table |
+| [03z_load_processed.R](scripts/03z_load_processed.R)|writes organized data frames (processed layer) to Postgres |
+| [04_prep_app.R](scripts/04_prep_app.R)|prepares and filters data for web apps |
+| [04z_load_app.R](scripts/04z_load_app.R)|writes app data to Postgres |
 | [00_install_packages.R](scripts/00_install_packages.R)|installation script which should later be repackaged as requirements |
 | [functions_database.R](scripts/functions_database.R)|scripts to connect to Postgres, write tables, and test inputs |
 

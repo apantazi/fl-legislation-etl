@@ -1,5 +1,7 @@
 data-raw/
+docs/archive/
+scripts/archive/
 .data.RData
 .RData
 .Rproj.user
-scripts/archive/
+
