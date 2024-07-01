@@ -23,6 +23,7 @@ ETL in the context of this legislative dashboard database means:
 * **Transform** data by cleaning, organizing, calculating, and aligning data so it's more useful and easier to understand
 * **Load** the transformed data into the Postgres database
 
+<br>
 
 ## Raw Layer
 ### Raw_LegiScan schema ###
@@ -39,6 +40,13 @@ The raw data schema of this database stores data parsed from the original JSON f
 |t_roll_calls|roll_call_id|One record per roll call. Includes summary data on roll calls (e.g. how many voted aye vs. nay, etc.)|
 |t_legislator_votes|person_id, roll_call_id|One record per legislator per roll call vote. Including data on how the legislator voted (aye, nay, absent, no vote).|
 
+### Other raw data schema to be developed
+* raw_demographics - block-level census data from Census and American Community Survey
+* raw_election_results - election results by district
+* raw_legistar - legislative voting data acquired from LegiStar API
+
+<br>
+
 ## Processed Layer
 The processed layer tracks data transformed from LegiScan, but is intended to eventually align data from multiple sources. Following is a blueprint of this layer.
 
@@ -50,7 +58,7 @@ The processed layer tracks data transformed from LegiScan, but is intended to ev
 |jct_bill_categories|bill_id, category|Manual data entry (for now)|Includes data on how the legislator voted (aye, nay, absent, no vote) and calculated partisan metrics (with their party, against their party, against both parties, etc.).|
 |(PROPOSED)<br>p_districts|district_id,<br>year|Census demographics, electoral results, etc.|One record per legislative district (Senate, House, City Council, etc.)|
 
-
+<br>
 
 ## App Layer
 This repo currently supports the legislative voting patterns Shiny app (see [prior version of demo app](https://shiny.jaxtrib.org/)).
