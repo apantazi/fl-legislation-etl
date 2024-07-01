@@ -110,20 +110,7 @@ To run these scripts, you'll need to know two passwords:
 | [functions_database.R](scripts/functions_database.R)|scripts to connect to Postgres, write tables, and test inputs |
 
 <br><br>
-# Ongoing Development Process
-## Data Quirks and Other E-Varmints Standing in My Righteous Path
-* The short-term duration of my internship motivates an upfront emphasis on future-proofing my work through clear documentation.
-* While LegiScan data is originally tracked within a [relational database](https://api.legiscan.com/dl/Database_ERD.png), API requests are returned as [nested JSONs](https://legiscan.com/misc/LegiScan_API_User_Manual.pdf). These nested JSONs are sometimes redundant and can lead to messy/bloated/error-prone data frames. In my opinion, long-term scalability is best ensured by restoring data to a relational database format with well-defined primary keys.
-* The jury's still out for me regarding the usefulness of **Shiny** as a web application framework. I'm an old-school hand coder, so I may not find the tradeoffs in development speed vs. customizatability to be worthwhile. I'm developing the pipeline to facilitate future non-Shiny development.
-
-## What I'm Learning
-I'm continuing to re-tool from commercial database design tools (esp. Microsoft) to open source tools.
-* This is my first **Postgres** database and my first **R** project, but I'm finding both very easy to pick up based on my SQL Server and Python experience
-* I'm really learning to appreciate working within an IDE with **R Studio**- particularly the ability to view entire dataframes and see a quick summary view of the number of rows and columns in each dataframe. I may likewise look for an IDE when developing future Python projects.  
-* Other tools I'm picking up include **draw.io** for database diagramming and **Docker** for containerization.
-
-
-## Development workplan
+# Development workplan
 Following are some key goals for developing this data pipeline.
 * Incorporate LegiStar voting data for Jacksonville and align this with state data, so it can be visualized with existing web apps
 * Incorporate district data (e.g. census demographics and partisan leanings of the electorate) to provide context
