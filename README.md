@@ -96,7 +96,7 @@ Clear and consistent naming conventions are essential to code maintainability. F
 |app_|app|**App**lication data, which has been filtered and organized from processed data. It's intended to support specific web applications but could also support data visualizations.|
 
 ## Running the ETL Script
-The following instructions describe the process of running the ETL scripts. I hope to develop a SQLite and folder-of-csvs exports to facilitate app development for those who don't want to interact with our Postgres database.
+The following instructions describe the process of running the ETL scripts. The last step includes CSV export(s) to [data-app](data-app/), to facilitate app development for those who don't want to interact with our Postgres database.
 
 To run these scripts, you'll need to know two passwords:
 * password for the Postgres database
