@@ -40,15 +40,17 @@ The raw data schema of this database stores data parsed from the original JSON f
 |t_legislator_votes|person_id, roll_call_id|One record per legislator per roll call vote. Including data on how the legislator voted (aye, nay, absent, no vote).|
 
 ## Processed Layer
-|Table|Primary Key|Status|Description and Notes|
+The processed layer tracks data transformed from LegiScan, but is intended to eventually align data from multiple sources. Following is a blueprint of this layer.
+
+|Table|Primary Key|Origin Data Sources|Notes|
 |---|---|---|---|
-|p_districts|district_id, district_type, year|blueprint TBD |One record per legislative district (Senate, House, City Council, etc.) summarizing Census demographics, electoral results, etc.|
-|p_legislators|person_id, session_year|blueprint TBD |Because legislators can change roles (i.e. move from the House to the Senate), one record is tracked per legislator per legislative session.|
-|p_roll_calls|roll_call_id|blueprint TBD |One record per roll call. Includes summary data on roll calls (e.g. how many voted aye vs. nay, etc.)|
-|p_legislator_votes|person_id, roll_call_id|active|One record per legislator per roll call vote. Includes data on how the legislator voted (aye, nay, absent, no vote) and calculated partisan metrics (with their party, against their party, against both parties, etc.).|
-<!-- The processed layer is intended to integrate data from multiple sources, organized as follows:
-* Legislator data (name, party, district identifier etc.)
-* Demographic data (by state/house/city council district)--->
+|p_legislators|person_id,<br>session_year|LegiScan (state), LegiStar (cities)|Session_year is part of key because legislators can change roles (i.e. move from the House to the Senate) over time|
+|p_roll_calls|roll_call_id|LegiScan (state), LegiStar (cities)|Includes summary data on roll calls (e.g. how many voted aye vs. nay, etc.)|
+|p_legislator_votes|person_id,<br>roll_call_id|LegiScan (state), LegiStar (cities)|Includes data on how the legislator voted (aye, nay, absent, no vote) and calculated partisan metrics (with their party, against their party, against both parties, etc.).|
+|jct_bill_categories|bill_id, category|Manual data entry (for now)|Includes data on how the legislator voted (aye, nay, absent, no vote) and calculated partisan metrics (with their party, against their party, against both parties, etc.).|
+|(PROPOSED)<br>p_districts|district_id,<br>year|Census demographics, electoral results, etc.|One record per legislative district (Senate, House, City Council, etc.)|
+
+
 
 ## App Layer
 This repo currently supports the legislative voting patterns Shiny app (see [prior version of demo app](https://shiny.jaxtrib.org/)).
@@ -56,7 +58,7 @@ This repo currently supports the legislative voting patterns Shiny app (see [pri
 Data is prepared to facilitate non-Shiny app development, and includes three types of fields:
 * plot data (x = legislator_name, y= roll_call_id, values = partisan metric)
 * context data (bill number, title, url, and description; roll call description and date, roll call vote and overall vote summary) currently rendered as a pop-up box when hovering over individual legislator votes
-* app filter data (party, chamber, session year)
+* app filter data (party, chamber, session year, plus a binary inclusion flag for Democrat vs. Republican roll calls)
 
 See [Data Dictionary for app_voting_patterns](docs/data-dictionary-app-voting-patterns.csv).
 
