@@ -1,9 +1,11 @@
 # Florida Legislative Voting Database
-6/30/24
+7/1/24
 
  This repo creates a data pipeline supporting the  ongoing development of the [Jacksonville Tributary's](https://jaxtrib.org/) legislative voting dashboard (see [prior version of demo app](https://shiny.jaxtrib.org/)). I created the ETL scripts by adapting an [R script originally created by apantazi](https://github.com/apantazi/legislator_dashboard/blob/main/pull-in-process-all-legiscan.R). My intent is to make it easier for others to maintain and develop the app, quickly adapt it to different jurisdictions, and create new apps or visualizations from the same processed data using any programming language.
  
- Part of this work has involved reshaping nested lists (from API-acquired JSONs) into relational database format, which enables storage in Postgres as well as easy export to csv or (theoretically) SQLite. The Postgres database is currently managed locally on my Windows machine, with intent to deploy to the Tributary's Azure platform.
+ Part of this work has involved reshaping nested lists (from API-acquired JSONs) into relational database format, which enables storage in Postgres. The Postgres database is currently managed locally on my Windows machine, with intent to deploy to the Tributary's Azure platform.
+
+ For those who don't want to deal with Postgres, the ETL script also includes a csv export of data for web applications.
 
  <!---See also my repo for front-end application development **[legislator dashboard](https://github.com/reliablerascal/fl-legislation-app-postgres)**.--->
 
@@ -76,6 +78,7 @@ See [Data Dictionary for app_voting_patterns](docs/data-dictionary-app-voting-pa
 # Guide to the Repository
 Following is an overview of files in this repository:
 
+* **[data-app](data-app/)**- data supporting web applications, in csv format
 * **data-raw**- raw data in JSON format, as bulk downloaded from LegiScan's API
 * **[docs](docs/)**- data dictionaries and diagrams
 * **[notebooks](notebooks/)**- API exploration using Jupyter Notebook and Python
@@ -119,7 +122,7 @@ To run these scripts, you'll need to know two passwords:
 | [03a_categorize_bills.R](scripts/03a_categorize_bills.R)|placeholder for categorizing bills in a junction table |
 | [03z_load_processed.R](scripts/03z_load_processed.R)|writes organized data frames (processed layer) to Postgres |
 | [04_prep_app.R](scripts/04_prep_app.R)|prepares and filters data for web apps |
-| [04z_load_app.R](scripts/04z_load_app.R)|writes app data to Postgres |
+| [04z_load_app.R](scripts/04z_load_app.R)|writes app data to Postgres, and exports data to CSV |
 | [00_install_packages.R](scripts/00_install_packages.R)|installation script which should later be repackaged as requirements |
 | [functions_database.R](scripts/functions_database.R)|scripts to connect to Postgres, write tables, and test inputs |
 
@@ -128,6 +131,5 @@ To run these scripts, you'll need to know two passwords:
 Following are some key goals for developing this data pipeline.
 * Incorporate LegiStar voting data for Jacksonville and align this with state data, so it can be visualized with existing web apps
 * Incorporate district data (e.g. census demographics and partisan leanings of the electorate) to provide context
-* Develop automated CSV and SQLite exports to support non-Postgres access for data visualization and web app development
 * Automate API requests via Github actions to keep legislative voting data up-to-date
 * Deploy Postgres app on Azure to enable online connectivity

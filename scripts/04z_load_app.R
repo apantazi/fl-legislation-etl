@@ -22,7 +22,7 @@ repeat {
 
 #############################################
 #                                           #  
-# 3) write app queries to Postgres and test #
+# 2) write app queries to Postgres and test #
 #                                           #
 #############################################
 # db schema for Andrew's Shiny app legislative dashboard currently at https://shiny.jaxtrib.org/.
@@ -40,3 +40,11 @@ write_tables_in_list(con, schema_name, list_tables)
 
 # Close the connection
 dbDisconnect(con)
+
+#############################################
+#                                           #  
+# 2) export app data to CSV                 #
+#                                           #
+#############################################
+# for those who don't want to deal with postgres
+write.csv(app_vote_patterns, "data-app/app_vote_patterns.csv", row.names = FALSE)
