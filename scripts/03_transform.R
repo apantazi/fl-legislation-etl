@@ -34,6 +34,16 @@ p_roll_calls_w_calc <- t_roll_calls %>%
   ) %>%
   arrange(pct_of_present)
 
+p_legislator_sessions <- t_legislator_sessions %>%
+  rename(
+    legislator_name = name
+  )
+
+p_legislators <- p_legislator_sessions %>%
+  group_by(legislator_name) %>%
+  slice(1) %>%
+  ungroup()
+
 #convert roll call id to character (not sure why)
 t_legislator_votes <- t_legislator_votes %>% mutate(roll_call_id = as.character(roll_call_id))
 p_roll_calls_w_calc <- p_roll_calls_w_calc %>% mutate(roll_call_id = as.character(roll_call_id))
@@ -43,7 +53,7 @@ calc_legislator_votes <- t_legislator_votes %>%
   inner_join(p_roll_calls_w_calc, by = c("roll_call_id", "session")) %>%
   rename(
     legislator_name = name
-  ) 
+  )
 
 ################################
 #                              #  
@@ -201,7 +211,10 @@ p_partisanship$legislator_name = with(p_partisanship, reorder(legislator_name, p
 calc_legislator_mean_partisanship <- p_partisanship %>%
   group_by(legislator_name) %>%
   filter(roll_call_date >= as.Date("11/10/2012")) %>%
-  summarize(mean_partisan_metric=mean(partisan_metric)) %>%
+  summarize(
+    mean_partisan_metric=mean(partisan_metric, na.rm = TRUE),
+    n_votes = n()
+    ) %>%
   arrange(mean_partisan_metric,legislator_name) #create the sort based on partisan metric
 
 ###########################################

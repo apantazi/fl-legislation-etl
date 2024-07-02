@@ -61,6 +61,7 @@ The processed layer tracks data transformed from LegiScan, but is intended to ev
 |p_legislator_sessions|person_id,<br>session_year|LegiScan (state), LegiStar (cities)|Session_year is part of key because legislators can change roles (i.e. move from the House to the Senate) over time|
 |p_roll_calls|roll_call_id|LegiScan (state), LegiStar (cities)|Includes summary data on roll calls (e.g. how many voted aye vs. nay, etc.)|
 |p_legislator_votes|person_id,<br>roll_call_id|LegiScan (state), LegiStar (cities)|Includes data on how the legislator voted (aye, nay, absent, no vote) and calculated partisan metrics (with their party, against their party, against both parties, etc.).|
+|p_legislators|person_id|Summary info about legislators, which arbitrarily takes the first record for each|
 |p_districts|district_id,<br>year|Census demographics, electoral results, etc.|One record per legislative district (Senate, House, City Council, etc.)|
 |jct_bill_categories|bill_id, category|Manual data entry (for now)|Includes data on how the legislator voted (aye, nay, absent, no vote) and calculated partisan metrics (with their party, against their party, against both parties, etc.).|
 
@@ -81,7 +82,6 @@ The two key metrics in this data are as follows:
     * 1 = vote against both parties
     * 2 = vote against party
 * **mean_partisan_metric** describes the legislators' average partisan_metric across all their votes on contested bills, where lower numbers (0) indicate voting in lock-step with their party
-* (to add: n_bills, which could be used to calculate a margin of error for partisanship)
 
 See [Data Dictionary for app_voting_patterns](docs/data-dictionary-app-voting-patterns.csv).
 

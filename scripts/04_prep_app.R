@@ -53,3 +53,24 @@ app_vote_patterns <- app_vote_patterns %>%
     is_include_d = ifelse(roll_call_id %in% calc_d_votes$roll_call_id, 1, 0),
     is_include_r = ifelse(roll_call_id %in% calc_r_votes$roll_call_id, 1, 0)
   )
+
+#################################
+#                               #  
+# create viz_partisanship       #
+#                               #
+#################################
+# recreating Yuriko Schumacher's partisanship visual from https://www.texastribune.org/2023/12/18/mark-jones-texas-senate-special-2023-liberal-conservative-scores/
+# first iteration: intent is to emulate the visual, though "partisanship" metric isn't identical
+
+viz_partisanship <- calc_legislator_mean_partisanship %>%
+  left_join(p_legislators %>%
+              select(legislator_name, party, district), by = "legislator_name") %>%
+  mutate(
+    sd_partisan_metric = p_partisanship %>%
+      group_by(legislator_name) %>%
+      filter(roll_call_date >= as.Date("2012-11-10")) %>%
+      summarize(sd_partisan_metric = sd(partisan_metric, na.rm = TRUE)) %>%
+      pull(sd_partisan_metric),
+    se_partisan_metric = sd_partisan_metric / sqrt(n_votes)
+  )
+
