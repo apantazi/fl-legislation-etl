@@ -3,6 +3,8 @@ docs/archive/
 scripts/archive/
 .data.RData
 .RData
+.RDataTmp
 .Rhistory
 .Rproj.user/
+fl-legislation-db.Rproj
 
