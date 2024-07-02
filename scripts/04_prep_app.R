@@ -37,10 +37,6 @@ app_data$final_vote[grepl("third",app_data$roll_call_desc,ignore.case=TRUE)] <- 
 
 app_data$ballotpedia2 <- paste0("http://ballotpedia.org/",app_data$ballotpedia)
 
-# app tables for now, though I should embed d_votes and r_votes within the primary app_vote_patterns table
-# app_d_votes <- calc_d_votes
-# app_r_votes <- calc_r_votes
-
 #################################
 #                               #  
 # create app_vote_patterns      #
@@ -51,6 +47,8 @@ app_vote_patterns <- app_data %>%
   select(roll_call_id, legislator_name, partisan_metric, session_year, role, final_vote, party, bill_number, roll_call_desc, bill_title, roll_call_date, bill_desc, bill_url, pct_voted_for, vote_text, legislator_name)
 
 app_vote_patterns <- app_vote_patterns %>%
+  left_join(calc_legislator_mean_partisanship %>%
+              select(legislator_name, mean_partisan_metric), by = "legislator_name") %>%
   mutate(
     is_include_d = ifelse(roll_call_id %in% calc_d_votes$roll_call_id, 1, 0),
     is_include_r = ifelse(roll_call_id %in% calc_r_votes$roll_call_id, 1, 0)

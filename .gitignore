@@ -3,5 +3,6 @@ docs/archive/
 scripts/archive/
 .data.RData
 .RData
-.Rproj.user
+.Rhistory
+.Rproj.user/
 

@@ -47,4 +47,4 @@ dbDisconnect(con)
 #                                           #
 #############################################
 # for those who don't want to deal with postgres
-write.csv(app_vote_patterns, "data-app/app_vote_patterns.csv", row.names = FALSE)
+write.csv(app_vote_patterns, "../data-app/app_vote_patterns.csv", row.names = FALSE)

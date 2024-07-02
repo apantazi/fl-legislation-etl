@@ -1,11 +1,14 @@
 field_name,data_type,description,format,constraints,allowed_values,example_value,notes
 roll_call_id,text,x axis,,,,0.92,percent of those who voted (vs. overall # of legislators)
 legislator_name,text,y axis,,,,"""Vicki Lopez""",
-partisan_metric,double precision,heatmap value,,,,2,
+partisan_metric,double precision,heatmap value for a single vote,,,"0,1,2",2,"0 = with party
+1 = against both parties
+2 = against party with opposing party"
+mean_partisan_metric,double precision,average partisan metric for the legislator,,,,,"legislator's mean partisanship across all bills. 0 = most partisan, 2 = least partisan"
 session_year,double precision,filter,,,,2023,
 role,text,filter,,,,"""Rep""",
 final_vote,text,filter,,,,"""Y""",
-party,text,filter,,,,"""R""",
+party,text,filter,,,"R,D","""R""",
 is_include_d,number,filter,,,"0,1",1,"determines which roll calls to display for Democratic legislators. 0 = exclude, 1 = include"
 is_include_r,number,filter,,,"0,1",1,determines which roll calls to display for Republican legislators
 bill_number,text,hover text,,,,"""S1718""",
@@ -14,7 +17,7 @@ bill_desc,text,hover text,,,,"""Prohibiting counties and municipalities, respect
 bill_url,text,hover text,,,,"""https://legiscan.com/FL/bill/H0731/2023""",
 roll_call_desc,text,hover text,,,,"""House: Third Reading RCS#376""",
 roll_call_date,text,hover text,,,,"""2023-05-02""",
-pct_voted_for,text,hover text,,,,"""66.6667%""",
+pct_voted_for,text,hover text,,,,"""66.6667%""",percent of chamber voting for this bill
 vote_text,text,hover text,,,,"yea, nay",
 ,,,,,,,
 notes,,,,,,,

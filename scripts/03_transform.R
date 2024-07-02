@@ -198,7 +198,11 @@ p_partisanship$legislator_name = with(p_partisanship, reorder(legislator_name, p
 
 # creates an overall partisanship metric for each legislator, filters for dates >= 11/10/12?
 # this is used later to sort the dataframe
-calc_legislator_mean_partisanship <- p_partisanship %>% group_by(legislator_name) %>% filter(roll_call_date >= as.Date("11/10/2012")) %>% summarize(partisan_metric=mean(partisan_metric)) %>% arrange(partisan_metric,legislator_name) #create the sort based on partisan metric
+calc_legislator_mean_partisanship <- p_partisanship %>%
+  group_by(legislator_name) %>%
+  filter(roll_call_date >= as.Date("11/10/2012")) %>%
+  summarize(mean_partisan_metric=mean(partisan_metric)) %>%
+  arrange(mean_partisan_metric,legislator_name) #create the sort based on partisan metric
 
 ###########################################
 #                                         #  
