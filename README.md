@@ -1,13 +1,16 @@
 # Florida Legislative Voting Database
 7/1/24
 
- This repo creates a data pipeline supporting the  ongoing development of the [Jacksonville Tributary's](https://jaxtrib.org/) legislative voting dashboard (see [prior version of demo app](https://shiny.jaxtrib.org/)). I created the ETL scripts by adapting an [R script originally created by apantazi](https://github.com/apantazi/legislator_dashboard/blob/main/pull-in-process-all-legiscan.R). My intent is to make it easier for others to maintain and develop the app, quickly adapt it to different jurisdictions, and create new apps or visualizations from the same processed data using any programming language.
- 
- Part of this work has involved reshaping nested lists (from API-acquired JSONs) into relational database format, which enables storage in Postgres. The Postgres database is currently managed locally on my Windows machine, with intent to deploy to the Tributary's Azure platform.
+ This repo creates a data pipeline supporting the ongoing development of the [Jacksonville Tributary's](https://jaxtrib.org/) legislative voting dashboard (see [prior version of demo app](https://shiny.jaxtrib.org/)). The purpose of the dashboard is to highlight voting patterns of Florida legislators, which can help answer questions about:
+* actual voting records of legislators as a tangible measure of their political leanings (compared to campaign rhetoric)
+* partisan/party-line voting
+* disparities between legislators and the demographics/political leanings of the districts they represent
 
- For those who don't want to deal with Postgres, the ETL script also includes a csv export of data for web applications.
-
- <!---See also my repo for front-end application development **[legislator dashboard](https://github.com/reliablerascal/fl-legislation-app-postgres)**.--->
+My role specific to the Tributary's project is to develop the [Shiny app and data pipeline originally created by apantazi](https://github.com/apantazi/legislator_dashboard/blob/main/pull-in-process-all-legiscan.R) to improve its maintainability and scalability. I'm improving data integrity and reliability by re-shaping nested lists (from API-acquired JSONs and R scripts) into relational database format and creating curated views of processed data. My intent is to make it easier for web app developers and data visualization specialists to:
+* adapt existing reporting tools to different jurisdictions besides the state of Florida- for example, Jacksonville via LegiStar data
+* create new visualizations using any programming language (not just R) and connecting via Postgres/SQL or loading CSV files
+* highlight contextual data (e.g. demographics and district electoral preferences) related to voting records
+* have greater control over the presentation of data by handling app logic such as sorting, hover text formatting, and filtering (i.e. I'm separating this logic from the ETL pipeline)
 
 ## Overview of the database
 <img src="./docs/etl-schematic.png" width=100%>
@@ -49,16 +52,18 @@ The raw data schema of this database stores data parsed from the original JSON f
 
 <br>
 
-## Processed Layer
+## Processed Layer (work in progress)
 The processed layer tracks data transformed from LegiScan, but is intended to eventually align data from multiple sources. Following is a blueprint of this layer.
 
 |Table|Primary Key|Origin Data Sources|Notes|
 |---|---|---|---|
-|p_legislators|person_id,<br>session_year|LegiScan (state), LegiStar (cities)|Session_year is part of key because legislators can change roles (i.e. move from the House to the Senate) over time|
+|p_bills|bill_id|LegiScan (state), LegiStar (cities)|Cleans up and aligns bill data from LegiScan and LegiStar|
+|p_legislator_sessions|person_id,<br>session_year|LegiScan (state), LegiStar (cities)|Session_year is part of key because legislators can change roles (i.e. move from the House to the Senate) over time|
 |p_roll_calls|roll_call_id|LegiScan (state), LegiStar (cities)|Includes summary data on roll calls (e.g. how many voted aye vs. nay, etc.)|
 |p_legislator_votes|person_id,<br>roll_call_id|LegiScan (state), LegiStar (cities)|Includes data on how the legislator voted (aye, nay, absent, no vote) and calculated partisan metrics (with their party, against their party, against both parties, etc.).|
+|p_districts|district_id,<br>year|Census demographics, electoral results, etc.|One record per legislative district (Senate, House, City Council, etc.)|
 |jct_bill_categories|bill_id, category|Manual data entry (for now)|Includes data on how the legislator voted (aye, nay, absent, no vote) and calculated partisan metrics (with their party, against their party, against both parties, etc.).|
-|(PROPOSED)<br>p_districts|district_id,<br>year|Census demographics, electoral results, etc.|One record per legislative district (Senate, House, City Council, etc.)|
+
 
 <br>
 
@@ -69,6 +74,14 @@ Data is prepared to facilitate non-Shiny app development, and includes three typ
 * plot data (x = legislator_name, y= roll_call_id, values = partisan metric)
 * context data (bill number, title, url, and description; roll call description and date, roll call vote and overall vote summary) currently rendered as a pop-up box when hovering over individual legislator votes
 * app filter data (party, chamber, session year, plus a binary inclusion flag for Democrat vs. Republican roll calls)
+
+The two key metrics in this data are as follows:
+* **partisan_metric** describes each legislator vote by partisanship
+    * 0 = vote with party
+    * 1 = vote against both parties
+    * 2 = vote against party
+* **mean_partisan_metric** describes the legislators' average partisan_metric across all their votes on contested bills, where lower numbers (0) indicate voting in lock-step with their party
+* (to add: n_bills, which could be used to calculate a margin of error for partisanship)
 
 See [Data Dictionary for app_voting_patterns](docs/data-dictionary-app-voting-patterns.csv).
 
