@@ -6,5 +6,5 @@ scripts/archive/
 .RDataTmp
 .Rhistory
 .Rproj.user/
-fl-legislation-db.Rproj
+fl-leg-etl.Rproj
 
