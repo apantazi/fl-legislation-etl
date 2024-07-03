@@ -3,44 +3,43 @@
 # 04_PREP_APP.R                 #
 #                               #
 #################################
-
+# first filter for legislator dashboard.
+# This includes some fields which are later removed from the app_vote_patterns view, but will be included in legislator activity app
 app_data <- calc_leg_votes_partisan %>%
   left_join(p_bills %>% select('bill_id','bill_desc'), by='bill_id')
 
-#was partisan_metric2
-app_data$partisan_metric <- ifelse(app_data$vote_with_neither == 1, 1,
-                                        ifelse(app_data$maverick_votes == 1, 2, 0))
-#was partisan_metric3
-app_data$partisan_metric_desc <- factor(app_data$partisan_metric,
-                                        levels = c(0, 1, 2),
-                                        labels = c("With Party", "Independent Vote", "Maverick Vote"))
+# filter for party-line (or against both parties) legislator-votes
+# partisan metric: 0 = with party, 1 = against both parties, 2 = against party 
 calc_d_partisan_votes <- app_data %>% filter(party=="D") %>% group_by(roll_call_id) %>% summarize(max=max(partisan_metric)) %>% filter(max>=1)
 calc_r_partisan_votes <- app_data %>% filter(party=="R") %>% group_by(roll_call_id) %>% summarize(max=max(partisan_metric)) %>% filter(max>=1)
 
+# filter for votes that had some intra-party dissension
 calc_d_votes <- app_data %>% filter(party=="D") %>% group_by(roll_call_id,vote_text) %>% summarize(n=n()) %>%  pivot_wider(names_from=vote_text,values_from=n,values_fill = 0) %>% mutate(y_pct = Yea/(Yea+Nay),n_pct = Nay/(Nay+Yea)) %>% filter(y_pct != 0 & y_pct != 1) %>% filter(as.character(roll_call_id) %in% as.character(calc_d_partisan_votes$roll_call_id))
-
 calc_r_votes <- app_data %>% filter(party=="R") %>% group_by(roll_call_id,vote_text) %>% summarize(n=n()) %>%  pivot_wider(names_from=vote_text,values_from=n,values_fill = 0) %>% mutate(y_pct = Yea/(Yea+Nay),n_pct = Nay/(Nay+Yea)) %>% filter(y_pct != 0 & y_pct != 1) %>% filter(as.character(roll_call_id) %in% as.character(calc_r_partisan_votes$roll_call_id))
 
-calc_roll_call_to_number <- app_data %>%
+calc_rc_to_bill <- app_data %>%
   select(roll_call_id, year=session_year,bill_number) %>%
   distinct() %>%
   arrange(desc(year),bill_number,roll_call_id)
 
-calc_roll_call_to_number$number_year <- paste(calc_roll_call_to_number$bill_number,"-",calc_roll_call_to_number$year)
+calc_rc_to_bill$label_bill_year <- paste(calc_rc_to_bill$bill_number,"-",calc_rc_to_bill$year)
 
-app_data$roll_call_id <- factor(app_data$roll_call_id, levels = calc_roll_call_to_number$roll_call_id)
-app_data$legislator_name <- factor(app_data$legislator_name, levels = calc_leg_mean_partisan$legislator_name)
+#hmm, not sure these are needed, probably created b/c prior app had duplicate rows
+#app_data$roll_call_id <- factor(app_data$roll_call_id, levels = calc_rc_to_bill$roll_call_id)
+#app_data$legislator_name <- factor(app_data$legislator_name, levels = calc_leg_mean_partisan$legislator_name)
 
-app_data$final_vote <- "N"
-app_data$final_vote[grepl("third",app_data$roll_call_desc,ignore.case=TRUE)] <- "Y"
+# determine whether it's a final vote
+#app_data$final_vote <- "N"
+#app_data$final_vote[grepl("third",app_data$roll_call_desc,ignore.case=TRUE)] <- "Y"
 
-app_data$ballotpedia2 <- paste0("http://ballotpedia.org/",app_data$ballotpedia)
+
 
 #################################
 #                               #  
 # create app_vote_patterns      #
 #                               #
 #################################
+# get subset of bills that had non-unanimous votes
 app_vote_patterns <- app_data %>%
   filter(pct_of_present != 0 & pct_of_present != 1) %>%
   select(roll_call_id, legislator_name, partisan_metric, session_year, role, final_vote, party, bill_number, roll_call_desc, bill_title, roll_call_date, bill_desc, bill_url, pct_voted_for, vote_text, legislator_name)
@@ -80,5 +79,3 @@ viz_partisan_senate_d <- viz_partisanship %>%
 
 viz_partisan_senate_r <- viz_partisanship %>%
   filter(party == 'R', role == 'Sen')
-
-

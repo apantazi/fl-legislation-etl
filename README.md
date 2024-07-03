@@ -72,7 +72,7 @@ The processed layer tracks data transformed from LegiScan, but is intended to ev
 
 ## App Layer
 ### Voting Patterns App
-This repo currently supports the legislative voting patterns tab of the Shiny app (see [prior version of demo app](https://shiny.jaxtrib.org/)).
+This repo currently supports the legislative voting patterns tab of the Shiny app (see [prior version of demo app](https://shiny.jaxtrib.org/)). This dataset filters for roll calls where one or more party member strayed from the party line.
 
 Data is prepared to facilitate non-Shiny app development, and includes three types of fields:
 * plot data (x = legislator_name, y= roll_call_id, values = partisan metric)
@@ -82,8 +82,8 @@ Data is prepared to facilitate non-Shiny app development, and includes three typ
 The two key metrics in this data are as follows:
 * **partisan_metric** describes each legislator vote by partisanship
     * 0 = voted with their own party
-    * 1 = voted against both parties
-    * 2 = voted against their own party
+    * 1 = voted against both parties ("Independent")
+    * 2 = voted against their own party ("Maverick")
 * **mean_partisan_metric** describes the legislators' average partisan_metric across all their votes on contested bills, where lower numbers (0) indicate voting in lock-step with their party
 
 See [Data Dictionary for app_voting_patterns](docs/data-dictionary-app-voting-patterns.csv).
@@ -175,10 +175,14 @@ I plan to make some small improvements to the Shiny app UX based on the revised 
 * add filtering by bill topic (education, environment)- demonstration using a small sample of ~10 manually categorized bills
 * add a legend
 
-Following are some additional goals for developing this data pipeline.
-* Continue reconciling and review counts of all roll calls, legislators, bills, etc.
+Following are some data pipeline maintenance tasks:
+* Add documentation for all calculated fields in p_* layer
+* Continue reconciling recordcounts and account for all disparities between tables
+* Continue cleaning up code by removing temp calculation variables and renaming calculation variables for clarity
+* Automate API requests via Github actions to keep legislative voting data up-to-date
+* Deploy Postgres database to Heroku (for testing), updated Shiny app to Shiny (for testing), and then both to Azure (for production)
+
+And some expansions to the data pipeline:
 * Incorporate district-level partisan leanings based on past election results
 * Incorporate LegiStar voting data for Jacksonville and align this with state data, so it can be visualized with existing web apps
 * Incorporate district-level census demographics
-* Automate API requests via Github actions to keep legislative voting data up-to-date
-* Deploy Postgres database to Heroku (for testing), updated Shiny app to Shiny (for testing), and then both to Azure (for production)

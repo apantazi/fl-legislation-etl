@@ -29,14 +29,18 @@ p_roll_calls <- t_roll_calls %>%
     pct_of_present = yea/n_present
   ) %>%
   arrange(pct_of_present) %>% 
-  mutate(roll_call_id = as.character(roll_call_id))
+  mutate(
+    roll_call_id = as.character(roll_call_id),
+    final_vote = ifelse(grepl("third", roll_call_desc, ignore.case = TRUE), "Y", "N")
+    )
 
 # remove all non-legislators
 p_legislator_sessions <- t_legislator_sessions %>%
   filter (party =='D' | party =='R') %>%
   rename(
     legislator_name = name
-  )
+  ) %>%
+  mutate( ballotpedia = paste0("http://ballotpedia.org/",ballotpedia))
 
 p_legislators <- p_legislator_sessions %>%
   group_by(legislator_name) %>%
@@ -48,6 +52,9 @@ p_legislator_votes <- t_legislator_votes %>%
   mutate(roll_call_id = as.character(roll_call_id))  %>%
   inner_join(p_legislator_sessions %>% select(people_id, session, party, legislator_name, ballotpedia, role), by = c("people_id", "session")) %>%
   inner_join(p_roll_calls, by = c("roll_call_id", "session"))
+
+
+
 
 ######################################
 #                                    #  
@@ -204,6 +211,8 @@ calc_rc_party_majority <- calc_votes_partisan %>% filter(party!=""& !is.na(party
 
 # note that these can be calculated for yea/nay votes only, so I'm creating a new temp dataframe
 # workaround 6/27/24 replaced session_name with session, twice in the first filter below
+# need to review with Andrew- which of these two partisan metrics to use? They're slightly different
+# partisan metric: 0 = with party, 1 = against both parties, 2 = against party 
 calc_leg_votes_partisan <- calc_votes_partisan %>%
   left_join(calc_rc_party_majority, by = c("roll_call_id")) %>%
   filter(!is.na(party)&party!="" & !grepl("2010",session,ignore.case=TRUE)& !is.na(session)) %>% 
@@ -212,8 +221,18 @@ calc_leg_votes_partisan <- calc_votes_partisan %>%
          diff_both_parties = if_else(diff_party_vote_d == 1 & diff_party_vote_r == 1,1,0),
          diff_d_not_r=if_else(diff_party_vote_d==1 & diff_party_vote_r==0,1,0),
          diff_r_not_d=if_else(diff_party_vote_d==0&diff_party_vote_r==1,1,0),
-         partisan_metric = ifelse(party=="R",diff_r_not_d,ifelse(party=="D",diff_d_not_r,NA)),
-         pct_voted_for = scales::percent(pct_of_total)) %>% arrange(desc(partisan_metric)) %>% distinct()
+         partisan_metric_a = ifelse(party=="R",diff_r_not_d,ifelse(party=="D",diff_d_not_r,NA)),
+         partisan_metric_b = ifelse(vote_with_neither == 1, 1,ifelse(maverick_votes == 1, 2, 0))
+  )
+
+calc_leg_votes_partisan <- calc_leg_votes_partisan %>%
+  mutate(
+    partisan_metric = partisan_metric_b,
+    pct_voted_for = scales::percent(pct_of_total),
+    partisan_metric_desc = factor(partisan_metric,levels = c(0, 1, 2),labels = c("With Party", "Independent Vote", "Maverick Vote"))
+)
+
+
 
 #...and merge these new stats back in to p_legislator_votes
 p_legislator_votes <- p_legislator_votes %>%
