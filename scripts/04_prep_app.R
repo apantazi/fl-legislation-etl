@@ -77,8 +77,10 @@ viz_partisanship <- calc_legislator_mean_partisanship %>%
     leg_label = paste0(legislator_name, " (", district,")")
   )
 
+viz_partisan_senate_d <- viz_partisanship %>%
+  filter(party == 'D', role == 'Sen')
+
 viz_partisan_senate_r <- viz_partisanship %>%
   filter(party == 'R', role == 'Sen')
 
-viz_partisan_senate_d <- viz_partisanship %>%
-  filter(party == 'D', role == 'Sen')
+

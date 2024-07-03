@@ -87,7 +87,7 @@ The two key metrics in this data are as follows:
 See [Data Dictionary for app_voting_patterns](docs/data-dictionary-app-voting-patterns.csv).
 
 ### Sample Data Visualizations
-Here's a sample use case for creating a data visualization based on querying this database in R:
+Here's a sample use case for creating a data visualization based on creating a dataframe in R, which is  exporting as [data-app/viz_partisanship.csv](data-app/viz_partisan_senate_d.csv) and then charted in DataWrapper:
  ```
 viz_partisanship <- calc_legislator_mean_partisanship %>%
   left_join(p_legislators %>%
@@ -107,7 +107,6 @@ viz_partisanship <- calc_legislator_mean_partisanship %>%
 viz_partisan_senate_d <- viz_partisanship %>%
   filter(party == 'D', role == 'Sen')
  ```
-Data exported to [data-app/viz_partisanship.csv](data-app/viz_partisan_senate_d.csv) and then displayed in DataWrapper:
 
 <img src="./docs/viz_partisan_dem_senate.png" width=100%>
 
