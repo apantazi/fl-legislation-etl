@@ -166,7 +166,6 @@ To run these scripts, you'll need to know two passwords:
 | [03z_load_processed.R](scripts/03z_load_processed.R)|writes organized data frames (processed layer) to Postgres |
 | [04_prep_app.R](scripts/04_prep_app.R)|prepares and filters data for web apps |
 | [04z_load_app.R](scripts/04z_load_app.R)|writes app data to Postgres, and exports data to CSV |
-| 
 
 <br><br>
 
