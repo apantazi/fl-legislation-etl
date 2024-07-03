@@ -52,8 +52,8 @@ The raw data schema of this database stores data parsed from the original JSON f
 
 <br>
 
-## Processed Layer (work in progress)
-The processed layer tracks data transformed from LegiScan, but is intended to eventually align data from multiple sources. Following is a blueprint of this layer.
+## Processed Layer
+The processed layer tracks data transformed from LegiScan, but is intended to eventually align data from multiple sources. Following is a list of tables in this layer.
 
 |Table|Primary Key|Origin Data Sources|Notes|
 |---|---|---|---|
@@ -63,8 +63,8 @@ The processed layer tracks data transformed from LegiScan, but is intended to ev
 |p_legislator_votes|person_id,<br>roll_call_id|LegiScan (state), LegiStar (cities)|Includes data on how the legislator voted (yea, nay, absent, no vote) and calculated partisan metrics (with their party, against their party, against both parties, etc.).|
 |p_leg_votes_partisan|person_id,<br>roll_call_id|LegiScan (state), LegiStar (cities)|Legislator votes filtered for only yea and nay votes with additional partisan metrics.|
 |p_legislators|person_id|Summary info about legislators, which arbitrarily takes the first record for each|
-|p_districts|district_id,<br>year|Census demographics, electoral results, etc.|One record per legislative district (Senate, House, City Council, etc.)|
 |jct_bill_categories|bill_id, category|Manual data entry (for now)|Includes data on how the legislator voted (aye, nay, absent, no vote) and calculated partisan metrics (with their party, against their party, against both parties, etc.).|
+|(PROPOSED) p_districts|district_id,<br>year|Census demographics, electoral results, etc.|One record per legislative district (Senate, House, City Council, etc.)|
 
 
 <br>
@@ -88,13 +88,12 @@ The two key metrics in this data are as follows:
 See [Data Dictionary for app_voting_patterns](docs/data-dictionary-app-voting-patterns.csv).
 
 ### Sample Data Visualizations
-Here's a sample use case for creating a data visualization based on creating a dataframe in R, which is  exporting as [data-app/viz_partisanship.csv](data-app/viz_partisan_senate_d.csv) and then charted in DataWrapper:
+Here's a sample use case for creating a data visualization based on creating a dataframe in R, which is  exporting as [data-app/viz_partisanship.csv](data-app/viz_partisan_senate_d.csv) and then charted in DataWrapper (note: I need to review this methodology with someone with a better stats background than me):
  ```
-viz_partisanship <- calc_legislator_mean_partisanship %>%
-  left_join(p_legislators %>%
-              select(legislator_name, party, role, district), by = "legislator_name") %>%
+viz_partisanship <- p_legislators %>%
+      select(legislator_name, party, role, district, n_votes, mean_partisan_metric) %>%
   mutate(
-    sd_partisan_metric = p_partisanship %>%
+    sd_partisan_metric = p_leg_votes_partisan %>%
       group_by(legislator_name) %>%
       filter(roll_call_date >= as.Date("2012-11-10")) %>%
       summarize(sd_partisan_metric = sd(partisan_metric, na.rm = TRUE)) %>%
