@@ -48,8 +48,21 @@ dbDisconnect(con)
 # 2) export app data to CSV                 #
 #                                           #
 #############################################
-# for those who don't want to deal with postgres
-write.csv(app_vote_patterns, "../data-app/app_vote_patterns.csv", row.names = FALSE)
-write.csv(viz_partisanship, "../data-app/viz_partisanship.csv", row.names = FALSE)
-write.csv(viz_partisan_senate_d, "../data-app/viz_partisan_senate_d.csv", row.names = FALSE)
-write.csv(viz_partisan_senate_r, "../data-app/viz_partisan_senate_r.csv", row.names = FALSE)
+# export to CSV for those who don't want to deal with postgres
+list_export_df <- list(
+  app_vote_patterns = app_vote_patterns,
+  viz_partisanship = viz_partisanship,
+  viz_partisan_senate_d = viz_partisan_senate_d,
+  viz_partisan_senate_r = viz_partisan_senate_r,
+  p_leg_votes_partisan = p_leg_votes_partisan,
+  p_legislator_sessions = p_legislator_sessions,
+  p_legislator_votes = p_legislator_votes,
+  p_legislators = p_legislators,
+  p_roll_calls = p_roll_calls
+)
+
+# Loop through the list and write each data frame to its respective file
+for (name in names(list_export_df)) {
+  file_path <- paste0("../data-app/", name, ".csv")
+  write.csv(list_export_df[[name]], file_path, row.names = FALSE)
+}

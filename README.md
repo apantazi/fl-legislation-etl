@@ -1,16 +1,17 @@
 # Florida Legislative Voting Database
-7/1/24
+7/3/24
 
  This repo creates a data pipeline supporting the ongoing development of the [Jacksonville Tributary's](https://jaxtrib.org/) legislative voting dashboard (see [prior version of demo app](https://shiny.jaxtrib.org/)). The purpose of the dashboard is to highlight voting patterns of Florida legislators, which can help answer questions about:
 * actual voting records of legislators as a tangible measure of their political leanings (compared to campaign rhetoric)
 * partisan/party-line voting
 * disparities between legislators and the demographics/political leanings of the districts they represent
 
-My role specific to the Tributary's project is to develop the [Shiny app and data pipeline originally created by apantazi](https://github.com/apantazi/legislator_dashboard/blob/main/pull-in-process-all-legiscan.R) to improve its maintainability and scalability. I'm improving data integrity and reliability by re-shaping nested lists (from API-acquired JSONs and R scripts) into relational database format and creating curated views of processed data. My intent is to make it easier for web app developers and data visualization specialists to:
+My current focus is to develop the [Shiny app and data pipeline originally created by apantazi](https://github.com/apantazi/legislator_dashboard/blob/main/pull-in-process-all-legiscan.R) to improve its maintainability and scalability. I'm improving data integrity and reliability by re-shaping nested lists (from API-acquired JSONs and R scripts) into relational database format and creating curated views of processed data. My intent is to make it easier for web app developers and data visualization specialists to:
 * adapt existing reporting tools to different jurisdictions besides the state of Florida- for example, Jacksonville via LegiStar data
 * create new visualizations using any programming language (not just R) and connecting via Postgres/SQL or loading CSV files
 * highlight contextual data (e.g. demographics and district electoral preferences) related to voting records
-* have greater control over the presentation of data by handling app logic such as sorting, hover text formatting, and filtering (i.e. I'm separating this logic from the ETL pipeline)
+* avoid the need for deduplicating or cleaning data
+* have greater control over the presentation of data including sorting, hover text formatting, and filtering
 
 ## Overview of the database
 <img src="./docs/etl-schematic.png" width=100%>
@@ -36,14 +37,14 @@ ETL in the context of this legislative dashboard database means:
 
 This database acquires only a portion of LegiScan data (see LegiScan's [entity relationship diagram](https://api.legiscan.com/dl/Database_ERD.png) and [API user manual](https://legiscan.com/misc/LegiScan_API_User_Manual.pdf) for info on all available data). LegiScan's data is provided as three folders of JSON files- votes (which are really roll calls, with individual votes nested within), people (i.e. legislators), and bills (with lots of related info nested within).
 
-The raw data schema of this database stores data parsed from the original JSON files but otherwise unaltered from the source format. It's organized as follows, with one row of data per unique combination of the primary key listed below.
+The raw data layer stores data parsed from the original JSON files but otherwise unaltered from the source format. It's organized as follows, with one row of data per unique combination of the primary key listed below.
 
 |Table|Primary Key|Description and Notes|
 |---|---|---|
 |t_bills|bill_id|One record per bill. Note that bills can persist across multiple legislative sessions.|
-|t_legislator_sessions|person_id, session|Because legislators can change roles (i.e. move from the House to the Senate), one record is tracked per legislator per legislative session.|
-|t_roll_calls|roll_call_id|One record per roll call. Includes summary data on roll calls (e.g. how many voted aye vs. nay, etc.)|
-|t_legislator_votes|person_id, roll_call_id|One record per legislator per roll call vote. Including data on how the legislator voted (aye, nay, absent, no vote).|
+|t_legislator_sessions|person_id,<br>session|Because legislators can change roles (i.e. move from the House to the Senate), one record is tracked per legislator per legislative session.|
+|t_roll_calls|roll_call_id|One record per roll call. Includes summary data on roll calls (e.g. how many voted yea vs. nay, etc.)|
+|t_legislator_votes|person_id,<br>roll_call_id|One record per legislator per roll call vote. Including data on how the legislator voted (yea, nay, absent, no vote).|
 
 ### Other raw data schema to be developed
 * raw_demographics - block-level census data from Census and American Community Survey
@@ -75,7 +76,7 @@ This repo currently supports the legislative voting patterns tab of the Shiny ap
 
 Data is prepared to facilitate non-Shiny app development, and includes three types of fields:
 * plot data (x = legislator_name, y= roll_call_id, values = partisan metric)
-* context data (bill number, title, url, and description; roll call description and date, roll call vote and overall vote summary) currently rendered as a pop-up box when hovering over individual legislator votes
+* context data (bill number, title, url, and description; roll call description and date, roll call vote and overall vote summary) currently rendered as a pop-up tooltip when hovering over individual legislator votes
 * app filter data (party, chamber, session year, plus a binary inclusion flag for Democrat vs. Republican roll calls)
 
 The two key metrics in this data are as follows:
@@ -87,8 +88,8 @@ The two key metrics in this data are as follows:
 
 See [Data Dictionary for app_voting_patterns](docs/data-dictionary-app-voting-patterns.csv).
 
-### Sample Data Visualizations
-Here's a sample use case for creating a data visualization based on creating a dataframe in R, which is  exporting as [data-app/viz_partisanship.csv](data-app/viz_partisan_senate_d.csv) and then charted in DataWrapper (note: I need to review this methodology with someone with a better stats background than me):
+### Partisanship Data Visualizations
+Here's a sample use case for creating a data visualization based on existing tables in the Postgres database. The resulting data frame is exported from this pipeline as [data-app/viz_partisanship.csv](data-app/viz_partisan_senate_d.csv) and then charted in DataWrapper (I need to review this methodology with someone with a better stats background):
  ```
 viz_partisanship <- p_legislators %>%
       select(legislator_name, party, role, district, n_votes, mean_partisan_metric) %>%
@@ -108,7 +109,11 @@ viz_partisan_senate_d <- viz_partisanship %>%
   filter(party == 'D', role == 'Sen')
  ```
 
-<img src="./docs/viz_partisan_dem_senate.png" width=100%>
+<img src="./docs/viz_partisan_dem_senate.png" width=600>
+
+### Ad-Hoc Data Analysis
+All tables from the processed layer and the application layer are exported to **[data-app](data-app/)**, enabling ad-hoc data visualizations or app creation.
+
 
 <br><br>
 
@@ -172,9 +177,9 @@ I plan to make some small improvements to the Shiny app UX based on the revised 
 * add a legend
 
 Following are some additional goals for developing this data pipeline.
-* Reconcile and review counts of all roll calls, legislators, bills, etc.
+* Continue reconciling and review counts of all roll calls, legislators, bills, etc.
 * Incorporate district-level partisan leanings based on past election results
 * Incorporate LegiStar voting data for Jacksonville and align this with state data, so it can be visualized with existing web apps
 * Incorporate district-level census demographics
 * Automate API requests via Github actions to keep legislative voting data up-to-date
-* Deploy Postgres app on Azure to enable online connectivity
+* Deploy Postgres database to Heroku (for testing), updated Shiny app to Shiny (for testing), and then both to Azure (for production)

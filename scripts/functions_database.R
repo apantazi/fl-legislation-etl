@@ -37,21 +37,6 @@ attempt_connection <- function() {
 }
 
 
-# Loop until successful connection
-# retry_connect <- function() {
-#   repeat {
-#     con <- attempt_connection()
-#     
-#     if (!is.null(con) && dbIsValid(con)) {
-#       print("Successfully connected to the database!")
-#       break
-#     } else {
-#       message("Failed to connect to the database. Please try again.")
-#     }
-#   }
-# }
-
-
 
 write_table <- function(df, con, schema_name, table_name, chunk_size = 1000) {
   n <- nrow(df)
