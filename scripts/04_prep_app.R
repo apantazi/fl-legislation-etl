@@ -64,9 +64,9 @@ app_vote_patterns <- app_vote_patterns %>%
 viz_partisanship <- p_legislators %>%
       select(legislator_name, party, role, district, n_votes, mean_partisan_metric) %>%
   mutate(
-    sd_partisan_metric = calc_leg_votes_partisan %>%
+    sd_partisan_metric = p_legislator_votes %>%
+      filter(!is.na(partisan_metric), roll_call_date >= as.Date("2012-11-10")) %>%  # Combined filters
       group_by(legislator_name) %>%
-      filter(roll_call_date >= as.Date("2012-11-10")) %>%
       summarize(sd_partisan_metric = sd(partisan_metric, na.rm = TRUE)) %>%
       pull(sd_partisan_metric),
     se_partisan_metric = sd_partisan_metric / sqrt(n_votes),
