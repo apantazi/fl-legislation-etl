@@ -1,7 +1,7 @@
 # Florida Legislative Voting Database
 7/3/24
 
- This repo creates a data pipeline supporting the ongoing development of the [Jacksonville Tributary's](https://jaxtrib.org/) legislative voting dashboard (see [prior version of demo app](https://shiny.jaxtrib.org/)). The purpose of the dashboard is to highlight voting patterns of Florida legislators, which can help answer questions about:
+ This repo develops an existing data pipeline supporting the ongoing development of the [Jacksonville Tributary's](https://jaxtrib.org/) legislative voting dashboard (see [prior version of demo app](https://shiny.jaxtrib.org/)). The purpose of the dashboard is to highlight voting patterns of Florida legislators, which can help answer questions about:
 * actual voting records of legislators as a tangible measure of their political leanings (compared to campaign rhetoric)
 * partisan/party-line voting
 * disparities between legislators and the demographics/political leanings of the districts they represent
@@ -112,7 +112,7 @@ viz_partisan_senate_d <- viz_partisanship %>%
 <img src="./docs/viz_partisan_dem_senate.png" width=600>
 
 ### Ad-Hoc Data Analysis
-All tables from the processed layer and the application layer are exported to **[data-app](data-app/)**, enabling ad-hoc data visualizations or app creation.
+All tables from the processed layer (except p_legislator_votes) and the application layer are exported to **[data-app](data-app/)**, enabling ad-hoc data visualizations or app creation.
 
 
 <br><br>
