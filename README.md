@@ -69,7 +69,8 @@ The processed layer tracks data transformed from LegiScan, but is intended to ev
 <br>
 
 ## App Layer
-This repo currently supports the legislative voting patterns Shiny app (see [prior version of demo app](https://shiny.jaxtrib.org/)).
+### Voting Patterns App
+This repo currently supports the legislative voting patterns tab of the Shiny app (see [prior version of demo app](https://shiny.jaxtrib.org/)).
 
 Data is prepared to facilitate non-Shiny app development, and includes three types of fields:
 * plot data (x = legislator_name, y= roll_call_id, values = partisan metric)
@@ -78,13 +79,37 @@ Data is prepared to facilitate non-Shiny app development, and includes three typ
 
 The two key metrics in this data are as follows:
 * **partisan_metric** describes each legislator vote by partisanship
-    * 0 = vote with party
-    * 1 = vote against both parties
-    * 2 = vote against party
+    * 0 = voted with their own party
+    * 1 = voted against both parties
+    * 2 = voted against their own party
 * **mean_partisan_metric** describes the legislators' average partisan_metric across all their votes on contested bills, where lower numbers (0) indicate voting in lock-step with their party
 
 See [Data Dictionary for app_voting_patterns](docs/data-dictionary-app-voting-patterns.csv).
 
+### Sample Data Visualizations
+Here's a sample use case for creating a data visualization based on querying this database in R:
+ ```
+viz_partisanship <- calc_legislator_mean_partisanship %>%
+  left_join(p_legislators %>%
+              select(legislator_name, party, role, district), by = "legislator_name") %>%
+  mutate(
+    sd_partisan_metric = p_partisanship %>%
+      group_by(legislator_name) %>%
+      filter(roll_call_date >= as.Date("2012-11-10")) %>%
+      summarize(sd_partisan_metric = sd(partisan_metric, na.rm = TRUE)) %>%
+      pull(sd_partisan_metric),
+    se_partisan_metric = sd_partisan_metric / sqrt(n_votes),
+    lower_bound = mean_partisan_metric - se_partisan_metric,
+    upper_bound = mean_partisan_metric + se_partisan_metric,
+    leg_label = paste0(legislator_name, " (", district,")")
+  )
+
+viz_partisan_senate_d <- viz_partisanship %>%
+  filter(party == 'D', role == 'Sen')
+ ```
+Data exported to [data-app/viz_partisanship.csv](data-app/viz_partisan_senate_d.csv) and then displayed in DataWrapper:
+
+<img src="./docs/viz_partisan_dem_senate.png" width=100%>
 
 <br><br>
 
@@ -103,7 +128,7 @@ Clear and consistent naming conventions are essential to code maintainability. F
 |Prefix|Saved in Schema|Purpose|
 |---|---|---|
 |t_|raw|**T**ables of raw data kept intact in their original source format.|
-|calc_|---|Performs intermediate **calc**ulations (e.g., partisanship metrics).|
+|calc_|---|Performs intermediate **calc**ulations (e.g., partisanship metrics), not stored in Postgres.|
 |p_|proc|**P**rocessed data, which has been cleaned and organized from original tables. This includes newly-introduced calculated fields.|
 |jct_|proc|**J**unction table, for example jct_bill_categories cross-references which categories (e.g. education, environment) each bill belongs to.|
 |app_|app|**App**lication data, which has been filtered and organized from processed data. It's intended to support specific web applications but could also support data visualizations.|

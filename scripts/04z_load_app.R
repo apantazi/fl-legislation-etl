@@ -34,7 +34,8 @@ dbExecute(con, paste0("CREATE SCHEMA IF NOT EXISTS ", schema_name))
 list_tables <- c(
   "app_vote_patterns",
   "app_data",
-  "viz_partisanship"
+  "viz_partisanship_d",
+  "viz_partisanship_r"
 )
 
 write_tables_in_list(con, schema_name, list_tables)
@@ -50,3 +51,5 @@ dbDisconnect(con)
 # for those who don't want to deal with postgres
 write.csv(app_vote_patterns, "../data-app/app_vote_patterns.csv", row.names = FALSE)
 write.csv(viz_partisanship, "../data-app/viz_partisanship.csv", row.names = FALSE)
+write.csv(viz_partisan_senate_d, "../data-app/viz_partisan_senate_d.csv", row.names = FALSE)
+write.csv(viz_partisan_senate_r, "../data-app/viz_partisan_senate_r.csv", row.names = FALSE)

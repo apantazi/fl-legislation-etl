@@ -64,13 +64,21 @@ app_vote_patterns <- app_vote_patterns %>%
 
 viz_partisanship <- calc_legislator_mean_partisanship %>%
   left_join(p_legislators %>%
-              select(legislator_name, party, district), by = "legislator_name") %>%
+              select(legislator_name, party, role, district), by = "legislator_name") %>%
   mutate(
     sd_partisan_metric = p_partisanship %>%
       group_by(legislator_name) %>%
       filter(roll_call_date >= as.Date("2012-11-10")) %>%
       summarize(sd_partisan_metric = sd(partisan_metric, na.rm = TRUE)) %>%
       pull(sd_partisan_metric),
-    se_partisan_metric = sd_partisan_metric / sqrt(n_votes)
+    se_partisan_metric = sd_partisan_metric / sqrt(n_votes),
+    lower_bound = mean_partisan_metric - se_partisan_metric,
+    upper_bound = mean_partisan_metric + se_partisan_metric,
+    leg_label = paste0(legislator_name, " (", district,")")
   )
 
+viz_partisan_senate_r <- viz_partisanship %>%
+  filter(party == 'R', role == 'Sen')
+
+viz_partisan_senate_d <- viz_partisanship %>%
+  filter(party == 'D', role == 'Sen')
