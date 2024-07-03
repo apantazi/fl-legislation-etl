@@ -59,8 +59,9 @@ The processed layer tracks data transformed from LegiScan, but is intended to ev
 |---|---|---|---|
 |p_bills|bill_id|LegiScan (state), LegiStar (cities)|Cleans up and aligns bill data from LegiScan and LegiStar|
 |p_legislator_sessions|person_id,<br>session_year|LegiScan (state), LegiStar (cities)|Session_year is part of key because legislators can change roles (i.e. move from the House to the Senate) over time|
-|p_roll_calls|roll_call_id|LegiScan (state), LegiStar (cities)|Includes summary data on roll calls (e.g. how many voted aye vs. nay, etc.)|
-|p_legislator_votes|person_id,<br>roll_call_id|LegiScan (state), LegiStar (cities)|Includes data on how the legislator voted (aye, nay, absent, no vote) and calculated partisan metrics (with their party, against their party, against both parties, etc.).|
+|p_roll_calls|roll_call_id|LegiScan (state), LegiStar (cities)|Includes summary data on roll calls (e.g. how many voted yea vs. nay, etc.)|
+|p_legislator_votes|person_id,<br>roll_call_id|LegiScan (state), LegiStar (cities)|Includes data on how the legislator voted (yea, nay, absent, no vote) and calculated partisan metrics (with their party, against their party, against both parties, etc.).|
+|p_leg_votes_partisan|person_id,<br>roll_call_id|LegiScan (state), LegiStar (cities)|Legislator votes filtered for only yea and nay votes with additional partisan metrics.|
 |p_legislators|person_id|Summary info about legislators, which arbitrarily takes the first record for each|
 |p_districts|district_id,<br>year|Census demographics, electoral results, etc.|One record per legislative district (Senate, House, City Council, etc.)|
 |jct_bill_categories|bill_id, category|Manual data entry (for now)|Includes data on how the legislator voted (aye, nay, absent, no vote) and calculated partisan metrics (with their party, against their party, against both parties, etc.).|
@@ -164,9 +165,17 @@ To run these scripts, you'll need to know two passwords:
 | [functions_database.R](scripts/functions_database.R)|scripts to connect to Postgres, write tables, and test inputs |
 
 <br><br>
+
 # Development workplan
-Following are some key goals for developing this data pipeline.
+I plan to make some small improvements to the Shiny app UX based on the revised architecture:
+* add sort by (legislator or mean partisanship)
+* add filtering by bill topic (education, environment)- demonstration using a small sample of ~10 manually categorized bills
+* add a legend
+
+Following are some additional goals for developing this data pipeline.
+* Reconcile and review counts of all roll calls, legislators, bills, etc.
+* Incorporate district-level partisan leanings based on past election results
 * Incorporate LegiStar voting data for Jacksonville and align this with state data, so it can be visualized with existing web apps
-* Incorporate district data (e.g. census demographics and partisan leanings of the electorate) to provide context
+* Incorporate district-level census demographics
 * Automate API requests via Github actions to keep legislative voting data up-to-date
 * Deploy Postgres app on Azure to enable online connectivity

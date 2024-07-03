@@ -4,7 +4,7 @@
 #                               #
 #################################
 
-app_data <- p_partisanship
+app_data <- p_leg_votes_partisan
 
 #was partisan_metric2
 app_data$partisan_metric <- ifelse(app_data$vote_with_neither == 1, 1,
@@ -29,8 +29,6 @@ calc_roll_call_to_number$number_year <- paste(calc_roll_call_to_number$bill_numb
 
 app_data$roll_call_id <- factor(app_data$roll_call_id, levels = calc_roll_call_to_number$roll_call_id)
 app_data$legislator_name <- factor(app_data$legislator_name, levels = calc_legislator_mean_partisanship$legislator_name)
-
-y_labels <- setNames(calc_roll_call_to_number$number_year, calc_roll_call_to_number$roll_call_id)
 
 app_data$final_vote <- "N"
 app_data$final_vote[grepl("third",app_data$roll_call_desc,ignore.case=TRUE)] <- "Y"
@@ -62,11 +60,10 @@ app_vote_patterns <- app_vote_patterns %>%
 # recreating Yuriko Schumacher's partisanship visual from https://www.texastribune.org/2023/12/18/mark-jones-texas-senate-special-2023-liberal-conservative-scores/
 # first iteration: intent is to emulate the visual, though "partisanship" metric isn't identical
 
-viz_partisanship <- calc_legislator_mean_partisanship %>%
-  left_join(p_legislators %>%
-              select(legislator_name, party, role, district), by = "legislator_name") %>%
+viz_partisanship <- p_legislators %>%
+      select(legislator_name, party, role, district, n_votes, mean_partisan_metric) %>%
   mutate(
-    sd_partisan_metric = p_partisanship %>%
+    sd_partisan_metric = p_leg_votes_partisan %>%
       group_by(legislator_name) %>%
       filter(roll_call_date >= as.Date("2012-11-10")) %>%
       summarize(sd_partisan_metric = sd(partisan_metric, na.rm = TRUE)) %>%

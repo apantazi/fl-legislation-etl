@@ -14,10 +14,10 @@
 
 ########################################
 #                                      #  
-# 1B) create views version 2           #
+# 1B) create initial processed frames  #
 #                                      #
 ########################################
-p_roll_calls_w_calc <- t_roll_calls %>%
+p_roll_calls <- t_roll_calls %>%
   left_join(t_bills %>% select(bill_id, title, number, session_year, description, url), by = "bill_id") %>%
   mutate(
     pct_of_total = yea/total,
@@ -32,9 +32,12 @@ p_roll_calls_w_calc <- t_roll_calls %>%
     roll_call_date = date,
     roll_call_desc = desc,
   ) %>%
-  arrange(pct_of_present)
+  arrange(pct_of_present) %>% 
+  mutate(roll_call_id = as.character(roll_call_id))
 
+# remove all non-legislators
 p_legislator_sessions <- t_legislator_sessions %>%
+  filter (party =='D' | party =='R') %>%
   rename(
     legislator_name = name
   )
@@ -45,29 +48,21 @@ p_legislators <- p_legislator_sessions %>%
   ungroup()
 
 #convert roll call id to character (not sure why)
-t_legislator_votes <- t_legislator_votes %>% mutate(roll_call_id = as.character(roll_call_id))
-p_roll_calls_w_calc <- p_roll_calls_w_calc %>% mutate(roll_call_id = as.character(roll_call_id))
+p_legislator_votes <- t_legislator_votes %>%
+  mutate(roll_call_id = as.character(roll_call_id))  %>%
+  inner_join(p_legislator_sessions %>% select(people_id, session, party, legislator_name, ballotpedia, role), by = c("people_id", "session")) %>%
+  inner_join(p_roll_calls, by = c("roll_call_id", "session"))
 
-calc_legislator_votes <- t_legislator_votes %>%
-  inner_join(t_legislator_sessions %>% select(people_id, session, party, name, ballotpedia, role), by = c("people_id", "session")) %>%
-  inner_join(p_roll_calls_w_calc, by = c("roll_call_id", "session")) %>%
-  rename(
-    legislator_name = name
-  )
+######################################
+#                                    #  
+# 2a) roll call partisanship analysis #
+#                                    #
+######################################
 
-################################
-#                              #  
-# 2) analyze and prep data     #
-#                              #
-################################
-
-# primary key should at least be roll_call_id and party, so 2x the number of roll_calls minus anything filtered out
-#temp_analyze_bill <- temp_legislator_votes_detailed %>% group_by(party,roll_call_id,title,vote_text,number) %>% summarize(n=n()) %>% arrange(desc(n)) %>% pivot_wider(values_from = n,names_from = vote_text,values_fill = 0) %>% mutate(total=sum(Yea,NV,Absent,Nay,na.rm = TRUE),total2=sum(Yea,Nay)) %>% filter(total>0 & total2 >0) %>% mutate(y_pct = Yea/total,n_pct=Nay/total,nv_pct=NV/total, absent_pct=Absent/total,NV_A=(NV+Absent)/total,y_pct2 = Yea/(Yea+Nay),n_pct2 = Nay/(Yea+Nay),margin=y_pct2-n_pct2)
-
-calc_analyze_bill <- calc_legislator_votes %>% group_by(party,roll_call_id,bill_title,vote_text,bill_number) %>% summarize(n=n()) %>% arrange(desc(n)) %>% pivot_wider(values_from = n,names_from = vote_text,values_fill = 0) %>% mutate(total=sum(Yea,NV,Absent,Nay,na.rm = TRUE),total2=sum(Yea,Nay)) %>% filter(total>0 & total2 >0) %>% mutate(y_pct = Yea/total,n_pct=Nay/total,nv_pct=NV/total, absent_pct=Absent/total,NV_A=(NV+Absent)/total,y_pct2 = Yea/(Yea+Nay),n_pct2 = Nay/(Yea+Nay),margin=y_pct2-n_pct2)
+calc_rc_party_sum <- p_legislator_votes %>% group_by(party,roll_call_id,bill_title,vote_text,bill_number) %>% summarize(n=n()) %>% arrange(desc(n)) %>% pivot_wider(values_from = n,names_from = vote_text,values_fill = 0) %>% mutate(total=sum(Yea,NV,Absent,Nay,na.rm = TRUE),total2=sum(Yea,Nay)) %>% filter(total>0 & total2 >0) %>% mutate(y_pct = Yea/total,n_pct=Nay/total,nv_pct=NV/total, absent_pct=Absent/total,NV_A=(NV+Absent)/total,y_pct2 = Yea/(Yea+Nay),n_pct2 = Nay/(Yea+Nay),margin=y_pct2-n_pct2)
 
 # create partisanship variables 
-calc_partisanbillvotes <- calc_analyze_bill %>%   select(party,roll_call_id,bill_title,y_pct2,bill_number) %>% 
+calc_rc_partisan <- calc_rc_party_sum %>%   select(party,roll_call_id,bill_title,y_pct2,bill_number) %>% 
   pivot_wider(names_from = party,values_from=y_pct2,values_fill = NA,id_cols = c(roll_call_id,bill_title,bill_number)) %>% 
   mutate(
     DminusR = D - R,
@@ -76,7 +71,7 @@ calc_partisanbillvotes <- calc_analyze_bill %>%   select(party,roll_call_id,bill
     DEM = NA_character_
     )
 
-calc_partisanbillvotes <- calc_partisanbillvotes %>%
+calc_rc_partisan <- calc_rc_partisan %>%
   mutate(
     Partisan = case_when(
       is.na(DminusR) ~ "Unclear",
@@ -116,23 +111,23 @@ calc_partisanbillvotes <- calc_partisanbillvotes %>%
     )
   )
 
-###########################################
-#                                         #  
-# 2b) partisanship analysis               #
-#                                         #
-###########################################
+#############################################
+#                                           #  
+# 2b) legislator vote partisanship analysis #
+#                                           #
+#############################################
 # join detailed legislative votes with partisanship analysis, removing nulls, initialize and set defaults for calculated fields
-calc_votes_partisanship <- calc_legislator_votes %>%
+calc_votes_partisan <- p_legislator_votes %>%
   filter(!is.na(roll_call_date)&total>0)
 # %>% # select(roll_call_id, R, D, DminusR, Partisan, GOP, DEM), 
-calc_votes_partisanship <- calc_votes_partisanship %>%
+calc_votes_partisan <- calc_votes_partisan %>%
   left_join(
-    calc_partisanbillvotes,
+    calc_rc_partisan,
     by = 'roll_call_id'
   ) %>%
   filter(!is.na(D) & !is.na(R) & !is.na(DminusR))
-calc_votes_partisanship <- calc_votes_partisanship %>% arrange(desc(abs(DminusR)))
-calc_votes_partisanship <- calc_votes_partisanship %>%
+calc_votes_partisan <- calc_votes_partisan %>% arrange(desc(abs(DminusR)))
+calc_votes_partisan <- calc_votes_partisan %>%
   mutate(
     dem_majority = NA_character_,
     gop_majority = NA_character_,
@@ -140,7 +135,7 @@ calc_votes_partisanship <- calc_votes_partisanship %>%
     priority_bills = "N"
   )
 
-calc_votes_partisanship <- calc_votes_partisanship %>%
+calc_votes_partisan <- calc_votes_partisan %>%
   mutate(
     dem_majority = case_when(
       D > 0.5 ~ "Y",
@@ -156,9 +151,9 @@ calc_votes_partisanship <- calc_votes_partisanship %>%
     )
   )
 
-calc_votes_partisanship$priority_bills[abs(calc_votes_partisanship$DminusR)>.85] <- "Y"
+calc_votes_partisan$priority_bills[abs(calc_votes_partisan$DminusR)>.85] <- "Y"
 
-calc_votes_partisanship <- calc_votes_partisanship %>%
+calc_votes_partisan <- calc_votes_partisan %>%
   mutate(vote_with_dem_majority = ifelse(dem_majority == "Y" & vote_text=="Yea", 1, 0),
          vote_with_gop_majority = ifelse(gop_majority == "Y" & vote_text=="Yea", 1, 0),
          vote_with_neither = ifelse((dem_majority == "Y" & gop_majority == "Y" & vote_text=="Nay") |
@@ -173,7 +168,7 @@ calc_votes_partisanship <- calc_votes_partisanship %>%
                                  (party=="R" & vote_text=="Yea" & gop_majority=="N" & dem_majority=="Y") |
                                  (party=="R" & vote_text=="Nay" & gop_majority=="Y" & dem_majority=="N"),1,0 ))
 
-calc_votes_partisanship <- calc_votes_partisanship %>%
+calc_votes_partisan <- calc_votes_partisan %>%
   mutate(
     bill_alignment = case_when(
       D == 0.5 | R == 0.5 ~ "at least one party even",
@@ -185,14 +180,19 @@ calc_votes_partisanship <- calc_votes_partisanship %>%
     )
   )
 
-calc_party_majority_votes <- calc_votes_partisanship %>% filter(party!=""& !is.na(party)) %>% 
+######################################
+#                                    #  
+# 2c) roll call partisanship analysis filtered for yea/nay votes only #
+#                                   #
+######################################
+calc_rc_party_majority <- calc_votes_partisan %>% filter(party!=""& !is.na(party)) %>% 
   group_by(roll_call_id, party) %>%
   summarize(majority_vote = if_else(sum(vote_text == "Yea") > sum(vote_text == "Nay"), "Yea", "Nay"), .groups = 'drop') %>% 
   pivot_wider(names_from = party,values_from = majority_vote,id_cols = roll_call_id,values_fill = "NA",names_prefix = "vote_")
 
 # workaround 6/27/24 replaced session_name with session, twice in the first filter below
-p_partisanship <- calc_votes_partisanship %>%
-  left_join(calc_party_majority_votes, by = c("roll_call_id")) %>%
+p_leg_votes_partisan <- calc_votes_partisan %>%
+  left_join(calc_rc_party_majority, by = c("roll_call_id")) %>%
   filter(!is.na(party)&party!="" & !grepl("2010",session,ignore.case=TRUE)& !is.na(session)) %>% 
   filter(vote_text=="Yea"|vote_text=="Nay") %>% 
   mutate(diff_party_vote_d = if_else(vote_text != vote_D, 1, 0),diff_party_vote_r = if_else(vote_text != vote_R, 1, 0),
@@ -202,13 +202,18 @@ p_partisanship <- calc_votes_partisanship %>%
          partisan_metric = ifelse(party=="R",diff_r_not_d,ifelse(party=="D",diff_d_not_r,NA)),
          pct_voted_for = scales::percent(pct_of_total)) %>% arrange(desc(partisan_metric)) %>% distinct()
 
-# re-order data for better visualization
-p_partisanship$roll_call_id = with(p_partisanship, reorder(roll_call_id, partisan_metric, sum))
-p_partisanship$legislator_name = with(p_partisanship, reorder(legislator_name, partisan_metric, sum))
+# re-order data for better visualization (might not be needed here since I do this in the app)
+#p_leg_votes_partisan$roll_call_id = with(p_leg_votes_partisan, reorder(roll_call_id, partisan_metric, sum))
+#p_leg_votes_partisan$legislator_name = with(p_leg_votes_partisan, reorder(legislator_name, partisan_metric, sum))
 
+#############################################
+#                                           #  
+# calc legislator mean partisanship #
+#                                           #
+#############################################
 # creates an overall partisanship metric for each legislator, filters for dates >= 11/10/12?
 # this is used later to sort the dataframe
-calc_legislator_mean_partisanship <- p_partisanship %>%
+calc_legislator_mean_partisanship <- p_leg_votes_partisan %>%
   group_by(legislator_name) %>%
   filter(roll_call_date >= as.Date("11/10/2012")) %>%
   summarize(
@@ -217,13 +222,17 @@ calc_legislator_mean_partisanship <- p_partisanship %>%
     ) %>%
   arrange(mean_partisan_metric,legislator_name) #create the sort based on partisan metric
 
+# and fold in to p_legislators
+p_legislators <- p_legislators %>%
+  left_join(calc_legislator_mean_partisanship, by='legislator_name')
+
 ###########################################
 #                                         #  
-# 3) STOPGAP HARDCODING                   #
+# 3) STOPGAP HARDCODING - TO DEBUG                  #
 #                                         #
 ###########################################
 #6/28/24 this works fine, but should debug and find the problem upstream
-p_partisanship$bill_number = p_partisanship$bill_number.x
-p_partisanship$bill_title = p_partisanship$bill_title.x
-p_partisanship <- p_partisanship %>%
+p_leg_votes_partisan$bill_number = p_leg_votes_partisan$bill_number.x
+p_leg_votes_partisan$bill_title = p_leg_votes_partisan$bill_title.x
+p_leg_votes_partisan <- p_leg_votes_partisan %>%
  select(-bill_title.x,-bill_title.y,-bill_number.x,-bill_number.y)

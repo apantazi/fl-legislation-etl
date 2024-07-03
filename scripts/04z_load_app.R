@@ -34,8 +34,8 @@ dbExecute(con, paste0("CREATE SCHEMA IF NOT EXISTS ", schema_name))
 list_tables <- c(
   "app_vote_patterns",
   "app_data",
-  "viz_partisanship_d",
-  "viz_partisanship_r"
+  "viz_partisan_senate_d",
+  "viz_partisan_senate_r"
 )
 
 write_tables_in_list(con, schema_name, list_tables)
