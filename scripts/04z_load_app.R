@@ -51,14 +51,14 @@ dbDisconnect(con)
 # export to CSV for those who don't want to deal with postgres
 list_export_df <- list(
   app_vote_patterns = app_vote_patterns,
-  viz_partisanship = viz_partisanship,
-  viz_partisan_senate_d = viz_partisan_senate_d,
-  viz_partisan_senate_r = viz_partisan_senate_r,
-  p_leg_votes_partisan = p_leg_votes_partisan,
+  p_bills = p_bills,
   p_legislator_sessions = p_legislator_sessions,
   p_legislator_votes = p_legislator_votes,
   p_legislators = p_legislators,
-  p_roll_calls = p_roll_calls
+  p_roll_calls = p_roll_calls,
+  viz_partisanship = viz_partisanship,
+  viz_partisan_senate_d = viz_partisan_senate_d,
+  viz_partisan_senate_r = viz_partisan_senate_r
 )
 
 # Loop through the list and write each data frame to its respective file

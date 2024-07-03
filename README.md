@@ -6,7 +6,7 @@
 * partisan/party-line voting
 * disparities between legislators and the demographics/political leanings of the districts they represent
 
-My current focus is to develop the [Shiny app and data pipeline originally created by apantazi](https://github.com/apantazi/legislator_dashboard/blob/main/pull-in-process-all-legiscan.R) to improve its maintainability and scalability. I'm improving data integrity and reliability by re-shaping nested lists (from API-acquired JSONs and R scripts) into relational database format and creating curated views of processed data. My intent is to make it easier for web app developers and data visualization specialists to:
+My focus here is adapting [apantazi's R-scripted data pipeline](https://github.com/apantazi/legislator_dashboard/blob/main/pull-in-process-all-legiscan.R) into a Postgres database, while improving its maintainability and scalability. I'm improving data integrity and reliability by re-shaping nested lists (from API-acquired JSONs and R scripts) into relational database format and creating curated views of processed data. My intent is to make it easier for web app developers and data visualization specialists to:
 * adapt existing reporting tools to different jurisdictions besides the state of Florida- for example, Jacksonville via LegiStar data
 * create new visualizations using any programming language (not just R) and connecting via Postgres/SQL or loading CSV files
 * highlight contextual data (e.g. demographics and district electoral preferences) related to voting records
@@ -112,7 +112,7 @@ viz_partisan_senate_d <- viz_partisanship %>%
 <img src="./docs/viz_partisan_dem_senate.png" width=600>
 
 ### Ad-Hoc Data Analysis
-All tables from the processed layer (except p_legislator_votes) and the application layer are exported to **[data-app](data-app/)**, enabling ad-hoc data visualizations or app creation.
+All tables from the processed layer (except p_legislator_votes, which is currently skipped due to file size) and the application layer are exported to **[data-app](data-app/)**, enabling ad-hoc data visualizations or app creation.
 
 
 <br><br>
@@ -157,6 +157,7 @@ To run these scripts, you'll need to know two passwords:
 
  | script                   | description              |
 |--------------------------|--------------------------|
+| [functions_database.R](scripts/functions_database.R)|scripts to connect to Postgres, write tables, and test inputs || 
 | [01_request_api_legiscan.R](scripts/01_request_api_legiscan.R)|requests data from LegiScan via API |
 | [02_parse_legiscan.R](scripts/02_parse_legiscan.R)|parses LegiScan JSON data |
 | [02z_load_raw.R](scripts/02z_load_raw.R)|saves parsed LegiScan data into Postgres as the raw layer|
@@ -165,8 +166,7 @@ To run these scripts, you'll need to know two passwords:
 | [03z_load_processed.R](scripts/03z_load_processed.R)|writes organized data frames (processed layer) to Postgres |
 | [04_prep_app.R](scripts/04_prep_app.R)|prepares and filters data for web apps |
 | [04z_load_app.R](scripts/04z_load_app.R)|writes app data to Postgres, and exports data to CSV |
-| [00_install_packages.R](scripts/00_install_packages.R)|installation script which should later be repackaged as requirements |
-| [functions_database.R](scripts/functions_database.R)|scripts to connect to Postgres, write tables, and test inputs |
+| 
 
 <br><br>
 

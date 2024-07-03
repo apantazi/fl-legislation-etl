@@ -1,4 +1,4 @@
-data-raw/
+# remove R project files and archives
 docs/archive/
 scripts/archive/
 .data.RData
@@ -8,3 +8,6 @@ scripts/archive/
 .Rproj.user/
 fl-leg-etl.Rproj
 
+# remove files over 100 MB
+# data-app/p_legislator_votes.csv
+data-raw/

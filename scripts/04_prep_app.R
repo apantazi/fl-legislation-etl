@@ -4,7 +4,8 @@
 #                               #
 #################################
 
-app_data <- p_leg_votes_partisan
+app_data <- calc_leg_votes_partisan %>%
+  left_join(p_bills %>% select('bill_id','bill_desc'), by='bill_id')
 
 #was partisan_metric2
 app_data$partisan_metric <- ifelse(app_data$vote_with_neither == 1, 1,
@@ -28,7 +29,7 @@ calc_roll_call_to_number <- app_data %>%
 calc_roll_call_to_number$number_year <- paste(calc_roll_call_to_number$bill_number,"-",calc_roll_call_to_number$year)
 
 app_data$roll_call_id <- factor(app_data$roll_call_id, levels = calc_roll_call_to_number$roll_call_id)
-app_data$legislator_name <- factor(app_data$legislator_name, levels = calc_legislator_mean_partisanship$legislator_name)
+app_data$legislator_name <- factor(app_data$legislator_name, levels = calc_leg_mean_partisan$legislator_name)
 
 app_data$final_vote <- "N"
 app_data$final_vote[grepl("third",app_data$roll_call_desc,ignore.case=TRUE)] <- "Y"
@@ -45,7 +46,7 @@ app_vote_patterns <- app_data %>%
   select(roll_call_id, legislator_name, partisan_metric, session_year, role, final_vote, party, bill_number, roll_call_desc, bill_title, roll_call_date, bill_desc, bill_url, pct_voted_for, vote_text, legislator_name)
 
 app_vote_patterns <- app_vote_patterns %>%
-  left_join(calc_legislator_mean_partisanship %>%
+  left_join(calc_leg_mean_partisan %>%
               select(legislator_name, mean_partisan_metric), by = "legislator_name") %>%
   mutate(
     is_include_d = ifelse(roll_call_id %in% calc_d_votes$roll_call_id, 1, 0),
@@ -63,7 +64,7 @@ app_vote_patterns <- app_vote_patterns %>%
 viz_partisanship <- p_legislators %>%
       select(legislator_name, party, role, district, n_votes, mean_partisan_metric) %>%
   mutate(
-    sd_partisan_metric = p_leg_votes_partisan %>%
+    sd_partisan_metric = calc_leg_votes_partisan %>%
       group_by(legislator_name) %>%
       filter(roll_call_date >= as.Date("2012-11-10")) %>%
       summarize(sd_partisan_metric = sd(partisan_metric, na.rm = TRUE)) %>%
