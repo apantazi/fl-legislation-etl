@@ -40,7 +40,10 @@ p_legislator_sessions <- t_legislator_sessions %>%
   rename(
     legislator_name = name
   ) %>%
-  mutate( ballotpedia = paste0("http://ballotpedia.org/",ballotpedia))
+  mutate(
+    ballotpedia = paste0("http://ballotpedia.org/",ballotpedia),
+    district_number = as.integer(str_extract(district, "\\d+"))
+    )
 
 p_legislators <- p_legislator_sessions %>%
   group_by(legislator_name) %>%

@@ -6,7 +6,8 @@
 # first filter for legislator dashboard.
 # This includes some fields which are later removed from the app_vote_patterns view, but will be included in legislator activity app
 app_data <- calc_leg_votes_partisan %>%
-  left_join(p_bills %>% select('bill_id','bill_desc'), by='bill_id')
+  left_join(p_bills %>% select('bill_id','bill_desc'), by='bill_id') %>%
+  left_join(p_legislators %>% select('people_id','district_number'))
 
 # filter for party-line (or against both parties) legislator-votes
 # partisan metric: 0 = with party, 1 = against both parties, 2 = against party 
@@ -42,7 +43,7 @@ calc_rc_to_bill$label_bill_year <- paste(calc_rc_to_bill$bill_number,"-",calc_rc
 # get subset of bills that had non-unanimous votes
 app_vote_patterns <- app_data %>%
   filter(pct_of_present != 0 & pct_of_present != 1) %>%
-  select(roll_call_id, legislator_name, partisan_metric, session_year, role, final_vote, party, bill_number, roll_call_desc, bill_title, roll_call_date, bill_desc, bill_url, pct_voted_for, vote_text, legislator_name)
+  select(roll_call_id, legislator_name, partisan_metric, session_year, role, final_vote, party, bill_number, roll_call_desc, bill_title, roll_call_date, bill_desc, bill_url, pct_voted_for, vote_text, legislator_name, bill_id, district_number)
 
 app_vote_patterns <- app_vote_patterns %>%
   left_join(calc_leg_mean_partisan %>%

@@ -76,8 +76,8 @@ This repo currently supports the legislative voting patterns tab of the Shiny ap
 
 Data is prepared to facilitate non-Shiny app development, and includes three types of fields:
 * plot data (x = legislator_name, y= roll_call_id, values = partisan metric)
-* context data (bill number, title, url, and description; roll call description and date, roll call vote and overall vote summary) currently rendered as a pop-up tooltip when hovering over individual legislator votes
-* app filter data (party, chamber, session year, plus a binary inclusion flag for Democrat vs. Republican roll calls)
+* context data (bill_id, bill_number, title, url, and description; roll call description and date, roll call vote and overall vote summary) currently rendered as a pop-up tooltip when hovering over individual legislator votes
+* app filter and sort data (party, chamber, district_number, session year, d_include, r_include). Bill_id is used for bill category filter.
 
 The two key metrics in this data are as follows:
 * **partisan_metric** describes each legislator vote by partisanship
