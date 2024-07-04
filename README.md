@@ -170,11 +170,6 @@ To run these scripts, you'll need to know two passwords:
 <br><br>
 
 # Development workplan
-I plan to make some small improvements to the Shiny app UX based on the revised architecture:
-* add sort by (legislator or mean partisanship)
-* add filtering by bill topic (education, environment)- demonstration using a small sample of ~10 manually categorized bills
-* add a legend
-
 Following are some data pipeline maintenance tasks:
 * Add documentation for all calculated fields in p_* layer
 * Continue reconciling recordcounts and account for all disparities between tables
@@ -186,3 +181,5 @@ And some expansions to the data pipeline:
 * Incorporate district-level partisan leanings based on past election results
 * Incorporate LegiStar voting data for Jacksonville and align this with state data, so it can be visualized with existing web apps
 * Incorporate district-level census demographics
+
+Additionally, the data pipeline revision is facilitating development of the legislative dashboard (see [repo for my revised web app work-in-progress](https://github.com/reliablerascal/fl-legislation-app-postgres)). Some early updates include the addition of legislator sorting, filtering by bill topic, and summary stats in the legend.
