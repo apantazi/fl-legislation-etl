@@ -17,11 +17,16 @@ p_bills <- t_bills %>%
     bill_url = url,
   )
 
-lkp_sessions <- p_bills %>%
+p_sessions <- p_bills %>%
   select(session_id,session_name,session_string) %>%
   distinct() %>%
   mutate(
-    session_year = substr(session_name,1,4)
+    session_year = as.numeric(substr(session_name,1,4)),
+    session_biennium = paste(
+      if_else(session_year %% 2 == 0, session_year - 1, session_year),
+      if_else(session_year %% 2 == 0, session_year, session_year + 1),
+      sep = "-"
+    )
   )
 
 p_roll_calls <- t_roll_calls %>%
@@ -63,7 +68,27 @@ p_legislator_votes <- t_legislator_votes %>%
   inner_join(p_legislator_sessions %>% select(people_id, session, party, legislator_name, ballotpedia, role), by = c("people_id", "session")) %>%
   inner_join(p_roll_calls, by = c("roll_call_id", "session"))
 
+jct_bill_categories <- user_bill_categories %>%
+  inner_join(p_sessions %>% select(session_year,session_id), by = 'session_year') %>%
+  inner_join(p_bills %>% select(bill_number,session_id,bill_id), by=c('bill_number','session_id'))
 
+user_incumbents_challenged <- user_incumbents_challenged %>%
+  mutate(is_incumbent_challenged = TRUE)
+
+p_districts <- p_legislators %>%
+  select(role,district_number,party) %>%
+  rename(chamber=role) %>%
+  mutate(
+    chamber = case_when(
+    chamber == "Sen" ~ "Senate",
+    chamber == "Rep" ~ "House",
+    TRUE ~ chamber
+  ),
+  year = 2024) %>%
+  arrange(chamber,district_number) %>%
+  left_join(user_incumbents_challenged %>%
+              select(chamber, district_number, is_incumbent_challenged), by = c('chamber','district_number')) %>%
+  replace_na(list(is_incumbent_challenged = FALSE))
 
 
 ######################################

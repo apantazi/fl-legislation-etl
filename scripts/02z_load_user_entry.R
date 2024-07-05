@@ -8,7 +8,7 @@
 # 1) read user-entered                 #
 #                                      #
 ########################################
-user_districts_challenged <- read.csv("../data-raw/user-entry/user_districts_challenged.csv")
+user_incumbents_challenged <- read.csv("../data-raw/user-entry/user_incumbents_challenged.csv")
 user_bill_categories <- read.csv("../data-raw/user-entry/user_bill_categories.csv")
 
 ########################################
@@ -42,7 +42,7 @@ schema_name <- "raw_user_entry"
 dbExecute(con, paste0("CREATE SCHEMA IF NOT EXISTS ", schema_name))
 
 list_tables <- c(
-  "user_districts_challenged",
+  "user_incumbents_challenged",
   "user_bill_categories"
 )
 

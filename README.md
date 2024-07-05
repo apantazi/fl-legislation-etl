@@ -50,11 +50,11 @@ The raw data layer stores data parsed from the original JSON files but otherwise
 |t_legislator_votes|person_id,<br>roll_call_id|One record per legislator per roll call vote. Including data on how the legislator voted (yea, nay, absent, no vote).|
 
 ### user-entry schema ###
-This schema includes a limited amount of user-entered data
+This schema includes a limited amount of user-entered data as a prototype. This data generation should be automated whenever that's more efficient (e.g. by bill committee assignments/ AI text search, election race data).
 |Table|Primary Key|Description and Notes|
 |---|---|---|
 |[user_bill_categories](https://docs.google.com/spreadsheets/d/1ivNJS9F6TyBjTr_D3OmUKxN0YCEM9ugLbJRteID6Q24/edit?usp=drive_link)|bill_number,<br>session_biennium,<br>bill_category|User assignment of bills to categories. This may be automated, use AI, etc. in future iterations.|
-|[user_districts_challenged](https://docs.google.com/spreadsheets/d/1woSZBU5bOfTGFKtuaYg2xT8jCo314RVlSpMrSARWl1c/edit?usp=drive_link)|party,<br>role,<br>district_number,<br>year|Tracks electoral districts where incumbents have primary challengers.|
+|[user_incumbents_challenged](https://docs.google.com/spreadsheets/d/1woSZBU5bOfTGFKtuaYg2xT8jCo314RVlSpMrSARWl1c/edit?usp=drive_link)|party,<br>role,<br>district_number,<br>year|Tracks electoral districts where incumbents have primary challengers.|
 
 ### Other raw data schema to be developed
 * raw_demographics - block-level census data from Census and American Community Survey
@@ -64,18 +64,20 @@ This schema includes a limited amount of user-entered data
 <br>
 
 ## Processed Layer
-The processed layer tracks data transformed from LegiScan, but is intended to eventually align data from multiple sources. Following is a list of tables in this layer.
+The processed layer tracks data transformed from LegiScan, but is intended to eventually align data from multiple sources. Following is a list of tables in this layer. Note that "origin data sources" is intended to eventually integrate LegiScan (state) data with LegiStar (city) data.
 
 |Table|Primary Key|Origin Data Sources|Notes|
 |---|---|---|---|
-|p_bills|bill_id|LegiScan (state), LegiStar (cities)|Cleans up and aligns bill data from LegiScan and LegiStar|
-|p_legislator_sessions|person_id,<br>session_year|LegiScan (state), LegiStar (cities)|Session_year is part of key because legislators can change roles (i.e. move from the House to the Senate) over time|
-|p_roll_calls|roll_call_id|LegiScan (state), LegiStar (cities)|Includes summary data on roll calls (e.g. how many voted yea vs. nay, etc.)|
-|p_legislator_votes|person_id,<br>roll_call_id|LegiScan (state), LegiStar (cities)|Includes data on how the legislator voted (yea, nay, absent, no vote) and calculated partisan metrics (with their party, against their party, against both parties, etc.).|
-|p_leg_votes_partisan|person_id,<br>roll_call_id|LegiScan (state), LegiStar (cities)|Legislator votes filtered for only yea and nay votes with additional partisan metrics.|
-|p_legislators|person_id|Summary info about legislators, which arbitrarily takes the first record for each|
-|jct_bill_categories|bill_id, category|Manual data entry (for now)|Includes data on how the legislator voted (aye, nay, absent, no vote) and calculated partisan metrics (with their party, against their party, against both parties, etc.).|
+|p_bills|bill_id|LegiScan (state)|Cleans up and aligns bill data from LegiScan and LegiStar|
 |p_districts|district_id,<br>year|CURRENT- User-entered flag for contested electoral districts<br>PROPOSED- Census demographics, electoral results, etc.|One record per legislative district (Senate, House, City Council, etc.)|
+|p_legislator_sessions|person_id,<br>session_year|LegiScan (state)|Session_year is part of key because legislators can change roles (i.e. move from the House to the Senate) over time|
+|p_roll_calls|roll_call_id|LegiScan (state)|Includes summary data on roll calls (e.g. how many voted yea vs. nay, etc.)|
+|p_legislator_votes|person_id,<br>roll_call_id|LegiScan (state)|Includes data on how the legislator voted (yea, nay, absent, no vote) and calculated partisan metrics (with their party, against their party, against both parties, etc.).|
+|p_leg_votes_partisan|person_id,<br>roll_call_id|LegiScan (state)|Legislator votes filtered for only yea and nay votes with additional partisan metrics.|
+|p_legislators|person_id|Summary info about legislators, which arbitrarily takes the first record for each.|
+|p_sessions|session_id|LegiScan (state)|Info about each legislative session, e.g. session name and session biennium.|
+|jct_bill_categories|bill_id, category|Manual data entry (for now)|Includes data on how the legislator voted (aye, nay, absent, no vote) and calculated partisan metrics (with their party, against their party, against both parties, etc.).|
+
 
 
 <br>
@@ -141,11 +143,13 @@ Clear and consistent naming conventions are essential to code maintainability. F
 
 |Prefix|Saved in Schema|Purpose|
 |---|---|---|
-|t_|raw|**T**ables of raw data kept intact in their original source format.|
-|calc_|---|Performs intermediate **calc**ulations (e.g., partisanship metrics), not stored in Postgres.|
-|p_|proc|**P**rocessed data, which has been cleaned and organized from original tables. This includes newly-introduced calculated fields.|
-|jct_|proc|**J**unction table, for example jct_bill_categories cross-references which categories (e.g. education, environment) each bill belongs to.|
 |app_|app|**App**lication data, which has been filtered and organized from processed data. It's intended to support specific web applications but could also support data visualizations.|
+|calc_|---|Performs intermediate **calc**ulations (e.g., partisanship metrics), not stored in Postgres.|
+|jct_|proc|**J**unction table, for example jct_bill_categories cross-references which categories (e.g. education, environment) each bill belongs to.|
+|p_|proc|**P**rocessed data, which has been cleaned and organized from original tables. This includes newly-introduced calculated fields.|
+|t_|raw|**T**ables of raw data kept intact in their original source format.|
+|user_|raw|**User**-entered data, e.g. on bill categorization or contested districts.|
+
 
 ## Running the ETL Script
 The following instructions describe the process of running the ETL scripts. The last step includes CSV export(s) to [data-app](data-app/), to facilitate app development for those who don't want to interact with our Postgres database.
@@ -172,11 +176,10 @@ To run these scripts, you'll need to know two passwords:
 | [02_parse_legiscan.R](scripts/02_parse_legiscan.R)|parses LegiScan JSON data |
 | [02z_load_raw.R](scripts/02z_load_raw.R)|saves parsed LegiScan data into Postgres as the raw layer|
   [02z_load_user_entry.R](scripts/02z_load_user_entry.R)|extracts and saves user-entered data into Postgres|
-| [03_transform.R](scripts/03_transform.R)|organizes parsed data and adds calculations, then prepares data for web apps |
-| [03a_categorize_bills.R](scripts/03a_categorize_bills.R)|placeholder for categorizing bills in a junction table |
-| [03z_load_processed.R](scripts/03z_load_processed.R)|writes organized data frames (processed layer) to Postgres |
-| [04_prep_app.R](scripts/04_prep_app.R)|prepares and filters data for web apps |
-| [04z_load_app.R](scripts/04z_load_app.R)|writes app data to Postgres, and exports data to CSV |
+| [03_transform.R](scripts/03_transform.R)|organizes and adds calculations to parsed and user-entered data|
+| [03z_load_processed.R](scripts/03z_load_processed.R)|writes organized data frames (processed layer) to Postgres|
+| [04_prep_app.R](scripts/04_prep_app.R)|prepares and filters data for web apps|
+| [04z_load_app.R](scripts/04z_load_app.R)|writes app data to Postgres, and exports data to CSV|
 
 <br><br>
 

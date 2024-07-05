@@ -15,6 +15,7 @@
 #################################
 # these libraries need to be installed prior to loading (see install-packages.R)
 
+library(tidyr) #for replace_na function used maybe once in 03_transform 
 library(tidyverse)  # A collection of R packages for data science
 library(tidytext)   # Text mining using tidy data principles
 library(legiscanrr) # Interface with the LegiScan API for accessing legislative data / devtools::install_github("fanghuiz/legiscanrr")
@@ -41,11 +42,10 @@ source("functions_database.R") # functions to write to Postgres database
 #ETL for raw layer
 source("02_parse_legiscan.R")
 source("02z_load_raw.R")
-source("02z_load_user_entry.R")"
+source("02z_load_user_entry.R")
 
 #ETL for processed layer
 source("03_transform.R")
-source("03a_categorize_bills.R")
 source("03z_load_processed.R")
 
 #ETL for app layer
