@@ -13,6 +13,9 @@ My focus here is adapting [apantazi's R-scripted data pipeline](https://github.c
 * avoid the need for deduplicating or cleaning data
 * have greater control over the presentation of data including sorting, hover text formatting, and filtering
 
+7/5/24 updates
+* integrates user-entered data on bill categorization and flagging contested electoral districts
+
 ## Overview of the database
 <img src="./docs/etl-schematic.png" width=100%>
 
@@ -20,7 +23,7 @@ Note that the database currently integrates data from only LegiScan, supporting 
 
 |Layer|Purpose|
 |---|---|
-|**Raw**|Raw data retrieved as JSON via API, then parsed into tables. Data elements are retained without modification.|
+|**Raw**|Raw data retrieved as JSON via API, then parsed into tables with data elements retained unmodified. This layer also includes some limited user-entered data.|
 |**Processed**|Cleaned and organized data including calculated fields. My intent is to also to align and integrate data between similar formats (e.g. LegiScan and LegiStar).|
 |**Application**|Data prepared for specific applications such as the legislator dashboard.|
 
@@ -32,7 +35,7 @@ ETL in the context of this legislative dashboard database means:
 <br>
 
 ## Raw Layer
-### Raw_LegiScan schema ###
+### raw-legiscan schema ###
 * [Data Dictionary for raw_legiscan](docs/data-dictionary-raw-legiscan.xlsx)
 
 This database acquires only a portion of LegiScan data (see LegiScan's [entity relationship diagram](https://api.legiscan.com/dl/Database_ERD.png) and [API user manual](https://legiscan.com/misc/LegiScan_API_User_Manual.pdf) for info on all available data). LegiScan's data is provided as three folders of JSON files- votes (which are really roll calls, with individual votes nested within), people (i.e. legislators), and bills (with lots of related info nested within).
@@ -45,6 +48,13 @@ The raw data layer stores data parsed from the original JSON files but otherwise
 |t_legislator_sessions|person_id,<br>session|Because legislators can change roles (i.e. move from the House to the Senate), one record is tracked per legislator per legislative session.|
 |t_roll_calls|roll_call_id|One record per roll call. Includes summary data on roll calls (e.g. how many voted yea vs. nay, etc.)|
 |t_legislator_votes|person_id,<br>roll_call_id|One record per legislator per roll call vote. Including data on how the legislator voted (yea, nay, absent, no vote).|
+
+### user-entry schema ###
+This schema includes a limited amount of user-entered data
+|Table|Primary Key|Description and Notes|
+|---|---|---|
+|[user_bill_categories](https://docs.google.com/spreadsheets/d/1ivNJS9F6TyBjTr_D3OmUKxN0YCEM9ugLbJRteID6Q24/edit?usp=drive_link)|bill_number,<br>session_biennium,<br>bill_category|User assignment of bills to categories. This may be automated, use AI, etc. in future iterations.|
+|[user_districts_challenged](https://docs.google.com/spreadsheets/d/1woSZBU5bOfTGFKtuaYg2xT8jCo314RVlSpMrSARWl1c/edit?usp=drive_link)|party,<br>role,<br>district_number,<br>year|Tracks electoral districts where incumbents have primary challengers.|
 
 ### Other raw data schema to be developed
 * raw_demographics - block-level census data from Census and American Community Survey
@@ -65,7 +75,7 @@ The processed layer tracks data transformed from LegiScan, but is intended to ev
 |p_leg_votes_partisan|person_id,<br>roll_call_id|LegiScan (state), LegiStar (cities)|Legislator votes filtered for only yea and nay votes with additional partisan metrics.|
 |p_legislators|person_id|Summary info about legislators, which arbitrarily takes the first record for each|
 |jct_bill_categories|bill_id, category|Manual data entry (for now)|Includes data on how the legislator voted (aye, nay, absent, no vote) and calculated partisan metrics (with their party, against their party, against both parties, etc.).|
-|(PROPOSED) p_districts|district_id,<br>year|Census demographics, electoral results, etc.|One record per legislative district (Senate, House, City Council, etc.)|
+|p_districts|district_id,<br>year|CURRENT- User-entered flag for contested electoral districts<br>PROPOSED- Census demographics, electoral results, etc.|One record per legislative district (Senate, House, City Council, etc.)|
 
 
 <br>
@@ -161,6 +171,7 @@ To run these scripts, you'll need to know two passwords:
 | [01_request_api_legiscan.R](scripts/01_request_api_legiscan.R)|requests data from LegiScan via API |
 | [02_parse_legiscan.R](scripts/02_parse_legiscan.R)|parses LegiScan JSON data |
 | [02z_load_raw.R](scripts/02z_load_raw.R)|saves parsed LegiScan data into Postgres as the raw layer|
+  [02z_load_user_entry.R](scripts/02z_load_user_entry.R)|extracts and saves user-entered data into Postgres|
 | [03_transform.R](scripts/03_transform.R)|organizes parsed data and adds calculations, then prepares data for web apps |
 | [03a_categorize_bills.R](scripts/03a_categorize_bills.R)|placeholder for categorizing bills in a junction table |
 | [03z_load_processed.R](scripts/03z_load_processed.R)|writes organized data frames (processed layer) to Postgres |
@@ -175,11 +186,11 @@ Following are some data pipeline maintenance tasks:
 * Continue reconciling recordcounts and account for all disparities between tables
 * Continue cleaning up code by removing temp calculation variables and renaming calculation variables for clarity
 * Automate API requests via Github actions to keep legislative voting data up-to-date
-* Deploy Postgres database to Heroku (for testing), updated Shiny app to Shiny (for testing), and then both to Azure (for production)
+* Deploy Postgres database to Heroku (for testing), then Azure (for production)
 
 And some expansions to the data pipeline:
 * Incorporate district-level partisan leanings based on past election results
 * Incorporate LegiStar voting data for Jacksonville and align this with state data, so it can be visualized with existing web apps
 * Incorporate district-level census demographics
 
-Additionally, the data pipeline revision is facilitating development of the legislative dashboard (see [repo for my revised web app work-in-progress](https://github.com/reliablerascal/fl-legislation-app-postgres)). Some early updates include the addition of legislator sorting, filtering by bill topic, and summary stats in the legend.
+Additionally, the data pipeline revision is facilitating development of the legislative dashboard (see [repo for my revised web app work-in-progress](https://github.com/reliablerascal/fl-legislation-app-postgres)). Some early updates include the addition of legislator sorting, filtering by bill topic and contested districts, and summary stats in the legend.

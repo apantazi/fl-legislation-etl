@@ -37,7 +37,8 @@ list_tables <- c(
   "p_legislator_sessions",
   "p_legislator_votes",
   "p_legislators",
-  "p_roll_calls"
+  "p_roll_calls",
+  "lkp_sessions"
 )
 
 write_tables_in_list(con, schema_name, list_tables)

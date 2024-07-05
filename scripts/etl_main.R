@@ -41,6 +41,7 @@ source("functions_database.R") # functions to write to Postgres database
 #ETL for raw layer
 source("02_parse_legiscan.R")
 source("02z_load_raw.R")
+source("02z_load_user_entry.R")"
 
 #ETL for processed layer
 source("03_transform.R")

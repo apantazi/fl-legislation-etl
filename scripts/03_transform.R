@@ -17,6 +17,13 @@ p_bills <- t_bills %>%
     bill_url = url,
   )
 
+lkp_sessions <- p_bills %>%
+  select(session_id,session_name,session_string) %>%
+  distinct() %>%
+  mutate(
+    session_year = substr(session_name,1,4)
+  )
+
 p_roll_calls <- t_roll_calls %>%
   left_join(p_bills %>% select(bill_id, bill_title, bill_number, session_year, bill_url), by = "bill_id") %>%
   rename(
