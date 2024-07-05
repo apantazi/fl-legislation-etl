@@ -1,5 +1,5 @@
 # Florida Legislative Voting Database
-7/3/24
+7/5/24
 
  This repo develops an existing data pipeline supporting the ongoing development of the [Jacksonville Tributary's](https://jaxtrib.org/) legislative voting dashboard (see [prior version of demo app](https://shiny.jaxtrib.org/)). The purpose of the dashboard is to highlight voting patterns of Florida legislators, which can help answer questions about:
 * actual voting records of legislators as a tangible measure of their political leanings (compared to campaign rhetoric)
@@ -96,11 +96,11 @@ Data is prepared to facilitate non-Shiny app development, and includes three typ
 * app filter and sort data (party, chamber, district_number, session year, d_include, r_include). Bill_id is used for bill category filter.
 
 The two key metrics in this data are as follows:
-* **partisan_metric** describes each legislator vote by partisanship
-    * 0 = voted with their own party
-    * 1 = voted against both parties ("Independent")
-    * 2 = voted against their own party ("Maverick")
-* **mean_partisan_metric** describes the legislators' average partisan_metric across all their votes on contested bills, where lower numbers (0) indicate voting in lock-step with their party
+* **partisan_vote** describes each legislator vote by partisanship
+    * 0 = voted with their own party, against the opposing party
+    * 1 = voted against their own party, with the opposing party ("Maverick")
+    * 99 = voted against both parties ("Independent")
+* **mean_partisanship** describes the legislators' mean average partisan_vote across all their votes with partisan_vote as 0 or 1. Mean partisanship values closer to 0 indicate voting more in lock-step with their own party.
 
 See [Data Dictionary for app_voting_patterns](docs/data-dictionary-app-voting-patterns.csv).
 
@@ -108,21 +108,21 @@ See [Data Dictionary for app_voting_patterns](docs/data-dictionary-app-voting-pa
 Here's a sample use case for creating a data visualization based on existing tables in the Postgres database. The resulting data frame is exported from this pipeline as [data-app/viz_partisanship.csv](data-app/viz_partisan_senate_d.csv) and then charted in DataWrapper (I need to review this methodology with someone with a better stats background):
  ```
 viz_partisanship <- p_legislators %>%
-      select(legislator_name, party, role, district, n_votes, mean_partisan_metric) %>%
+      select(legislator_name, party, chamber, district_number, n_votes, mean_partisanship) %>%
   mutate(
-    sd_partisan_metric = p_legislator_votes %>%
-      filter(!is.na(partisan_metric), roll_call_date >= as.Date("2012-11-10")) %>%
+    sd_partisan_vote = p_legislator_votes %>%
+      filter(!is.na(partisan_vote), roll_call_date >= as.Date("2012-11-10")) %>%  # Combined filters
       group_by(legislator_name) %>%
-      summarize(sd_partisan_metric = sd(partisan_metric, na.rm = TRUE)) %>%
-      pull(sd_partisan_metric),
-    se_partisan_metric = sd_partisan_metric / sqrt(n_votes),
-    lower_bound = mean_partisan_metric - se_partisan_metric,
-    upper_bound = mean_partisan_metric + se_partisan_metric,
-    leg_label = paste0(legislator_name, " (", district,")")
+      summarize(sd_partisan_vote = sd(partisan_vote, na.rm = TRUE)) %>%
+      pull(sd_partisan_vote),
+    se_partisan_vote = sd_partisan_vote / sqrt(n_votes),
+    lower_bound = mean_partisanship - se_partisan_vote,
+    upper_bound = mean_partisanship + se_partisan_vote,
+    leg_label = paste0(legislator_name, " (", substr(chamber,1,1), "-", district_number,")")
   )
 
 viz_partisan_senate_d <- viz_partisanship %>%
-  filter(party == 'D', role == 'Sen')
+  filter(party == 'D', chamber == 'Senate')
  ```
 
 <img src="./docs/viz_partisan_dem_senate.png" width=600>
@@ -179,7 +179,7 @@ To run these scripts, you'll need to know two passwords:
 | [01_request_api_legiscan.R](scripts/01_request_api_legiscan.R)|requests data from LegiScan via API |
 | [02a_parse_legiscan.R](scripts/02a_parse_legiscan.R)|parses LegiScan JSON data|
 | [02b_read_csvs.R](scripts/02b_read_csvs.R)|reads csv files including user-entered data and exported Dave's Redistricting data|
-|  [02z_load_raw.R](scripts/02z_load_raw.R)|saves all acquired data into Postgres as the raw layer|
+| [02z_load_raw.R](scripts/02z_load_raw.R)|saves all acquired data into Postgres as the raw layer|
 | [03_transform.R](scripts/03_transform.R)|organizes and adds calculations to parsed and user-entered data|
 | [03z_load_processed.R](scripts/03z_load_processed.R)|writes organized data frames (processed layer) to Postgres|
 | [04_prep_app.R](scripts/04_prep_app.R)|prepares and filters data for web apps|
@@ -196,8 +196,6 @@ Following are some data pipeline maintenance tasks:
 * Deploy Postgres database to Heroku (for testing), then Azure (for production)
 
 And some expansions to the data pipeline:
-* Incorporate district-level partisan leanings based on past election results
 * Incorporate LegiStar voting data for Jacksonville and align this with state data, so it can be visualized with existing web apps
-* Incorporate district-level census demographics
 
 Additionally, the data pipeline revision is facilitating development of the legislative dashboard (see [repo for my revised web app work-in-progress](https://github.com/reliablerascal/fl-legislation-app-postgres)). Some early updates include the addition of legislator sorting, filtering by bill topic and contested districts, and summary stats in the legend.

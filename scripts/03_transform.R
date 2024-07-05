@@ -14,7 +14,7 @@ p_bills <- t_bills %>%
     bill_desc = description,
     bill_number = number,
     bill_title = title,
-    bill_url = url,
+    bill_url = url
   )
 
 p_sessions <- p_bills %>%
@@ -33,7 +33,8 @@ p_roll_calls <- t_roll_calls %>%
   left_join(p_bills %>% select(bill_id, bill_title, bill_number, session_year, bill_url), by = "bill_id") %>%
   rename(
     roll_call_date = date,
-    roll_call_desc = desc
+    roll_call_desc = desc,
+    roll_call_chamber = chamber
   ) %>%
   mutate(
     pct_of_total = yea/total,
@@ -44,7 +45,9 @@ p_roll_calls <- t_roll_calls %>%
   mutate(
     roll_call_id = as.character(roll_call_id),
     final_vote = ifelse(grepl("third", roll_call_desc, ignore.case = TRUE), "Y", "N")
-    )
+    ) %>%
+  select(-chamber_id)
+
 
 # remove all non-legislators
 p_legislator_sessions <- t_legislator_sessions %>%
@@ -60,15 +63,14 @@ p_legislator_sessions <- t_legislator_sessions %>%
 p_legislators <- p_legislator_sessions %>%
   group_by(legislator_name) %>%
   slice(1) %>%
-  ungroup()
-
-p_legislators <- p_legislators %>%
+  ungroup() %>%
   mutate(
     chamber = case_when(
     role == "Sen" ~ "Senate",
     role == "Rep" ~ "House",
     TRUE ~ role
-    ))
+    )) %>%
+  select(-role,-role_id,-party_id,-district, -committee_id, -committee_sponsor, -state_federal, -session)
 
     
 #convert roll call id to character (not sure why)
@@ -253,7 +255,10 @@ calc_rc_party_majority <- calc_votes_partisan %>% filter(party!=""& !is.na(party
 # note that these can be calculated for yea/nay votes only, so I'm creating a new temp dataframe
 # workaround 6/27/24 replaced session_name with session, twice in the first filter below
 # need to review with Andrew- which of these two partisan metrics to use? They're slightly different
-# partisan metric: 0 = with party, 1 = against both parties, 2 = against party 
+# partisan metric:
+# 0 = with party
+# 1 = against party
+# 99 = against both parties (exclude from weighted count of partisanship)
 calc_leg_votes_partisan <- calc_votes_partisan %>%
   left_join(calc_rc_party_majority, by = c("roll_call_id")) %>%
   filter(!is.na(party)&party!="" & !grepl("2010",session,ignore.case=TRUE)& !is.na(session)) %>% 
@@ -262,15 +267,20 @@ calc_leg_votes_partisan <- calc_votes_partisan %>%
          diff_both_parties = if_else(diff_party_vote_d == 1 & diff_party_vote_r == 1,1,0),
          diff_d_not_r=if_else(diff_party_vote_d==1 & diff_party_vote_r==0,1,0),
          diff_r_not_d=if_else(diff_party_vote_d==0&diff_party_vote_r==1,1,0),
-         partisan_metric_a = ifelse(party=="R",diff_r_not_d,ifelse(party=="D",diff_d_not_r,NA)),
-         partisan_metric_b = ifelse(vote_with_neither == 1, 1,ifelse(maverick_votes == 1, 2, 0))
+         #partisan_metric_a = ifelse(party=="R",diff_r_not_d,ifelse(party=="D",diff_d_not_r,NA)), #old defunct metric
+         #partisan_metric_b = ifelse(vote_with_neither == 1, 1,ifelse(maverick_votes == 1, 2, 0)),
+         partisan_vote = case_when(
+           vote_with_neither == 1 ~ 99,
+           maverick_votes == 1 ~ 1,
+           TRUE ~ 0
+         ),
+         partisan_vote_weight = ifelse(partisan_vote == 99, NA,partisan_vote)
   )
 
 calc_leg_votes_partisan <- calc_leg_votes_partisan %>%
   mutate(
-    partisan_metric = partisan_metric_b,
-    pct_voted_for = scales::percent(pct_of_total),
-    partisan_metric_desc = factor(partisan_metric,levels = c(0, 1, 2),labels = c("With Party", "Independent Vote", "Maverick Vote"))
+    pct_voted_for = scales::percent(pct_of_total), # converts to percent format
+    partisan_vote_desc = factor(partisan_vote,levels = c(0, 1, 99),labels = c("With Party", "Against Party", "Against Both Parties"))
 )
 
 
@@ -278,14 +288,9 @@ calc_leg_votes_partisan <- calc_leg_votes_partisan %>%
 #...and merge these new stats back in to p_legislator_votes
 p_legislator_votes <- p_legislator_votes %>%
   left_join(calc_leg_votes_partisan %>%
-              select(people_id,roll_call_id,diff_party_vote_d,diff_both_parties,diff_d_not_r,diff_r_not_d,partisan_metric,pct_voted_for),
+              select(people_id,roll_call_id,partisan_vote,pct_voted_for),
             by = c('people_id','roll_call_id')
   )
-
-
-# re-order data for better visualization (probably not be needed here since I do this in the app)
-#p_leg_votes_partisan$roll_call_id = with(p_leg_votes_partisan, reorder(roll_call_id, partisan_metric, sum))
-#p_leg_votes_partisan$legislator_name = with(p_leg_votes_partisan, reorder(legislator_name, partisan_metric, sum))
 
 #############################################
 #                                           #  
@@ -298,10 +303,10 @@ calc_leg_mean_partisan <- calc_leg_votes_partisan %>%
   group_by(legislator_name) %>%
   filter(roll_call_date >= as.Date("11/10/2012")) %>%
   summarize(
-    mean_partisan_metric=mean(partisan_metric, na.rm = TRUE),
-    n_votes = n()
-    ) %>%
-  arrange(mean_partisan_metric,legislator_name) #create the sort based on partisan metric
+    mean_partisanship=mean(partisan_vote_weight, na.rm = TRUE),
+    n_votes = sum(!is.na(partisan_vote_weight))
+    )
+  #arrange(mean_partisan_metric,legislator_name) #create the sort based on partisan metric
 
 # and fold in to p_legislators
 p_legislators <- p_legislators %>%
