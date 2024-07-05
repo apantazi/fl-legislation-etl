@@ -9,7 +9,7 @@
 My focus here is adapting [apantazi's R-scripted data pipeline](https://github.com/apantazi/legislator_dashboard/blob/main/pull-in-process-all-legiscan.R) into a Postgres database, while improving its maintainability and scalability. I'm improving data integrity and reliability by re-shaping nested lists (from API-acquired JSONs and R scripts) into relational database format and creating curated views of processed data. My intent is to make it easier for web app developers and data visualization specialists to:
 * adapt existing reporting tools to different jurisdictions besides the state of Florida- for example, Jacksonville via LegiStar data
 * create new visualizations using any programming language (not just R) and connecting via Postgres/SQL or loading CSV files
-* highlight contextual data (e.g. demographics and district electoral preferences) related to voting records
+* highlight contextual data (e.g. demographics and district electoral preferences) related to legislator voting records
 * avoid the need for deduplicating or cleaning data
 * have greater control over the presentation of data including sorting, hover text formatting, and filtering
 
@@ -54,8 +54,8 @@ The raw data layer stores data parsed from the original JSON files but otherwise
 State Congressional district data downloaded from [Dave's Redistricting](https://davesredistricting.org/). This includes American Community Survey (2020), Citizen Voting Age Population (2022), and metrics of partisan preference based on state governor and Presidential election results from 2016 to 2020.
 |Table|Primary Key|Description and Notes|
 |---|---|---|
-|t_districts_house|district_id|One record per house district (2022) from .|
-|t_districts_senate|district_id,<br>session|Because legislators can change roles (i.e. move from the House to the Senate), one record is tracked per legislator per legislative session.|
+|t_districts_house|district_id|One record per house district based on 2022 map.|
+|t_districts_senate|district_id|One record per senate district based on 2022 map.|
 
 
 ### user-entry schema ###
@@ -175,11 +175,11 @@ To run these scripts, you'll need to know two passwords:
 
  | script                   | description              |
 |--------------------------|--------------------------|
-| [functions_database.R](scripts/functions_database.R)|scripts to connect to Postgres, write tables, and test inputs || 
+| [functions_database.R](scripts/functions_database.R)|scripts to connect to Postgres, write tables, and test inputs | 
 | [01_request_api_legiscan.R](scripts/01_request_api_legiscan.R)|requests data from LegiScan via API |
-| [02_parse_legiscan.R](scripts/02_parse_legiscan.R)|parses LegiScan JSON data |
-| [02z_load_raw.R](scripts/02z_load_raw.R)|saves parsed LegiScan data into Postgres as the raw layer|
-  [02z_load_user_entry.R](scripts/02z_load_user_entry.R)|extracts and saves user-entered data into Postgres|
+| [02a_parse_legiscan.R](scripts/02a_parse_legiscan.R)|parses LegiScan JSON data|
+| [02b_read_csvs.R](scripts/02b_read_csvs.R)|reads csv files including user-entered data and exported Dave's Redistricting data|
+|  [02z_load_raw.R](scripts/02z_load_raw.R)|saves all acquired data into Postgres as the raw layer|
 | [03_transform.R](scripts/03_transform.R)|organizes and adds calculations to parsed and user-entered data|
 | [03z_load_processed.R](scripts/03z_load_processed.R)|writes organized data frames (processed layer) to Postgres|
 | [04_prep_app.R](scripts/04_prep_app.R)|prepares and filters data for web apps|
