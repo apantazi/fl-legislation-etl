@@ -25,14 +25,6 @@ calc_rc_to_bill <- app_data %>%
 
 calc_rc_to_bill$label_bill_year <- paste(calc_rc_to_bill$bill_number,"-",calc_rc_to_bill$year)
 
-#hmm, not sure these are needed, probably created b/c prior app had duplicate rows
-#app_data$roll_call_id <- factor(app_data$roll_call_id, levels = calc_rc_to_bill$roll_call_id)
-#app_data$legislator_name <- factor(app_data$legislator_name, levels = calc_leg_mean_partisan$legislator_name)
-
-# determine whether it's a final vote
-#app_data$final_vote <- "N"
-#app_data$final_vote[grepl("third",app_data$roll_call_desc,ignore.case=TRUE)] <- "Y"
-
 
 
 #################################
@@ -41,18 +33,23 @@ calc_rc_to_bill$label_bill_year <- paste(calc_rc_to_bill$bill_number,"-",calc_rc
 #                               #
 #################################
 # get subset of bills that had non-unanimous votes
+
 app_vote_patterns <- app_data %>%
   filter(pct_of_present != 0 & pct_of_present != 1) %>%
-  select(roll_call_id, legislator_name, partisan_metric, session_year, role, final_vote, party, bill_number, roll_call_desc, bill_title, roll_call_date, bill_desc, bill_url, pct_voted_for, vote_text, legislator_name, bill_id, district_number)
+  select(roll_call_id, legislator_name, partisan_metric, session_year, chamber, final_vote, party, bill_number, roll_call_desc, bill_title, roll_call_date, bill_desc, bill_url, pct_voted_for, vote_text, legislator_name, bill_id, district_number)
 
 app_vote_patterns <- app_vote_patterns %>%
   left_join(calc_leg_mean_partisan %>%
               select(legislator_name, mean_partisan_metric), by = "legislator_name") %>%
   mutate(
     is_include_d = ifelse(roll_call_id %in% calc_d_votes$roll_call_id, 1, 0),
-    is_include_r = ifelse(roll_call_id %in% calc_r_votes$roll_call_id, 1, 0)
+    is_include_r = ifelse(roll_call_id %in% calc_r_votes$roll_call_id, 1, 0),
   )
 
+app_vote_patterns <- app_vote_patterns %>%
+  left_join(p_districts %>%
+              select(district_number, chamber, is_incumbent_challenged), by = "district_number, chamber")
+  
 #################################
 #                               #  
 # create viz_partisanship       #

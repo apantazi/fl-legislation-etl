@@ -3,7 +3,7 @@
 # ETL_MAIN.R                    #
 #                               #
 #################################
-# 6/11/24
+# JUNE and JULY 2024
 # This script transforms data that's already been requested or downloaded from LegiScan
 # and stored in the folder fl-regular-json (eventually will be in Postgres db)
 # remove comment on source("01_request_api_legiscan.R") below to renew API requests, but be wary of API limits
@@ -40,9 +40,9 @@ source("functions_database.R") # functions to write to Postgres database
 #source("01_request_api_legiscan.R") #request LegiScan data from API 
 
 #ETL for raw layer
-source("02_parse_legiscan.R")
+source("02a_parse_legiscan.R")
+source("02b_read_csvs.R")
 source("02z_load_raw.R")
-source("02z_load_user_entry.R")
 
 #ETL for processed layer
 source("03_transform.R")

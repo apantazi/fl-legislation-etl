@@ -62,6 +62,15 @@ p_legislators <- p_legislator_sessions %>%
   slice(1) %>%
   ungroup()
 
+p_legislators <- p_legislators %>%
+  mutate(
+    chamber = case_when(
+    role == "Sen" ~ "Senate",
+    role == "Rep" ~ "House",
+    TRUE ~ role
+    ))
+
+    
 #convert roll call id to character (not sure why)
 p_legislator_votes <- t_legislator_votes %>%
   mutate(roll_call_id = as.character(roll_call_id))  %>%
@@ -73,22 +82,19 @@ jct_bill_categories <- user_bill_categories %>%
   inner_join(p_bills %>% select(bill_number,session_id,bill_id), by=c('bill_number','session_id'))
 
 user_incumbents_challenged <- user_incumbents_challenged %>%
-  mutate(is_incumbent_challenged = TRUE)
+  mutate(is_incumbent_primaried = TRUE)
 
-p_districts <- p_legislators %>%
-  select(role,district_number,party) %>%
-  rename(chamber=role) %>%
-  mutate(
-    chamber = case_when(
-    chamber == "Sen" ~ "Senate",
-    chamber == "Rep" ~ "House",
-    TRUE ~ chamber
-  ),
-  year = 2024) %>%
-  arrange(chamber,district_number) %>%
+t_districts_house$chamber= 'House'
+t_districts_senate$chamber= 'Senate'
+p_districts <- rbind(t_districts_house, t_districts_senate) %>%
+  select(chamber,ID,E_16_20_COMP_Total, E_16_20_COMP_Dem, E_16_20_COMP_Rep, V_22_CVAP_Total, V_22_CVAP_White, V_22_CVAP_Hispanic, V_22_CVAP_Black, V_22_CVAP_Asian, V_22_CVAP_Native, V_22_CVAP_Pacific, T_20_ACS_Total, T_20_ACS_White, T_20_ACS_Hispanic, T_20_ACS_Black, T_20_ACS_Asian, T_20_ACS_Native, T_20_ACS_Pacific
+) %>%
+  rename(district_number=ID) %>%
   left_join(user_incumbents_challenged %>%
-              select(chamber, district_number, is_incumbent_challenged), by = c('chamber','district_number')) %>%
-  replace_na(list(is_incumbent_challenged = FALSE))
+               select(chamber, district_number, is_incumbent_primaried), by = c('chamber','district_number')) %>%
+  replace_na(list(is_incumbent_primaried = FALSE))
+
+
 
 
 ######################################

@@ -14,6 +14,7 @@ My focus here is adapting [apantazi's R-scripted data pipeline](https://github.c
 * have greater control over the presentation of data including sorting, hover text formatting, and filtering
 
 7/5/24 updates
+* integrates Census and election results data
 * integrates user-entered data on bill categorization and flagging contested electoral districts
 
 ## Overview of the database
@@ -49,17 +50,20 @@ The raw data layer stores data parsed from the original JSON files but otherwise
 |t_roll_calls|roll_call_id|One record per roll call. Includes summary data on roll calls (e.g. how many voted yea vs. nay, etc.)|
 |t_legislator_votes|person_id,<br>roll_call_id|One record per legislator per roll call vote. Including data on how the legislator voted (yea, nay, absent, no vote).|
 
+### raw-daves schema ###
+State Congressional district data downloaded from [Dave's Redistricting](https://davesredistricting.org/). This includes American Community Survey (2020), Citizen Voting Age Population (2022), and metrics of partisan preference based on state governor and Presidential election results from 2016 to 2020.
+|Table|Primary Key|Description and Notes|
+|---|---|---|
+|t_districts_house|district_id|One record per house district (2022) from .|
+|t_districts_senate|district_id,<br>session|Because legislators can change roles (i.e. move from the House to the Senate), one record is tracked per legislator per legislative session.|
+
+
 ### user-entry schema ###
 This schema includes a limited amount of user-entered data as a prototype. This data generation should be automated whenever that's more efficient (e.g. by bill committee assignments/ AI text search, election race data).
 |Table|Primary Key|Description and Notes|
 |---|---|---|
 |[user_bill_categories](https://docs.google.com/spreadsheets/d/1ivNJS9F6TyBjTr_D3OmUKxN0YCEM9ugLbJRteID6Q24/edit?usp=drive_link)|bill_number,<br>session_biennium,<br>bill_category|User assignment of bills to categories. This may be automated, use AI, etc. in future iterations.|
 |[user_incumbents_challenged](https://docs.google.com/spreadsheets/d/1woSZBU5bOfTGFKtuaYg2xT8jCo314RVlSpMrSARWl1c/edit?usp=drive_link)|party,<br>role,<br>district_number,<br>year|Tracks electoral districts where incumbents have primary challengers.|
-
-### Other raw data schema to be developed
-* raw_demographics - block-level census data from Census and American Community Survey
-* raw_election_results - election results by district
-* raw_legistar - legislative voting data acquired from LegiStar API
 
 <br>
 
@@ -69,12 +73,12 @@ The processed layer tracks data transformed from LegiScan, but is intended to ev
 |Table|Primary Key|Origin Data Sources|Notes|
 |---|---|---|---|
 |p_bills|bill_id|LegiScan (state)|Cleans up and aligns bill data from LegiScan and LegiStar|
-|p_districts|district_id,<br>year|CURRENT- User-entered flag for contested electoral districts<br>PROPOSED- Census demographics, electoral results, etc.|One record per legislative district (Senate, House, City Council, etc.)|
+|p_districts|district_id,<br>year|Dave's Redistricting and user-entered data on incumbent primary challenge status |One record per legislative district (Senate, House, City Council, etc.)|
+|p_legislators|person_id||Summary info about legislators, which arbitrarily takes the first record for each.|
 |p_legislator_sessions|person_id,<br>session_year|LegiScan (state)|Session_year is part of key because legislators can change roles (i.e. move from the House to the Senate) over time|
-|p_roll_calls|roll_call_id|LegiScan (state)|Includes summary data on roll calls (e.g. how many voted yea vs. nay, etc.)|
 |p_legislator_votes|person_id,<br>roll_call_id|LegiScan (state)|Includes data on how the legislator voted (yea, nay, absent, no vote) and calculated partisan metrics (with their party, against their party, against both parties, etc.).|
 |p_leg_votes_partisan|person_id,<br>roll_call_id|LegiScan (state)|Legislator votes filtered for only yea and nay votes with additional partisan metrics.|
-|p_legislators|person_id|Summary info about legislators, which arbitrarily takes the first record for each.|
+|p_roll_calls|roll_call_id|LegiScan (state)|Includes summary data on roll calls (e.g. how many voted yea vs. nay, etc.)|
 |p_sessions|session_id|LegiScan (state)|Info about each legislative session, e.g. session name and session biennium.|
 |jct_bill_categories|bill_id, category|Manual data entry (for now)|Includes data on how the legislator voted (aye, nay, absent, no vote) and calculated partisan metrics (with their party, against their party, against both parties, etc.).|
 
