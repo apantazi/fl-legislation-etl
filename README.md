@@ -54,8 +54,8 @@ The raw data layer stores data parsed from the original JSON files but otherwise
 State Congressional district data downloaded from [Dave's Redistricting](https://davesredistricting.org/). This includes American Community Survey (2020), Citizen Voting Age Population (2022), and metrics of partisan preference based on state governor and Presidential election results from 2016 to 2020.
 |Table|Primary Key|Description and Notes|
 |---|---|---|
-|t_districts_house|district_id|One record per house district based on 2022 map.|
-|t_districts_senate|district_id|One record per senate district based on 2022 map.|
+|t_districts_house|district_id|One record per house district based on 2022 district map.|
+|t_districts_senate|district_id|One record per senate district based on 2022 district map.|
 
 
 ### raw-user-entry schema ###
