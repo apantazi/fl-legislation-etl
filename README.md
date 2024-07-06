@@ -1,5 +1,5 @@
 # Florida Legislative Voting Database
-7/5/24
+7/6/24
 
  This repo develops an existing data pipeline supporting the ongoing development of the [Jacksonville Tributary's](https://jaxtrib.org/) legislative voting dashboard (see [prior version of demo app](https://shiny.jaxtrib.org/)). The purpose of the dashboard is to highlight voting patterns of Florida legislators, which can help answer questions about:
 * actual voting records of legislators as a tangible measure of their political leanings (compared to campaign rhetoric)
@@ -14,8 +14,8 @@ My focus here is adapting [apantazi's R-scripted data pipeline](https://github.c
 * have greater control over the presentation of data including sorting, hover text formatting, and filtering
 
 7/5/24 updates
-* integrates Census and election results data
-* integrates user-entered data on bill categorization and flagging contested electoral districts
+* integrates census and election results data from [Dave's Redistricting](https://davesredistricting.org/)
+* integrates user-entered data on bill categorization and flagging contested electoral districts via Google Sheets
 
 ## Overview of the database
 <img src="./docs/etl-schematic.png" width=100%>
@@ -58,12 +58,12 @@ State Congressional district data downloaded from [Dave's Redistricting](https:/
 |t_districts_senate|district_id|One record per senate district based on 2022 map.|
 
 
-### user-entry schema ###
+### raw-user-entry schema ###
 This schema includes a limited amount of user-entered data as a prototype. This data generation should be automated whenever that's more efficient (e.g. by bill committee assignments/ AI text search, election race data).
 |Table|Primary Key|Description and Notes|
 |---|---|---|
-|[user_bill_categories](https://docs.google.com/spreadsheets/d/1ivNJS9F6TyBjTr_D3OmUKxN0YCEM9ugLbJRteID6Q24/edit?usp=drive_link)|bill_number,<br>session_biennium,<br>bill_category|User assignment of bills to categories. This may be automated, use AI, etc. in future iterations.|
-|[user_incumbents_challenged](https://docs.google.com/spreadsheets/d/1woSZBU5bOfTGFKtuaYg2xT8jCo314RVlSpMrSARWl1c/edit?usp=drive_link)|party,<br>role,<br>district_number,<br>year|Tracks electoral districts where incumbents have primary challengers.|
+|[user_bill_categories](https://docs.google.com/spreadsheets/d/1ivNJS9F6TyBjTr_D3OmUKxN0YCEM9ugLbJRteID6Q24/edit?usp=drive_link)|bill_number,<br>session_biennium,<br>bill_category|User assignment of bills to categories, as a prototype for category filtering. Intent is to expand and automate this.|
+|[user_incumbents_challenged](https://docs.google.com/spreadsheets/d/1woSZBU5bOfTGFKtuaYg2xT8jCo314RVlSpMrSARWl1c/edit?usp=drive_link)|party,<br>role,<br>district_number,<br>year|Tracks electoral districts where incumbents have primary challengers based on [Ballotpedia info](https://ballotpedia.org/Florida_House_of_Representatives_elections,_2024).|
 
 <br>
 
@@ -73,7 +73,7 @@ The processed layer tracks data transformed from LegiScan, but is intended to ev
 |Table|Primary Key|Origin Data Sources|Notes|
 |---|---|---|---|
 |p_bills|bill_id|LegiScan (state)|Cleans up and aligns bill data from LegiScan and LegiStar|
-|p_districts|district_id,<br>year|Dave's Redistricting and user-entered data on incumbent primary challenge status |One record per legislative district (Senate, House, City Council, etc.)|
+|p_districts|district_id,<br>year|Dave's Redistricting and user-entered data|One record per legislative district (Senate, House, City Council, etc.)|
 |p_legislators|person_id||Summary info about legislators, which arbitrarily takes the first record for each.|
 |p_legislator_sessions|person_id,<br>session_year|LegiScan (state)|Session_year is part of key because legislators can change roles (i.e. move from the House to the Senate) over time|
 |p_legislator_votes|person_id,<br>roll_call_id|LegiScan (state)|Includes data on how the legislator voted (yea, nay, absent, no vote) and calculated partisan metrics (with their party, against their party, against both parties, etc.).|

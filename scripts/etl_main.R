@@ -33,6 +33,8 @@ library(RPostgres)
 library(progress) # to show progress bar during database write operations
 library(dplyr) # allows excluding specific columns by name from sql commands (e.g. to debug heatmap_data)
 
+library(googlesheets4) # for reading a publicly shared Google sheet
+
 #set working directory to the location of current script
 setwd(script_dir <- dirname(rstudioapi::getActiveDocumentContext()$path))
 

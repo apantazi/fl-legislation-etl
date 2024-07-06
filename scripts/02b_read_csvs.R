@@ -1,23 +1,32 @@
-# LOAD_USER_ENTERED.R
-# 7/5/24 RR
-# this script uploads user-entered data, such as bill categorization and info on contested primary races
-# Consider updating this to load user-entered tables from Google Sheets
+# READ_CSVS.R
+# 7/6/24 RR
+# this script retrieves user-entered data and reads downloaded csvs
 
 ########################################
 #                                      #  
-# 1) read user-entered                 #
+# 1) read Google Sheets user-entered   #
 #                                      #
 ########################################
-# should update this to connect directly to Google Drive
-user_incumbents_challenged <- read.csv("../data-raw/user-entry/user_incumbents_challenged.csv")
-user_bill_categories <- read.csv("../data-raw/user-entry/user_bill_categories.csv")
+gs4_deauth() # de-authorize to connect to publicly shared sheets
+
+user_incumbents_challenged <- read_sheet("https://docs.google.com/spreadsheets/d/1woSZBU5bOfTGFKtuaYg2xT8jCo314RVlSpMrSARWl1c/edit?usp=drive_link")
+user_bill_categories <- read_sheet("https://docs.google.com/spreadsheets/d/1ivNJS9F6TyBjTr_D3OmUKxN0YCEM9ugLbJRteID6Q24/edit?usp=drive_link")
+
+#back-up connection method in case I need it
+#user_incumbents_challenged <- read.csv("../data-raw/user-entry/user_incumbents_challenged.csv")
+#user_bill_categories <- read.csv("../data-raw/user-entry/user_bill_categories.csv")
+
+
+
 
 
 
 ########################################
 #                                      #  
-# 1) read downloaded csvs              #
+# 2) read downloaded csvs              #
 #                                      #
 ########################################
+
+
 t_districts_house <- read.csv("../data-raw/daves/t_districts_house.csv")
 t_districts_senate <- read.csv("../data-raw/daves/t_districts_senate.csv")
