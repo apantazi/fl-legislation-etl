@@ -72,7 +72,7 @@ viz_partisanship <- p_legislators %>%
     se_partisan_vote = sd_partisan_vote / sqrt(n_votes_partisan),
     lower_bound = mean_partisanship - se_partisan_vote,
     upper_bound = mean_partisanship + se_partisan_vote,
-    leg_label = paste0(legislator_name, " (", substr(chamber,1,1), "-", district_number,")")
+    leg_label = paste0(legislator_name, " (", substr(party,1,1), "-", district_number,")")
   )
 
 viz_partisan_senate_d <- viz_partisanship %>%

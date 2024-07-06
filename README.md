@@ -110,14 +110,14 @@ See [Data Dictionary for app_voting_patterns](docs/data-dictionary-app-voting-pa
 Here's a sample use case for creating a data visualization based on existing tables in the Postgres database. The resulting data frame is exported from this pipeline as [data-app/viz_partisanship.csv](data-app/viz_partisan_senate_d.csv) and then charted in DataWrapper (I need to review this methodology with someone with a better stats background):
  ```
 viz_partisanship <- p_legislators %>%
-      select(legislator_name, party, chamber, district_number, n_votes, mean_partisanship) %>%
+      select(legislator_name, party, chamber, district_number, n_votes_partisan, mean_partisanship) %>%
   mutate(
     sd_partisan_vote = p_legislator_votes %>%
-      filter(!is.na(partisan_vote), roll_call_date >= as.Date("2012-11-10")) %>%  # Combined filters
+      filter(!is.na(partisan_vote_type), partisan_vote_type != 99, roll_call_date >= as.Date("2012-11-10")) %>%  # Combined filters
       group_by(legislator_name) %>%
-      summarize(sd_partisan_vote = sd(partisan_vote, na.rm = TRUE)) %>%
+      summarize(sd_partisan_vote = sd(partisan_vote_type, na.rm = TRUE)) %>%
       pull(sd_partisan_vote),
-    se_partisan_vote = sd_partisan_vote / sqrt(n_votes),
+    se_partisan_vote = sd_partisan_vote / sqrt(n_votes_partisan),
     lower_bound = mean_partisanship - se_partisan_vote,
     upper_bound = mean_partisanship + se_partisan_vote,
     leg_label = paste0(legislator_name, " (", substr(chamber,1,1), "-", district_number,")")
@@ -194,6 +194,7 @@ Following are some data pipeline maintenance tasks:
 * Add documentation for all calculated fields in p_* layer (see first and last sections of 03_transform)
 * Continue reconciling recordcounts and account for all disparities between tables/ calculation data frames
 * Improve data integrity by reviewing/updating data types
+* Include alternate partisanship metrics (including [nominate](https://en.wikipedia.org/wiki/NOMINATE_(scaling_method)))
 * Continue cleaning up code by removing unused temp fields and renaming calculation variables for clarity
 * Automate API requests via Github actions to keep legislative voting data up-to-date
 * Deploy Postgres database to Heroku (for testing), then Azure (for production)
