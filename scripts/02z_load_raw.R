@@ -34,7 +34,7 @@ write_tables_in_list(con, schema_name, list_tables)
 
 #####################
 #                   #  
-# save user-entered     #
+# save user-entered #
 #                   #
 #####################
 
@@ -48,11 +48,11 @@ list_tables <- c(
 
 write_tables_in_list(con, schema_name, list_tables)
 
-#####################
-#                   #  
+###############################
+#                             #  
 # save Daves District Data    #
-#                   #
-#####################
+#                             #
+###############################
 
 schema_name <- "raw_daves"
 dbExecute(con, paste0("CREATE SCHEMA IF NOT EXISTS ", schema_name))

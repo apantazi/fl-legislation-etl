@@ -18,15 +18,11 @@ user_bill_categories <- read_sheet("https://docs.google.com/spreadsheets/d/1ivNJ
 
 
 
-
-
-
 ########################################
 #                                      #  
 # 2) read downloaded csvs              #
 #                                      #
 ########################################
-
 
 t_districts_house <- read.csv("../data-raw/daves/t_districts_house.csv")
 t_districts_senate <- read.csv("../data-raw/daves/t_districts_senate.csv")

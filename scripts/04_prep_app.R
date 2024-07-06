@@ -3,16 +3,24 @@
 # 04_PREP_APP.R                 #
 #                               #
 #################################
-# first filter for legislator dashboard.
-# This includes some fields which are later removed from the app_vote_patterns view, but will be included in legislator activity app
-app_data <- calc_leg_votes_partisan %>%
+
+app_data <- p_legislator_votes %>%
+  filter(
+    !is.na(party) & party != "" & 
+      !grepl("2010", session, ignore.case = TRUE) & 
+      !is.na(session) & 
+      (vote_text == "Yea" | vote_text == "Nay") &
+      !is.na(partisan_vote_type)
+   )%>%
   left_join(p_bills %>% select('bill_id','bill_desc'), by='bill_id') %>%
-  left_join(p_legislators %>% select('people_id','district_number','chamber'))
+  left_join(p_legislators %>% select('people_id','district_number','chamber', 'last_name')) %>%
+  left_join(p_roll_calls %>% select('roll_call_id','D_pct_of_present','R_pct_of_present'))
+
 
 # filter for party-line (or against both parties) legislator-votes
 # partisan metric: 0 = with party, 1 = against both parties, 2 = against party 
-calc_d_partisan_votes <- app_data %>% filter(party=="D") %>% group_by(roll_call_id) %>% summarize(max=max(partisan_vote)) %>% filter(max>=1)
-calc_r_partisan_votes <- app_data %>% filter(party=="R") %>% group_by(roll_call_id) %>% summarize(max=max(partisan_vote)) %>% filter(max>=1)
+calc_d_partisan_votes <- app_data %>% filter(party=="D") %>% group_by(roll_call_id) %>% summarize(max=max(partisan_vote_type)) %>% filter(max>=1)
+calc_r_partisan_votes <- app_data %>% filter(party=="R") %>% group_by(roll_call_id) %>% summarize(max=max(partisan_vote_type)) %>% filter(max>=1)
 
 # filter for votes that had some intra-party dissension
 calc_d_votes <- app_data %>% filter(party=="D") %>% group_by(roll_call_id,vote_text) %>% summarize(n=n()) %>%  pivot_wider(names_from=vote_text,values_from=n,values_fill = 0) %>% mutate(y_pct = Yea/(Yea+Nay),n_pct = Nay/(Nay+Yea)) %>% filter(y_pct != 0 & y_pct != 1) %>% filter(as.character(roll_call_id) %in% as.character(calc_d_partisan_votes$roll_call_id))
@@ -29,14 +37,16 @@ calc_r_votes <- app_data %>% filter(party=="R") %>% group_by(roll_call_id,vote_t
 
 app_vote_patterns <- app_data %>%
   filter(pct_of_present != 0 & pct_of_present != 1) %>%
-  select(roll_call_id, legislator_name, chamber, partisan_vote, session_year, final_vote, party, bill_number, roll_call_desc, bill_title, roll_call_date, bill_desc, bill_url, pct_voted_for, vote_text, legislator_name, bill_id, district_number)
+  select(roll_call_id, legislator_name, last_name, chamber, partisan_vote_type, session_year, final_vote, party, bill_number, roll_call_desc, bill_title, roll_call_date, bill_desc, bill_url, pct_of_total, vote_text, legislator_name, bill_id, district_number, D_pct_of_present,R_pct_of_present)
 
 app_vote_patterns <- app_vote_patterns %>%
   left_join(calc_leg_mean_partisan %>%
               select(legislator_name, mean_partisanship), by = "legislator_name") %>%
   mutate(
-    is_include_d = ifelse(roll_call_id %in% calc_d_votes$roll_call_id, 1, 0),
-    is_include_r = ifelse(roll_call_id %in% calc_r_votes$roll_call_id, 1, 0),
+    # is_include_d = ifelse(roll_call_id %in% calc_d_votes$roll_call_id, 1, 0),
+    # is_include_r = ifelse(roll_call_id %in% calc_r_votes$roll_call_id, 1, 0),
+    is_include_d = roll_call_id %in% calc_d_votes$roll_call_id,
+    is_include_r = roll_call_id %in% calc_r_votes$roll_call_id
   )
 
 app_vote_patterns <- app_vote_patterns %>%
@@ -52,14 +62,14 @@ app_vote_patterns <- app_vote_patterns %>%
 # first iteration: intent is to emulate the visual, though "partisanship" metric isn't identical
 
 viz_partisanship <- p_legislators %>%
-      select(legislator_name, party, chamber, district_number, n_votes, mean_partisanship) %>%
+      select(legislator_name, party, chamber, district_number, n_votes_partisan, mean_partisanship) %>%
   mutate(
     sd_partisan_vote = p_legislator_votes %>%
-      filter(!is.na(partisan_vote), roll_call_date >= as.Date("2012-11-10")) %>%  # Combined filters
+      filter(!is.na(partisan_vote_type), partisan_vote_type != 99, roll_call_date >= as.Date("2012-11-10")) %>%  # Combined filters
       group_by(legislator_name) %>%
-      summarize(sd_partisan_vote = sd(partisan_vote, na.rm = TRUE)) %>%
+      summarize(sd_partisan_vote = sd(partisan_vote_type, na.rm = TRUE)) %>%
       pull(sd_partisan_vote),
-    se_partisan_vote = sd_partisan_vote / sqrt(n_votes),
+    se_partisan_vote = sd_partisan_vote / sqrt(n_votes_partisan),
     lower_bound = mean_partisanship - se_partisan_vote,
     upper_bound = mean_partisanship + se_partisan_vote,
     leg_label = paste0(legislator_name, " (", substr(chamber,1,1), "-", district_number,")")

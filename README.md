@@ -1,16 +1,16 @@
 # Florida Legislative Voting Database
 7/6/24
 
- This repo develops an existing data pipeline supporting the ongoing development of the [Jacksonville Tributary's](https://jaxtrib.org/) legislative voting dashboard (see [prior version of demo app](https://shiny.jaxtrib.org/)). The purpose of the dashboard is to highlight voting patterns of Florida legislators, which can help answer questions about:
+ This repo develops an existing data pipeline supporting the ongoing development of the Jacksonville Tributary's legislative voting dashboard (see [my web app development repo](https://github.com/reliablerascal/fl-legislation-app-postgres)). The purpose of the dashboard is to highlight voting patterns of Florida legislators, which can help answer questions about:
 * actual voting records of legislators as a tangible measure of their political leanings (compared to campaign rhetoric)
 * partisan/party-line voting
 * disparities between legislators and the demographics/political leanings of the districts they represent
 
-My focus here is adapting [apantazi's R-scripted data pipeline](https://github.com/apantazi/legislator_dashboard/blob/main/pull-in-process-all-legiscan.R) into a Postgres database, while improving its maintainability and scalability. I'm improving data integrity and reliability by re-shaping nested lists (from API-acquired JSONs and R scripts) into relational database format and creating curated views of processed data. My intent is to make it easier for web app developers and data visualization specialists to:
+My focus here is adapting [apantazi's R-scripted data pipeline](https://github.com/apantazi/legislator_dashboard/blob/main/pull-in-process-all-legiscan.R) into a Postgres database, integrating new sources of data, and improving its maintainability and scalability. I'm improving data integrity and reliability by re-shaping nested lists (from API-acquired JSONs and R scripts) into relational database format and creating curated views of processed data. My intent is to make it easier for web app developers and data visualization specialists to:
 * adapt existing reporting tools to different jurisdictions besides the state of Florida- for example, Jacksonville via LegiStar data
 * create new visualizations using any programming language (not just R) and connecting via Postgres/SQL or loading CSV files
 * highlight contextual data (e.g. demographics and district electoral preferences) related to legislator voting records
-* avoid the need for deduplicating or cleaning data
+* avoid the need for deduplicating or cleaning data as part of app design
 * have greater control over the presentation of data including sorting, hover text formatting, and filtering
 
 7/5/24 updates
@@ -91,16 +91,18 @@ The processed layer tracks data transformed from LegiScan, but is intended to ev
 This repo currently supports the legislative voting patterns tab of the Shiny app (see [prior version of demo app](https://shiny.jaxtrib.org/)). This dataset filters for roll calls where one or more party member strayed from the party line.
 
 Data is prepared to facilitate non-Shiny app development, and includes three types of fields:
-* plot data (x = legislator_name, y= roll_call_id, values = partisan metric)
-* context data (bill_id, bill_number, title, url, and description; roll call description and date, roll call vote and overall vote summary) currently rendered as a pop-up tooltip when hovering over individual legislator votes
-* app filter and sort data (party, chamber, district_number, session year, d_include, r_include). Bill_id is used for bill category filter.
+* plot data (axes = legislator_name/district_number, roll_call_id; values = partisan metric_type)
+* context data (for tooltips, etc.)
+  * bill info (bill_id, bill_number, title, url, and description)
+  * roll call info (description, date, party and overall vote summaries)
+* filtering and sorting data (party, chamber, district_number, session year, d_include, r_include, bill_id).
 
 The two key metrics in this data are as follows:
-* **partisan_vote** describes each legislator vote by partisanship
+* **partisan_vote_type** describes each legislator vote by partisanship
     * 0 = voted with their own party, against the opposing party
     * 1 = voted against their own party, with the opposing party ("Maverick")
     * 99 = voted against both parties ("Independent")
-* **mean_partisanship** describes the legislators' mean average partisan_vote across all their votes with partisan_vote as 0 or 1. Mean partisanship values closer to 0 indicate voting more in lock-step with their own party.
+* **mean_partisanship** describes the legislators' mean average partisan_vote across all their votes with partisan_vote as 0 or 1 (independent votes not counted). Mean partisanship values closer to 0 indicate voting more in lock-step with their own party.
 
 See [Data Dictionary for app_voting_patterns](docs/data-dictionary-app-voting-patterns.csv).
 
@@ -189,9 +191,10 @@ To run these scripts, you'll need to know two passwords:
 
 # Development workplan
 Following are some data pipeline maintenance tasks:
-* Add documentation for all calculated fields in p_* layer
-* Continue reconciling recordcounts and account for all disparities between tables
-* Continue cleaning up code by removing temp calculation variables and renaming calculation variables for clarity
+* Add documentation for all calculated fields in p_* layer (see first and last sections of 03_transform)
+* Continue reconciling recordcounts and account for all disparities between tables/ calculation data frames
+* Improve data integrity by reviewing/updating data types
+* Continue cleaning up code by removing unused temp fields and renaming calculation variables for clarity
 * Automate API requests via Github actions to keep legislative voting data up-to-date
 * Deploy Postgres database to Heroku (for testing), then Azure (for production)
 

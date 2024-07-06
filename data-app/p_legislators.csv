@@ -1,4 +1,4 @@
-"people_id","person_hash","state_id","party","legislator_name","first_name","middle_name","last_name","suffix","nickname","ftm_eid","votesmart_id","opensecrets_id","knowwho_pid","ballotpedia","bioguide_id","district_number","chamber","mean_partisanship","n_votes"
+"people_id","person_hash","state_id","party","legislator_name","first_name","middle_name","last_name","suffix","nickname","ftm_eid","votesmart_id","opensecrets_id","knowwho_pid","ballotpedia","bioguide_id","district_number","chamber","mean_partisanship","n_votes_partisan"
 23359,"174k0tvr",9,"R","Adam Anderson","Adam","","Anderson","","",55866434,209492,"",0,"http://ballotpedia.org/Adam_Anderson","",57,"House",0.00158102766798419,1265
 22261,"b6kfhnbd",9,"R","Adam Botana","Adam","","Botana","","",49845673,194550,"",740462,"http://ballotpedia.org/Adam_Botana","",80,"House",0.00165837479270315,1206
 21782,"87jh4enj",9,"R","Alejandro Rizo","Alejandro","","Rizo","Jr.","Alex",49845738,194462,"",740319,"http://ballotpedia.org/Alex_Rizo","",112,"House",0.000805152979066023,1242
