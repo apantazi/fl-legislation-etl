@@ -125,6 +125,9 @@ viz_partisanship <- p_legislators %>%
 
 viz_partisan_senate_d <- viz_partisanship %>%
   filter(party == 'D', chamber == 'Senate')
+
+viz_partisan_senate_r <- viz_partisanship %>%
+  filter(party == 'R', chamber == 'Senate')
  ```
 
 <img src="./docs/viz_partisan_dem_senate.png" width=600>
