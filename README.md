@@ -128,6 +128,7 @@ viz_partisan_senate_d <- viz_partisanship %>%
  ```
 
 <img src="./docs/viz_partisan_dem_senate.png" width=600>
+<img src="./docs/viz_partisan_repub_senate.png" width=600>
 
 ### Ad-Hoc Data Analysis
 All tables from the processed layer (except p_legislator_votes, which is currently skipped due to file size) and the application layer are exported to **[data-app](data-app/)**, enabling ad-hoc data visualizations or app creation.
