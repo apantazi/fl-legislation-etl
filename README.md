@@ -1,5 +1,5 @@
 # Florida Legislative Voting Database
-7/6/24
+7/8/24
 
  This repo develops an existing data pipeline supporting the ongoing development of the Jacksonville Tributary's legislative voting dashboard (see [my web app development repo](https://github.com/reliablerascal/fl-legislation-app-postgres)). The purpose of the dashboard is to highlight voting patterns of Florida legislators, which can help answer questions about:
 * actual voting records of legislators as a tangible measure of their political leanings (compared to campaign rhetoric)
@@ -12,10 +12,6 @@ My focus here is adapting [apantazi's R-scripted data pipeline](https://github.c
 * highlight contextual data (e.g. demographics and district electoral preferences) related to legislator voting records
 * avoid the need for deduplicating or cleaning data as part of app design
 * have greater control over the presentation of data including sorting, hover text formatting, and filtering
-
-7/5/24 updates
-* integrates census and election results data from [Dave's Redistricting](https://davesredistricting.org/)
-* integrates user-entered data on bill categorization and flagging contested electoral districts via Google Sheets
 
 ## Overview of the database
 <img src="./docs/etl-schematic.png" width=100%>
@@ -74,11 +70,11 @@ The processed layer tracks data transformed from LegiScan, but is intended to ev
 |---|---|---|---|
 |p_bills|bill_id|LegiScan (state)|Cleans up and aligns bill data from LegiScan and LegiStar|
 |p_districts|district_id,<br>year|Dave's Redistricting and user-entered data|One record per legislative district (Senate, House, City Council, etc.)|
-|p_legislators|person_id||Summary info about legislators, which arbitrarily takes the first record for each.|
+|p_legislators|person_id||Summary info about legislators, including <strong>mean_partisanship</strong>- a measure of partisan leaning based on voting patterns.|
 |p_legislator_sessions|person_id,<br>session_year|LegiScan (state)|Session_year is part of key because legislators can change roles (i.e. move from the House to the Senate) over time|
-|p_legislator_votes|person_id,<br>roll_call_id|LegiScan (state)|Includes data on how the legislator voted (yea, nay, absent, no vote) and calculated partisan metrics (with their party, against their party, against both parties, etc.).|
+|p_legislator_votes|person_id,<br>roll_call_id|LegiScan (state)|Includes data on how the legislator voted (yea, nay, absent, no vote) and calculated **partisan_vote_type** (with their party, against their party, against both parties, etc.).|
 |p_leg_votes_partisan|person_id,<br>roll_call_id|LegiScan (state)|Legislator votes filtered for only yea and nay votes with additional partisan metrics.|
-|p_roll_calls|roll_call_id|LegiScan (state)|Includes summary data on roll calls (e.g. how many voted yea vs. nay, etc.)|
+|p_roll_calls|roll_call_id|LegiScan (state)|Includes summary data on roll calls. See [p_roll_calls data dictionary](docs/data-dictionary-p_roll_calls.csv).|
 |p_sessions|session_id|LegiScan (state)|Info about each legislative session, e.g. session name and session biennium.|
 |jct_bill_categories|bill_id, category|Manual data entry (for now)|Includes data on how the legislator voted (aye, nay, absent, no vote) and calculated partisan metrics (with their party, against their party, against both parties, etc.).|
 
@@ -87,8 +83,8 @@ The processed layer tracks data transformed from LegiScan, but is intended to ev
 <br>
 
 ## App Layer
-### Voting Patterns App
-This repo currently supports the legislative voting patterns tab of the Shiny app (see [prior version of demo app](https://shiny.jaxtrib.org/)). This dataset filters for roll calls where one or more party member strayed from the party line.
+### App #1: Voting Patterns
+The app layer currently supports the [Voting Patterns Analysis web app (dev version)](https://mockingbird.shinyapps.io/fl-leg-app-postgres/), a tool for Florida political journalists and policy wonks. This dataset filters for roll calls where one or more party member strayed from the party line.
 
 Data is prepared to facilitate non-Shiny app development, and includes three types of fields:
 * plot data (axes = legislator_name/district_number, roll_call_id; values = partisan metric_type)
@@ -105,7 +101,10 @@ The two key metrics in this data are as follows:
 * **mean_partisanship** describes the legislators' mean average partisan_vote across all their votes with partisan_vote as 0 or 1 (independent votes not counted). Mean partisanship values closer to 0 indicate voting more in lock-step with their own party.
 
 See [Data Dictionary for app_voting_patterns](docs/data-dictionary-app-voting-patterns.csv).
-
+<br><br>
+### App #2: Representation Alignment (work in progress)
+Data already incorporated in this data pipeline is intended to support a second app which compares legislative partisanship with district political leanings and demographics. I intend to complete a basic prototype of this by mid-July. The audience for this app is prospective voters in [Florida's primary election](https://ballotpedia.org/Florida_elections,_2024#Offices_on_the_ballot) on August 20.
+<br><br>
 ### Partisanship Data Visualizations
 Here's a sample use case for creating a data visualization based on existing tables in the Postgres database. The resulting data frame is exported from this pipeline as [data-app/viz_partisanship.csv](data-app/viz_partisan_senate_d.csv) and then charted in DataWrapper (I need to review this methodology with someone with a better stats background):
  ```
