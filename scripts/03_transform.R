@@ -74,7 +74,7 @@ p_legislators <- p_legislator_sessions %>%
 #convert roll call id to character (not sure why)
 p_legislator_votes <- t_legislator_votes %>%
   mutate(roll_call_id = as.character(roll_call_id))  %>%
-  inner_join(p_legislator_sessions %>% select(people_id, session, party, legislator_name, ballotpedia, role), by = c("people_id", "session")) %>%
+  inner_join(p_legislator_sessions %>% select(people_id, session, party, legislator_name), by = c("people_id", "session")) %>%
   inner_join(p_roll_calls, by = c("roll_call_id", "session"))
 
 jct_bill_categories <- user_bill_categories %>%
@@ -86,15 +86,56 @@ user_incumbents_challenged <- user_incumbents_challenged %>%
 
 t_districts_house$chamber= 'House'
 t_districts_senate$chamber= 'Senate'
+
+# per Andrew 7/5/24, consider also T_20_ACS counts (I chose to focus only on CVAP for now)
 p_districts <- rbind(t_districts_house, t_districts_senate) %>%
-  select(chamber,ID,E_16_20_COMP_Total, E_16_20_COMP_Dem, E_16_20_COMP_Rep, V_22_CVAP_Total, V_22_CVAP_White, V_22_CVAP_Hispanic, V_22_CVAP_Black, V_22_CVAP_Asian, V_22_CVAP_Native, V_22_CVAP_Pacific, T_20_ACS_Total, T_20_ACS_White, T_20_ACS_Hispanic, T_20_ACS_Black, T_20_ACS_Asian, T_20_ACS_Native, T_20_ACS_Pacific
-) %>%
-  rename(district_number=ID) %>%
+  select(chamber,ID,E_16_20_COMP_Total, E_16_20_COMP_Dem, E_16_20_COMP_Rep, V_22_CVAP_Total, V_22_CVAP_White, V_22_CVAP_Hispanic, V_22_CVAP_Black, V_22_CVAP_Asian, V_22_CVAP_Native, V_22_CVAP_Pacific,
+  ) %>%
+  rename(
+    district_number=ID
+  )  %>%
   left_join(user_incumbents_challenged %>%
-               select(chamber, district_number, is_incumbent_primaried), by = c('chamber','district_number')) %>%
-  replace_na(list(is_incumbent_primaried = FALSE))
+              select(chamber, district_number, is_incumbent_primaried), by = c('chamber','district_number')) %>%
+  replace_na(list(is_incumbent_primaried = FALSE)) %>%
+  mutate(
+    pct_22CVAP_White= V_22_CVAP_White/V_22_CVAP_Total,
+    pct_22CVAP_Hispanic= V_22_CVAP_Hispanic/V_22_CVAP_Total,
+    pct_22CVAP_Black= V_22_CVAP_Black/V_22_CVAP_Total,
+    pct_22CVAP_Asian= V_22_CVAP_Asian/V_22_CVAP_Total,
+    pct_22CVAP_Pacific = V_22_CVAP_Pacific/V_22_CVAP_Total,
+    pct_E1620COMP_D = E_16_20_COMP_Dem/E_16_20_COMP_Total,
+    pct_E1620COMP_R = E_16_20_COMP_Rep/E_16_20_COMP_Total
+  ) %>%
+  select(-E_16_20_COMP_Total, -E_16_20_COMP_Dem, -E_16_20_COMP_Rep, -V_22_CVAP_Total, -V_22_CVAP_White, -V_22_CVAP_Hispanic, -V_22_CVAP_Black, -V_22_CVAP_Asian, -V_22_CVAP_Native, -V_22_CVAP_Pacific,
+  )
 
-
+p_state_summary <- rbind(t_districts_house, t_districts_senate) %>%
+  select(chamber,ID,E_16_20_COMP_Total, E_16_20_COMP_Dem, E_16_20_COMP_Rep, V_22_CVAP_Total, V_22_CVAP_White, V_22_CVAP_Hispanic, V_22_CVAP_Black, V_22_CVAP_Asian, V_22_CVAP_Native, V_22_CVAP_Pacific,
+  ) %>%
+  summarise(
+    sum_22CVAP_White = sum(V_22_CVAP_White, na.rm = TRUE),
+    sum_22CVAP_Hispanic = sum(V_22_CVAP_Hispanic, na.rm = TRUE),
+    sum_22CVAP_Black = sum(V_22_CVAP_Black, na.rm = TRUE),
+    sum_22CVAP_Asian = sum(V_22_CVAP_Asian, na.rm = TRUE),
+    sum_22CVAP_Pacific = sum(V_22_CVAP_Pacific, na.rm = TRUE),
+    sum_22CVAP_Total = sum(V_22_CVAP_Total, na.rm = TRUE),
+    sum_E1620COMP_Dem = sum(E_16_20_COMP_Dem, na.rm = TRUE),
+    sum_E1620COMP_Rep = sum(E_16_20_COMP_Rep, na.rm = TRUE),
+    sum_E1620COMP_Total = sum(E_16_20_COMP_Total, na.rm = TRUE)
+  ) %>%
+  mutate(
+    pct_22CVAP_White = sum_22CVAP_White / sum_22CVAP_Total,
+    pct_22CVAP_Hispanic = sum_22CVAP_Hispanic / sum_22CVAP_Total,
+    pct_22CVAP_Black = sum_22CVAP_Black / sum_22CVAP_Total,
+    pct_22CVAP_Asian = sum_22CVAP_Asian / sum_22CVAP_Total,
+    pct_22CVAP_Pacific = sum_22CVAP_Pacific / sum_22CVAP_Total,
+    pct_E1620COMP_D = sum_E1620COMP_Dem / sum_E1620COMP_Total,
+    pct_E1620COMP_R = sum_E1620COMP_Rep / sum_E1620COMP_Total
+  )
+  # ) %>%
+  # select(-E_16_20_COMP_Total, -E_16_20_COMP_Dem, -E_16_20_COMP_Rep, -V_22_CVAP_Total, -V_22_CVAP_White, -V_22_CVAP_Hispanic, -V_22_CVAP_Black, -V_22_CVAP_Asian, -V_22_CVAP_Native, -V_22_CVAP_Pacific,
+  # )
+  
 
 
 ######################################
@@ -287,12 +328,12 @@ calc_leg_votes_partisan <- calc_leg_votes_partisan %>%
 
 
 
-#############################################
-#                                           #  
-# calc legislator mean partisanship         #
-#                                           #
-#############################################
-# creates an overall partisanship metric for each legislator, filters for dates >= 11/10/12?
+####################################################
+#                                                  #  
+# calc mean partisanship for bills and legislators #
+#                                                  #
+####################################################
+# creates an overall partisanship metric for each legislator, filters for dates >= 11/10/12 (data has some issues prior to that, per Andy)
 # this is used later to sort the dataframe
 calc_leg_mean_partisan <- calc_leg_votes_partisan %>%
   group_by(legislator_name) %>%
@@ -301,6 +342,15 @@ calc_leg_mean_partisan <- calc_leg_votes_partisan %>%
     mean_partisanship=mean(partisan_vote_weight, na.rm = TRUE),
     n_votes_partisan = sum(!is.na(partisan_vote_weight))
     )
+
+# could prolly clean up code by incorporating this calculation elsewhere
+calc_roll_call_mean_partisan <- calc_leg_votes_partisan %>%
+  group_by(roll_call_id) %>%
+  filter(roll_call_date >= as.Date("11/10/2012")) %>%
+  summarize(
+    rc_mean_partisanship=mean(partisan_vote_weight, na.rm = TRUE),
+    rc_n_votes_partisan = sum(!is.na(partisan_vote_weight))
+  )
 #################################################
 #                                               #  
 # add calculated fields to processed dataframes #
@@ -321,7 +371,11 @@ p_legislator_votes <- p_legislator_votes %>%
 # roll call summaries, 6271
 p_roll_calls <- p_roll_calls %>%
   left_join(calc_rc_partisan %>%
-              select(R,D),
+              select(roll_call_id,R,D),
+            by = 'roll_call_id'
+  ) %>%
+  left_join(calc_roll_call_mean_partisan %>%
+              select(roll_call_id,rc_mean_partisanship,rc_n_votes_partisan),
             by = 'roll_call_id'
   ) %>%
   rename (

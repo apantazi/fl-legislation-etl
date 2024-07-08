@@ -4,6 +4,7 @@
 #                               #
 #################################
 
+# this data frame was originally created to support voting patterns and legislative activity apps
 app_data <- p_legislator_votes %>%
   filter(
     !is.na(party) & party != "" & 
@@ -13,7 +14,7 @@ app_data <- p_legislator_votes %>%
       !is.na(partisan_vote_type)
    )%>%
   left_join(p_bills %>% select('bill_id','bill_desc'), by='bill_id') %>%
-  left_join(p_legislators %>% select('people_id','district_number','chamber', 'last_name')) %>%
+  left_join(p_legislators %>% select('people_id','district_number','chamber', 'last_name', 'ballotpedia')) %>%
   left_join(p_roll_calls %>% select('roll_call_id','D_pct_of_present','R_pct_of_present'))
 
 
@@ -37,14 +38,14 @@ calc_r_votes <- app_data %>% filter(party=="R") %>% group_by(roll_call_id,vote_t
 
 app_vote_patterns <- app_data %>%
   filter(pct_of_present != 0 & pct_of_present != 1) %>%
-  select(roll_call_id, legislator_name, last_name, chamber, partisan_vote_type, session_year, final_vote, party, bill_number, roll_call_desc, bill_title, roll_call_date, bill_desc, bill_url, pct_of_total, vote_text, legislator_name, bill_id, district_number, D_pct_of_present,R_pct_of_present)
+  select(roll_call_id, legislator_name, last_name, chamber, partisan_vote_type, session_year, final_vote, party, bill_number, roll_call_desc, bill_title, roll_call_date, bill_desc, bill_url, pct_of_total, vote_text, legislator_name, bill_id, district_number, D_pct_of_present,R_pct_of_present, ballotpedia)
 
 app_vote_patterns <- app_vote_patterns %>%
-  left_join(calc_leg_mean_partisan %>%
+  left_join(p_legislators %>%
               select(legislator_name, mean_partisanship), by = "legislator_name") %>%
+  left_join(p_roll_calls %>%
+              select(roll_call_id, rc_mean_partisanship), by = "roll_call_id") %>%
   mutate(
-    # is_include_d = ifelse(roll_call_id %in% calc_d_votes$roll_call_id, 1, 0),
-    # is_include_r = ifelse(roll_call_id %in% calc_r_votes$roll_call_id, 1, 0),
     is_include_d = roll_call_id %in% calc_d_votes$roll_call_id,
     is_include_r = roll_call_id %in% calc_r_votes$roll_call_id
   )

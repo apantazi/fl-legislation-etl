@@ -69,13 +69,14 @@ The processed layer tracks data transformed from LegiScan, but is intended to ev
 |Table|Primary Key|Origin Data Sources|Notes|
 |---|---|---|---|
 |p_bills|bill_id|LegiScan (state)|Cleans up and aligns bill data from LegiScan and LegiStar|
-|p_districts|district_id,<br>year|Dave's Redistricting and user-entered data|One record per legislative district (Senate, House, City Council, etc.)|
+|p_districts|district_id,<br>year|Dave's Redistricting and user-entered data|One record per legislative district (Senate, House, City Council, etc.) with percent demographics of 2022 Citizen Age Voting Population and composite percent D vs. R vote for president and governor in 2016-2022|
 |p_legislators|person_id||Summary info about legislators, including <strong>mean_partisanship</strong>- a measure of partisan leaning based on voting patterns.|
 |p_legislator_sessions|person_id,<br>session_year|LegiScan (state)|Session_year is part of key because legislators can change roles (i.e. move from the House to the Senate) over time|
 |p_legislator_votes|person_id,<br>roll_call_id|LegiScan (state)|Includes data on how the legislator voted (yea, nay, absent, no vote) and calculated **partisan_vote_type** (with their party, against their party, against both parties, etc.).|
 |p_leg_votes_partisan|person_id,<br>roll_call_id|LegiScan (state)|Legislator votes filtered for only yea and nay votes with additional partisan metrics.|
 |p_roll_calls|roll_call_id|LegiScan (state)|Includes summary data on roll calls. See [p_roll_calls data dictionary](docs/data-dictionary-p_roll_calls.csv).|
 |p_sessions|session_id|LegiScan (state)|Info about each legislative session, e.g. session name and session biennium.|
+|p_state_summary|district_id|Dave's Redistricting|Summary of demographics and election results from p_districts.|
 |jct_bill_categories|bill_id, category|Manual data entry (for now)|Includes data on how the legislator voted (aye, nay, absent, no vote) and calculated partisan metrics (with their party, against their party, against both parties, etc.).|
 
 

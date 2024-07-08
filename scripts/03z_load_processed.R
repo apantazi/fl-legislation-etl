@@ -34,11 +34,13 @@ dbExecute(con, paste0("CREATE SCHEMA IF NOT EXISTS ", schema_name))
 list_tables <- c(
   "jct_bill_categories",
   "p_bills",
+  "p_districts",
   "p_legislator_sessions",
   "p_legislator_votes",
   "p_legislators",
   "p_roll_calls",
-  "p_sessions"
+  "p_sessions",
+  "p_state_summary"
 )
 
 write_tables_in_list(con, schema_name, list_tables)

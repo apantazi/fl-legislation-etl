@@ -22,7 +22,7 @@ setwd(script_dir <- dirname(rstudioapi::getActiveDocumentContext()$path))
 parse_bills <- function(bill_json_paths) {
   pb <- progress::progress_bar$new(
     format = "  parsing bill metadata and bill-votes [:bar] :percent in :elapsed.",
-    total = length(bill_json_paths), clear = FALSE, width = 60
+    total = length(bill_json_paths), clear = FALSE, width = 100
   )
   pb$tick(0)
   
@@ -78,7 +78,7 @@ extract_bill <- function(input_bill_path, pb) {
 parse_legislator_sessions <- function (people_json_paths) {
   pb <- progress::progress_bar$new(
     format = "  parsing legislator-sessions [:bar] :percent in :elapsed.",
-    total = length(people_json_paths), clear = FALSE, width = 60
+    total = length(people_json_paths), clear = FALSE, width = 100
     )
   pb$tick(0)
   
@@ -119,7 +119,7 @@ extract_people <- function(input_people_json_path, pb) {
 parse_roll_calls <- function (vote_json_paths) {
   pb <- progress::progress_bar$new(
     format = "  parsing vote jsons [:bar] :percent in :elapsed.",
-    total = length(vote_json_paths), clear = FALSE, width = 60
+    total = length(vote_json_paths), clear = FALSE, width = 100
   )
   pb$tick(0)
   
