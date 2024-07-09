@@ -101,7 +101,7 @@ app03_district_context <- p_legislators %>%
   )
 
 #rank senate partisanship
-calc_senate_ranks <- app03_district_context %>%
+calc_dist_senate_ranks <- app03_district_context %>%
   filter(
     chamber == "House"
   ) %>%
@@ -109,12 +109,10 @@ calc_senate_ranks <- app03_district_context %>%
   mutate(rank_partisan_dist_R = row_number()) %>%
   arrange(desc(DminusR)) %>%
   mutate(rank_partisan_dist_D = row_number()) %>%
-  arrange(desc(mean_partisanship)) %>%
-  mutate(rank_partisan_legislator = row_number()) %>%
-  select (district_number, chamber, rank_partisan_dist_R, rank_partisan_dist_D, rank_partisan_legislator)
+  select (district_number, chamber, rank_partisan_dist_R, rank_partisan_dist_D)
 
 #rank house partisanship
-calc_house_ranks <- app03_district_context %>%
+calc_dist_house_ranks <- app03_district_context %>%
   filter(
     chamber == "Senate"
   ) %>%
@@ -122,14 +120,32 @@ calc_house_ranks <- app03_district_context %>%
   mutate(rank_partisan_dist_R = row_number()) %>%
   arrange(desc(DminusR)) %>%
   mutate(rank_partisan_dist_D = row_number()) %>%
-  arrange(desc(mean_partisanship)) %>%
-  mutate(rank_partisan_legislator = row_number()) %>%
-  select (district_number, chamber, rank_partisan_dist_R, rank_partisan_dist_D, rank_partisan_legislator)  
-  
-calc_ranks <- rbind(calc_senate_ranks,calc_house_ranks)
+  select (district_number, chamber, rank_partisan_dist_R, rank_partisan_dist_D)  
+
+calc_dist_ranks <- rbind(calc_dist_senate_ranks,calc_dist_house_ranks)
+
+# calculate legislator ranks for each party and for each chamber
+calculate_leg_ranks <- function(data, chamber, party, rank_column) {
+  data %>%
+    filter(chamber == !!chamber, party == !!party) %>%
+    arrange(mean_partisanship) %>%
+    mutate(!!rank_column := row_number()) %>%
+    select(district_number, chamber, !!rank_column)
+}
+calc_leg_house_R_ranks <- calculate_leg_ranks(app03_district_context, "House", "R", "rank_partisan_leg_R")
+calc_leg_house_D_ranks <- calculate_leg_ranks(app03_district_context, "House", "D", "rank_partisan_leg_D")
+calc_leg_senate_R_ranks <- calculate_leg_ranks(app03_district_context, "Senate", "R", "rank_partisan_leg_R")
+calc_leg_senate_D_ranks <- calculate_leg_ranks(app03_district_context, "Senate", "D", "rank_partisan_leg_D")
+
+# Bind the House and Senate R ranks together
+calc_leg_R_ranks <- bind_rows(calc_leg_house_R_ranks, calc_leg_senate_R_ranks)
+calc_leg_D_ranks <- bind_rows(calc_leg_house_D_ranks, calc_leg_senate_D_ranks)
+calc_leg_ranks <- bind_rows(calc_leg_R_ranks, calc_leg_D_ranks)
+
 
 app03_district_context <- app03_district_context %>%
-  inner_join(calc_ranks, by = c('district_number','chamber'))
+  left_join(calc_dist_ranks, by = c('district_number','chamber')) %>%
+  left_join(calc_leg_ranks, by = c('district_number','chamber')) 
 
 app03_district_context_state <- p_state_summary %>%
   rename(
