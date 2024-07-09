@@ -32,8 +32,10 @@ dbExecute(con, paste0("CREATE SCHEMA IF NOT EXISTS ", schema_name))
 #tables currently in testing
 
 list_tables <- c(
-  "app_vote_patterns",
-  "app_data",
+  "app01_vote_patterns",
+  "app02_leg_activity",
+  "app03_district_context",
+  "app03_district_context_state",
   "viz_partisan_senate_d",
   "viz_partisan_senate_r"
 )
@@ -50,12 +52,10 @@ dbDisconnect(con)
 #############################################
 # export to CSV for those who don't want to deal with postgres
 list_export_df <- list(
-  app_vote_patterns = app_vote_patterns,
-  p_bills = p_bills,
-  p_legislator_sessions = p_legislator_sessions,
-  p_legislator_votes = p_legislator_votes,
-  p_legislators = p_legislators,
-  p_roll_calls = p_roll_calls,
+  app01_vote_patterns = app01_vote_patterns,
+  app02_leg_activity = app02_leg_activity,
+  app03_district_context = app03_district_context,
+  app03_district_context_state = app03_district_context_state,
   viz_partisanship = viz_partisanship,
   viz_partisan_senate_d = viz_partisan_senate_d,
   viz_partisan_senate_r = viz_partisan_senate_r

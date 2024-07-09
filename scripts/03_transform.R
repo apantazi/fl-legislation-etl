@@ -55,21 +55,29 @@ p_legislator_sessions <- t_legislator_sessions %>%
   ) %>%
   mutate(
     ballotpedia = paste0("http://ballotpedia.org/",ballotpedia),
-    district_number = as.integer(str_extract(district, "\\d+"))
-    )
+    district_number = as.integer(str_extract(district, "\\d+")),
+    chamber = case_when(
+      role == "Sen" ~ "Senate",
+      role == "Rep" ~ "House",
+      TRUE ~ role
+    ))
 
 p_legislators <- p_legislator_sessions %>%
   group_by(legislator_name) %>%
   slice(1) %>%
   ungroup() %>%
-  mutate(
-    chamber = case_when(
-    role == "Sen" ~ "Senate",
-    role == "Rep" ~ "House",
-    TRUE ~ role
-    )) %>%
   select(-role,-role_id,-party_id,-district, -committee_id, -committee_sponsor, -state_federal, -session)
 
+# flag for manually removal:
+# Hawkings (House 35) who resigned on 6/30/23, people_id = 21981
+# Fernandez-Barquin (House 118) who resigned on 6/16/23, people_id = 20023
+temp_legislators_terminated <- data.frame(
+  people_id = c(21981, 20023),
+  termination_date = as.Date(c("2023-06-30", "2023-06-16"))
+)
+
+p_legislators <- p_legislators %>%
+  left_join(temp_legislators_terminated, by="people_id")
     
 #convert roll call id to character (not sure why)
 p_legislator_votes <- t_legislator_votes %>%

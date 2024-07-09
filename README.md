@@ -69,7 +69,7 @@ The processed layer tracks data transformed from LegiScan, but is intended to ev
 |Table|Primary Key|Origin Data Sources|Notes|
 |---|---|---|---|
 |p_bills|bill_id|LegiScan (state)|Cleans up and aligns bill data from LegiScan and LegiStar|
-|p_districts|district_id,<br>year|Dave's Redistricting and user-entered data|One record per legislative district (Senate, House, City Council, etc.) with percent demographics of 2022 Citizen Age Voting Population and composite percent D vs. R vote for president and governor in 2016-2022|
+|p_districts|chamber,<br>district_number|Dave's Redistricting and user-entered data|One record per legislative district (Senate, House, City Council, etc.) with percent demographics of 2022 Citizen Age Voting Population and composite percent D vs. R vote for president and governor in 2016-2022|
 |p_legislators|person_id||Summary info about legislators, including <strong>mean_partisanship</strong>- a measure of partisan leaning based on voting patterns.|
 |p_legislator_sessions|person_id,<br>session_year|LegiScan (state)|Session_year is part of key because legislators can change roles (i.e. move from the House to the Senate) over time|
 |p_legislator_votes|person_id,<br>roll_call_id|LegiScan (state)|Includes data on how the legislator voted (yea, nay, absent, no vote) and calculated **partisan_vote_type** (with their party, against their party, against both parties, etc.).|
@@ -103,8 +103,17 @@ The two key metrics in this data are as follows:
 
 See [Data Dictionary for app_voting_patterns](docs/data-dictionary-app-voting-patterns.csv).
 <br><br>
-### App #2: Representation Alignment (work in progress)
-Data already incorporated in this data pipeline is intended to support a second app which compares legislative partisanship with district political leanings and demographics. I intend to complete a basic prototype of this by mid-July. The audience for this app is prospective voters in [Florida's primary election](https://ballotpedia.org/Florida_elections,_2024#Offices_on_the_ballot) on August 20.
+### App #3: Representation Alignment (work in progress)
+Data already incorporated in this data pipeline supports a new app (intended to be posted 7/9ish) which compares legislative partisanship with district political leanings and demographics. The audience for this app is prospective voters in [Florida's primary election](https://ballotpedia.org/Florida_elections,_2024#Offices_on_the_ballot) on August 20.
+
+Data supporting this app:
+* [data-app/app03_district_context.csv](data-app/app03_district_context.csv)
+* [data-app/app03_district_context_state.csv](data-app/app03_district_context_state.csv)
+
+<!---
+>See [Data Dictionary for app03_district_context](docs/data-dictionary-app03_district_context.csv) and [Data Dictionary for  app03_district_context_state](docs/data-dictionary-app03_district_context_state.csv).
+--->
+
 <br><br>
 ### Partisanship Data Visualizations
 Here's a sample use case for creating a data visualization based on existing tables in the Postgres database. The resulting data frame is exported from this pipeline as [data-app/viz_partisanship.csv](data-app/viz_partisan_senate_d.csv) and then charted in DataWrapper (I need to review this methodology with someone with a better stats background):
@@ -195,7 +204,9 @@ To run these scripts, you'll need to know two passwords:
 
 # Development workplan
 Following are some data pipeline maintenance tasks:
-* Add documentation for all calculated fields in p_* layer (see first and last sections of 03_transform)
+* Add data dictionary for app #3
+* Automate mechanism in p_legislators to flag legislators in who leave mid-term: Hawkins (House 35) and Fernandez-Barquin (House 118)- these are currently hard-coded
+* Improve documentation for all calculated fields in p_* layer (see first and last sections of 03_transform)
 * Continue reconciling recordcounts and account for all disparities between tables/ calculation data frames
 * Improve data integrity by reviewing/updating data types
 * Include alternate partisanship metrics (including [nominate](https://en.wikipedia.org/wiki/NOMINATE_(scaling_method)))

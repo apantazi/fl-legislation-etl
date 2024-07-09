@@ -10,4 +10,5 @@ fl-leg-etl.Rproj
 
 # remove files over 100 MB
 # data-app/p_legislator_votes.csv
+data-app/app02_leg_activity.csv
 data-raw/
