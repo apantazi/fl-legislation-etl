@@ -91,13 +91,14 @@ app03_district_context <- p_legislators %>%
     pct_asian = pct_22CVAP_Asian,
     pct_hispanic = pct_22CVAP_Hispanic,
     pct_pacific = pct_22CVAP_Pacific,
-    pct_black = pct_22CVAP_Black
+    pct_black = pct_22CVAP_Black,
+    pct_R = pct_E1620COMP_R,
+    pct_D = pct_E1620COMP_D
   ) %>%
   mutate (
-    RminusD = pct_E1620COMP_R - pct_E1620COMP_D,
-    DminusR = pct_E1620COMP_D - pct_E1620COMP_R 
-  ) %>%
-  select (-pct_E1620COMP_R,-pct_E1620COMP_D)
+    RminusD = pct_R - pct_D,
+    DminusR = pct_D - pct_R 
+  )
 
 #rank senate partisanship
 calc_senate_ranks <- app03_district_context %>%
