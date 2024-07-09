@@ -1,17 +1,19 @@
 # Florida Legislative Voting Database
 7/8/24
 
- This repo develops an existing data pipeline supporting the ongoing development of the Jacksonville Tributary's legislative voting dashboard (see [my web app development repo](https://github.com/reliablerascal/fl-legislation-app-postgres)). The purpose of the dashboard is to highlight voting patterns of Florida legislators, which can help answer questions about:
+ This repo develops an existing data pipeline supporting the ongoing development of the Jacksonville Tributary's legislative voting dashboard (see dev versions of [web app](https://mockingbird.shinyapps.io/fl-leg-app-postgres/) and [repo](https://github.com/reliablerascal/fl-legislation-app-postgres)). The purpose of the dashboard is to highlight voting patterns of Florida legislators, which can help answer questions about:
 * actual voting records of legislators as a tangible measure of their political leanings (compared to campaign rhetoric)
 * partisan/party-line voting
 * disparities between legislators and the demographics/political leanings of the districts they represent
 
-My focus here is adapting [apantazi's R-scripted data pipeline](https://github.com/apantazi/legislator_dashboard/blob/main/pull-in-process-all-legiscan.R) into a Postgres database, integrating new sources of data, and improving its maintainability and scalability. I'm improving data integrity and reliability by re-shaping nested lists (from API-acquired JSONs and R scripts) into relational database format and creating curated views of processed data. My intent is to make it easier for web app developers and data visualization specialists to:
+This work builds on apantazi's prior work (see [web app](https://shiny.jaxtrib.org/) and [repo](https://github.com/apantazi/legislator_dashboard/tree/main)) by managing data in a Postgres database, integrating new sources of data, and improving the app's maintainability and scalability. I'm improving data integrity and reliability by re-shaping nested lists (from API-acquired JSONs and R scripts) into relational database format and creating curated views of processed data. My intent is to make it easier for web app developers and data visualization specialists to:
 * adapt existing reporting tools to different jurisdictions besides the state of Florida- for example, Jacksonville via LegiStar data
 * create new visualizations using any programming language (not just R) and connecting via Postgres/SQL or loading CSV files
 * highlight contextual data (e.g. demographics and district electoral preferences) related to legislator voting records
 * avoid the need for deduplicating or cleaning data as part of app design
 * have greater control over the presentation of data including sorting, hover text formatting, and filtering
+
+Some early updates to the app include addition of sorting, filtering by bill topic, and a new tab comparing legislator voting records to their district's voting preferences and demographics.
 
 ## Overview of the database
 <img src="./docs/etl-schematic.png" width=100%>
@@ -216,5 +218,3 @@ Following are some data pipeline maintenance tasks:
 
 And some expansions to the data pipeline:
 * Incorporate LegiStar voting data for Jacksonville and align this with state data, so it can be visualized with existing web apps
-
-Additionally, the data pipeline revision is facilitating development of the legislative dashboard (see [repo for my revised web app work-in-progress](https://github.com/reliablerascal/fl-legislation-app-postgres)). Some early updates include the addition of legislator sorting, filtering by bill topic and contested districts, and summary stats in the legend.
