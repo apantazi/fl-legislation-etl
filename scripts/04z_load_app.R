@@ -36,6 +36,7 @@ list_tables <- c(
   "app02_leg_activity",
   "app03_district_context",
   "app03_district_context_state",
+  "viz_partisanship",
   "viz_partisan_senate_d",
   "viz_partisan_senate_r"
 )

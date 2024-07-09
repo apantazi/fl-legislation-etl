@@ -86,15 +86,6 @@ app03_district_context <- p_legislators %>%
     is.na(termination_date)
   ) %>%
   left_join(p_districts) %>%
-  rename(
-    pct_white = pct_22CVAP_White,
-    pct_asian = pct_22CVAP_Asian,
-    pct_hispanic = pct_22CVAP_Hispanic,
-    pct_pacific = pct_22CVAP_Pacific,
-    pct_black = pct_22CVAP_Black,
-    pct_R = pct_E1620COMP_R,
-    pct_D = pct_E1620COMP_D
-  ) %>%
   mutate (
     RminusD = pct_R - pct_D,
     DminusR = pct_D - pct_R 
@@ -147,16 +138,7 @@ app03_district_context <- app03_district_context %>%
   left_join(calc_dist_ranks, by = c('district_number','chamber')) %>%
   left_join(calc_leg_ranks, by = c('district_number','chamber')) 
 
-app03_district_context_state <- p_state_summary %>%
-  rename(
-    pct_white = pct_22CVAP_White,
-    pct_asian = pct_22CVAP_Asian,
-    pct_hispanic = pct_22CVAP_Hispanic,
-    pct_pacific = pct_22CVAP_Pacific,
-    pct_black = pct_22CVAP_Black
-  ) %>%
-  select (pct_white, pct_asian, pct_hispanic, pct_pacific, pct_black)
-  
+app03_district_context_state <- p_state_summary
 
 #################################
 #                               #  

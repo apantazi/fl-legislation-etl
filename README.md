@@ -108,7 +108,7 @@ The two key metrics in this data are as follows:
 See [Data Dictionary for app_voting_patterns](docs/data-dictionary-app-voting-patterns.csv).
 <br><br>
 ### App #3: Representation Alignment (work in progress)
-Data already incorporated in this data pipeline supports a new app (intended to be posted 7/9ish) which compares legislative partisanship with district political leanings and demographics. The audience for this app is prospective voters in [Florida's primary election](https://ballotpedia.org/Florida_elections,_2024#Offices_on_the_ballot) on August 20.
+Data already incorporated in this data pipeline supports a new app which compares legislative partisanship with district political leanings and demographics. The audience for this app is prospective voters in [Florida's primary election](https://ballotpedia.org/Florida_elections,_2024#Offices_on_the_ballot) on August 20.
 
 Data supporting this app:
 * [data-app/app03_district_context.csv](data-app/app03_district_context.csv)
@@ -209,14 +209,11 @@ To run these scripts, you'll need to know two passwords:
 
 # Development workplan
 Following are some data pipeline maintenance tasks:
-* Add data dictionary for app #3
-* Automate mechanism in p_legislators to flag legislators in who leave mid-term: Hawkins (House 35) and Fernandez-Barquin (House 118)- these are currently hard-coded
-* Improve documentation for all calculated fields in p_* layer (see first and last sections of 03_transform)
+* Improve documentation- data dictionary for app #3, all calculated fields in p_* layer (see first and last sections of 03_transform)
 * Continue reconciling recordcounts and account for all disparities between tables/ calculation data frames
 * Improve data integrity by reviewing/updating data types
 * Include alternate partisanship metrics (including [nominate](https://en.wikipedia.org/wiki/NOMINATE_(scaling_method)))
-* Continue cleaning up code by removing unused temp fields and renaming calculation variables for clarity
-* Automate API requests via Github actions to keep legislative voting data up-to-date
+* Automate API requests via Github actions to keep legislative voting data up-to-date during Fall legislative session
 * Deploy Postgres database to Heroku (for testing), then Azure (for production)
 
 And some expansions to the data pipeline:

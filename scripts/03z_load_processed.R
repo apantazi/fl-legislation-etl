@@ -38,7 +38,6 @@ list_tables <- c(
   "jct_bill_categories",
   "p_bills",
   "p_districts",
-  "p_legislator_sessions",
   "p_legislator_votes",
   "p_legislators",
   "p_roll_calls",

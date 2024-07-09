@@ -6,7 +6,7 @@
 
 ########################################
 #                                      #  
-# 1B) create initial processed frames  #
+# create initial processed frames      #
 #                                      #
 ########################################
 p_bills <- t_bills %>%
@@ -46,7 +46,11 @@ p_roll_calls <- t_roll_calls %>%
     ) %>%
   select(-chamber_id)
 
-
+##############################
+#                            #  
+# create history tables      #
+#                            #
+##############################
 # remove all non-legislators
 hist_leg_sessions <- t_legislator_sessions %>%
   filter (party =='D' | party =='R') %>%
@@ -61,23 +65,6 @@ hist_leg_sessions <- t_legislator_sessions %>%
       role == "Rep" ~ "House",
       TRUE ~ role
     ))
-
-p_legislators <- hist_leg_sessions %>%
-  group_by(legislator_name) %>%
-  slice(1) %>%
-  ungroup() %>%
-  select(-role,-role_id,-party_id,-district, -committee_id, -committee_sponsor, -state_federal, -session)
-
-# flag for manually removal:
-# Hawkings (House 35) who resigned on 6/30/23, people_id = 21981
-# Fernandez-Barquin (House 118) who resigned on 6/16/23, people_id = 20023
-temp_legislators_terminated <- data.frame(
-  people_id = c(21981, 20023),
-  termination_date = as.Date(c("2023-06-30", "2023-06-16"))
-)
-
-p_legislators <- p_legislators %>%
-  left_join(temp_legislators_terminated, by="people_id")
     
 #convert roll call id to character (not sure why)
 p_legislator_votes <- t_legislator_votes %>%
@@ -95,10 +82,41 @@ user_incumbents_challenged <- user_incumbents_challenged %>%
 t_districts_house$chamber= 'House'
 t_districts_senate$chamber= 'Senate'
 
-# per Andrew 7/5/24, consider also T_20_ACS counts (I chose to focus only on CVAP for now)
-p_districts <- rbind(t_districts_house, t_districts_senate) %>%
-  select(chamber,ID,E_16_20_COMP_Total, E_16_20_COMP_Dem, E_16_20_COMP_Rep, V_22_CVAP_Total, V_22_CVAP_White, V_22_CVAP_Hispanic, V_22_CVAP_Black, V_22_CVAP_Asian, V_22_CVAP_Native, V_22_CVAP_Pacific,
+# add 2022 CVAP demographics (citizen voting age population)
+calc_hist_district_demo_cvap <- rbind(t_districts_house, t_districts_senate) %>%
+  rename(
+    district_number=ID
+  )  %>%
+  mutate(
+    pct_white= V_22_CVAP_White/V_22_CVAP_Total,
+    pct_hispanic= V_22_CVAP_Hispanic/V_22_CVAP_Total,
+    pct_black= V_22_CVAP_Black/V_22_CVAP_Total,
+    pct_asian= V_22_CVAP_Asian/V_22_CVAP_Total,
+    pct_napi = V_22_CVAP_Pacific/V_22_CVAP_Total,
+    source_demo = 'CVAP',
+    year_demo = 2022
   ) %>%
+  select(chamber,district_number,pct_white, pct_hispanic, pct_black, pct_asian, pct_napi, source_demo, year_demo)
+
+# add 2022 ACS demographics (American Community Survey)
+calc_hist_district_demo_acs <- rbind(t_districts_house, t_districts_senate) %>%
+  rename(
+    district_number=ID
+  )  %>%
+  mutate(
+    pct_white= T_22_ACS_White/T_22_ACS_Total,
+    pct_hispanic= T_22_ACS_Hispanic/T_22_ACS_Total,
+    pct_black= T_22_ACS_Black/T_22_ACS_Total,
+    pct_asian= T_22_ACS_Asian/T_22_ACS_Total,
+    pct_napi = (T_22_ACS_Pacific+T_22_ACS_Native)/T_22_ACS_Total,
+    source_demo = 'ACS',
+    year_demo = 2022
+  ) %>%
+  select(chamber,district_number,pct_white, pct_hispanic, pct_black, pct_asian, pct_napi, source_demo, year_demo)
+
+hist_district_demo <- rbind(calc_hist_district_demo_acs,calc_hist_district_demo_cvap)
+
+hist_district_elections <- rbind(t_districts_house, t_districts_senate) %>%
   rename(
     district_number=ID
   )  %>%
@@ -106,16 +124,37 @@ p_districts <- rbind(t_districts_house, t_districts_senate) %>%
               select(chamber, district_number, is_incumbent_primaried), by = c('chamber','district_number')) %>%
   replace_na(list(is_incumbent_primaried = FALSE)) %>%
   mutate(
-    pct_22CVAP_White= V_22_CVAP_White/V_22_CVAP_Total,
-    pct_22CVAP_Hispanic= V_22_CVAP_Hispanic/V_22_CVAP_Total,
-    pct_22CVAP_Black= V_22_CVAP_Black/V_22_CVAP_Total,
-    pct_22CVAP_Asian= V_22_CVAP_Asian/V_22_CVAP_Total,
-    pct_22CVAP_Pacific = V_22_CVAP_Pacific/V_22_CVAP_Total,
-    pct_E1620COMP_D = E_16_20_COMP_Dem/E_16_20_COMP_Total,
-    pct_E1620COMP_R = E_16_20_COMP_Rep/E_16_20_COMP_Total
+    pct_D = E_16_20_COMP_Dem/E_16_20_COMP_Total,
+    pct_R = E_16_20_COMP_Rep/E_16_20_COMP_Total,
+    source_elec = 'Daves 2016-2020 composite'
   ) %>%
-  select(-E_16_20_COMP_Total, -E_16_20_COMP_Dem, -E_16_20_COMP_Rep, -V_22_CVAP_Total, -V_22_CVAP_White, -V_22_CVAP_Hispanic, -V_22_CVAP_Black, -V_22_CVAP_Asian, -V_22_CVAP_Native, -V_22_CVAP_Pacific,
-  )
+  select(chamber,district_number,pct_D,pct_R,source_elec,is_incumbent_primaried)
+
+################################################
+#                                              #  
+# roll up history tables and statewide summary #
+#                                              #
+################################################
+p_legislators <- hist_leg_sessions %>%
+  group_by(legislator_name) %>%
+  slice(1) %>%
+  ungroup() %>%
+  select(-role,-role_id,-party_id,-district, -committee_id, -committee_sponsor, -state_federal, -session)
+
+# flag for manual removal:
+# Hawkings (House 35) who resigned on 6/30/23, people_id = 21981
+# Fernandez-Barquin (House 118) who resigned on 6/16/23, people_id = 20023
+temp_legislators_terminated <- data.frame(
+  people_id = c(21981, 20023),
+  termination_date = as.Date(c("2023-06-30", "2023-06-16"))
+)
+
+p_legislators <- p_legislators %>%
+  left_join(temp_legislators_terminated, by="people_id")
+
+p_districts <- hist_district_demo %>%
+  filter(source_demo=='CVAP',year_demo==2022) %>%
+  inner_join(hist_district_elections, by=c('chamber','district_number'))
 
 p_state_summary <- rbind(t_districts_house, t_districts_senate) %>%
   select(chamber,ID,E_16_20_COMP_Total, E_16_20_COMP_Dem, E_16_20_COMP_Rep, V_22_CVAP_Total, V_22_CVAP_White, V_22_CVAP_Hispanic, V_22_CVAP_Black, V_22_CVAP_Asian, V_22_CVAP_Native, V_22_CVAP_Pacific,
@@ -132,17 +171,16 @@ p_state_summary <- rbind(t_districts_house, t_districts_senate) %>%
     sum_E1620COMP_Total = sum(E_16_20_COMP_Total, na.rm = TRUE)
   ) %>%
   mutate(
-    pct_22CVAP_White = sum_22CVAP_White / sum_22CVAP_Total,
-    pct_22CVAP_Hispanic = sum_22CVAP_Hispanic / sum_22CVAP_Total,
-    pct_22CVAP_Black = sum_22CVAP_Black / sum_22CVAP_Total,
-    pct_22CVAP_Asian = sum_22CVAP_Asian / sum_22CVAP_Total,
-    pct_22CVAP_Pacific = sum_22CVAP_Pacific / sum_22CVAP_Total,
-    pct_E1620COMP_D = sum_E1620COMP_Dem / sum_E1620COMP_Total,
-    pct_E1620COMP_R = sum_E1620COMP_Rep / sum_E1620COMP_Total
-  )
-  # ) %>%
-  # select(-E_16_20_COMP_Total, -E_16_20_COMP_Dem, -E_16_20_COMP_Rep, -V_22_CVAP_Total, -V_22_CVAP_White, -V_22_CVAP_Hispanic, -V_22_CVAP_Black, -V_22_CVAP_Asian, -V_22_CVAP_Native, -V_22_CVAP_Pacific,
-  # )
+    pct_white = sum_22CVAP_White / sum_22CVAP_Total,
+    pct_hispanic = sum_22CVAP_Hispanic / sum_22CVAP_Total,
+    pct_black = sum_22CVAP_Black / sum_22CVAP_Total,
+    pct_asian = sum_22CVAP_Asian / sum_22CVAP_Total,
+    pct_napi = sum_22CVAP_Pacific / sum_22CVAP_Total,
+    pct_D = sum_E1620COMP_Dem / sum_E1620COMP_Total,
+    pct_R = sum_E1620COMP_Rep / sum_E1620COMP_Total,
+    source_elec = "Daves 2016-2020 composite"
+  ) %>%
+  select(pct_white, pct_hispanic, pct_black, pct_asian, pct_napi)
   
 
 
