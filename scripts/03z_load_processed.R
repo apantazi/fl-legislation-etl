@@ -32,6 +32,9 @@ dbExecute(con, paste0("CREATE SCHEMA IF NOT EXISTS ", schema_name))
 #tables currently in testing
 
 list_tables <- c(
+  "hist_district_demo",
+  "hist_district_elections",
+  "hist_leg_sessions",
   "jct_bill_categories",
   "p_bills",
   "p_districts",

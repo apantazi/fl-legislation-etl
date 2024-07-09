@@ -1,12 +1,12 @@
 # Florida Legislative Voting Database
-7/8/24
+7/9/24
 
  This repo develops an existing data pipeline supporting the ongoing development of the Jacksonville Tributary's legislative voting dashboard (see dev versions of [web app](https://mockingbird.shinyapps.io/fl-leg-app-postgres/) and [repo](https://github.com/reliablerascal/fl-legislation-app-postgres)). The purpose of the dashboard is to highlight voting patterns of Florida legislators, which can help answer questions about:
 * actual voting records of legislators as a tangible measure of their political leanings (compared to campaign rhetoric)
 * partisan/party-line voting
 * disparities between legislators and the demographics/political leanings of the districts they represent
 
-This work builds on apantazi's prior work (see [web app](https://shiny.jaxtrib.org/) and [repo](https://github.com/apantazi/legislator_dashboard/tree/main)) by managing data in a Postgres database, integrating new sources of data, and improving the app's maintainability and scalability. I'm improving data integrity and reliability by re-shaping nested lists (from API-acquired JSONs and R scripts) into relational database format and creating curated views of processed data. My intent is to make it easier for web app developers and data visualization specialists to:
+This work builds on apantazi's prior work (see [web app](https://shiny.jaxtrib.org/) and [repo](https://github.com/apantazi/legislator_dashboard/tree/main)) by managing data in a Postgres database, integrating new sources of data, tracking historical changes in data, and improving the app's maintainability and scalability. I'm improving data integrity and reliability by re-shaping nested lists (from API-acquired JSONs and R scripts) into relational database format and creating curated views of processed data. My intent is to make it easier for web app developers and data visualization specialists to:
 * adapt existing reporting tools to different jurisdictions besides the state of Florida- for example, Jacksonville via LegiStar data
 * create new visualizations using any programming language (not just R) and connecting via Postgres/SQL or loading CSV files
 * highlight contextual data (e.g. demographics and district electoral preferences) related to legislator voting records
@@ -66,14 +66,16 @@ This schema includes a limited amount of user-entered data as a prototype. This 
 <br>
 
 ## Processed Layer
-The processed layer tracks data transformed from LegiScan, but is intended to eventually align data from multiple sources. Following is a list of tables in this layer. Note that "origin data sources" is intended to eventually integrate LegiScan (state) data with LegiStar (city) data.
+The processed layer tracks data transformed from LegiScan, census demographics, and election data. Following is a list of tables in this layer. Note that "origin data sources" is intended to eventually integrate LegiScan (state) data with LegiStar (city) data.
 
 |Table|Primary Key|Origin Data Sources|Notes|
 |---|---|---|---|
+|hist_district_demo|chamber,<br>district_number, source|Dave's Redistricting|One record per legislative district (Senate, House, etc.) per source (2022 Citizen Age Voting Population, 2020 American Community Survey, etc.) with demographic data|
+|hist_district_elections|chamber,<br>district_number, election|Dave's Redistricting and user-entered data|One record per legislative district (Senate, House, etc.) per election (in this case, composite D vs. R vote for president and governor in 2016-2022)|
+|hist_leg_sessions|person_id,<br>session_year|LegiScan (state)|Session_year is part of key because legislators can change roles (i.e. move from the House to the Senate) over time|
 |p_bills|bill_id|LegiScan (state)|Cleans up and aligns bill data from LegiScan and LegiStar|
-|p_districts|chamber,<br>district_number|Dave's Redistricting and user-entered data|One record per legislative district (Senate, House, City Council, etc.) with percent demographics of 2022 Citizen Age Voting Population and composite percent D vs. R vote for president and governor in 2016-2022|
-|p_legislators|person_id||Summary info about legislators, including <strong>mean_partisanship</strong>- a measure of partisan leaning based on voting patterns.|
-|p_legislator_sessions|person_id,<br>session_year|LegiScan (state)|Session_year is part of key because legislators can change roles (i.e. move from the House to the Senate) over time|
+|p_districts|chamber,<br>district_number|Dave's Redistricting and user-entered data|One record per legislative district (Senate, House, City Council, etc.) in this case taking 2020 CVAP and  |
+|p_legislators|district_id|Summary info about most current legislator for each district, based on hist_legislator_sessions.|
 |p_legislator_votes|person_id,<br>roll_call_id|LegiScan (state)|Includes data on how the legislator voted (yea, nay, absent, no vote) and calculated **partisan_vote_type** (with their party, against their party, against both parties, etc.).|
 |p_leg_votes_partisan|person_id,<br>roll_call_id|LegiScan (state)|Legislator votes filtered for only yea and nay votes with additional partisan metrics.|
 |p_roll_calls|roll_call_id|LegiScan (state)|Includes summary data on roll calls. See [p_roll_calls data dictionary](docs/data-dictionary-p_roll_calls.csv).|
@@ -166,8 +168,9 @@ Clear and consistent naming conventions are essential to code maintainability. F
 |---|---|---|
 |app_|app|**App**lication data, which has been filtered and organized from processed data. It's intended to support specific web applications but could also support data visualizations.|
 |calc_|---|Performs intermediate **calc**ulations (e.g., partisanship metrics), not stored in Postgres.|
+|hist_|proc|**P**rocessed data, cleaned and organized from original tables and adding newly-introduced calculated fields.|
 |jct_|proc|**J**unction table, for example jct_bill_categories cross-references which categories (e.g. education, environment) each bill belongs to.|
-|p_|proc|**P**rocessed data, which has been cleaned and organized from original tables. This includes newly-introduced calculated fields.|
+|p_|proc|**P**rocessed data, either directly processed or queried from the most recent record for each entity in the corresponding hist_* table.|
 |t_|raw|**T**ables of raw data kept intact in their original source format.|
 |user_|raw|**User**-entered data, e.g. on bill categorization or contested districts.|
 

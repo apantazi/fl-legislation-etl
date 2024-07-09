@@ -48,7 +48,7 @@ p_roll_calls <- t_roll_calls %>%
 
 
 # remove all non-legislators
-p_legislator_sessions <- t_legislator_sessions %>%
+hist_leg_sessions <- t_legislator_sessions %>%
   filter (party =='D' | party =='R') %>%
   rename(
     legislator_name = name
@@ -62,7 +62,7 @@ p_legislator_sessions <- t_legislator_sessions %>%
       TRUE ~ role
     ))
 
-p_legislators <- p_legislator_sessions %>%
+p_legislators <- hist_leg_sessions %>%
   group_by(legislator_name) %>%
   slice(1) %>%
   ungroup() %>%
@@ -82,7 +82,7 @@ p_legislators <- p_legislators %>%
 #convert roll call id to character (not sure why)
 p_legislator_votes <- t_legislator_votes %>%
   mutate(roll_call_id = as.character(roll_call_id))  %>%
-  inner_join(p_legislator_sessions %>% select(people_id, session, party, legislator_name), by = c("people_id", "session")) %>%
+  inner_join(hist_leg_sessions %>% select(people_id, session, party, legislator_name), by = c("people_id", "session")) %>%
   inner_join(p_roll_calls, by = c("roll_call_id", "session"))
 
 jct_bill_categories <- user_bill_categories %>%
