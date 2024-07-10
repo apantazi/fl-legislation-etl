@@ -1,12 +1,12 @@
 # Florida Legislative Voting Database
 7/9/24
 
- This repo develops an existing data pipeline supporting the ongoing development of the Jacksonville Tributary's legislative voting dashboard (see dev versions of [web app](https://mockingbird.shinyapps.io/fl-leg-app-postgres/) and [repo](https://github.com/reliablerascal/fl-legislation-app-postgres)). The purpose of the dashboard is to highlight voting patterns of Florida legislators, which can help answer questions about:
+ This repo develops an existing data pipeline supporting the ongoing development of the Jacksonville Tributary's legislative voting dashboard (see dev versions of **[web app](https://mockingbird.shinyapps.io/fl-leg-app-postgres/)** and [web app repo](https://github.com/reliablerascal/fl-legislation-app-postgres)). The purpose of the dashboard is to highlight voting patterns of Florida legislators, which can help answer questions about:
 * actual voting records of legislators as a tangible measure of their political leanings (compared to campaign rhetoric)
 * partisan/party-line voting
 * disparities between legislators and the demographics/political leanings of the districts they represent
 
-This work builds on apantazi's prior work (see [web app](https://shiny.jaxtrib.org/) and [repo](https://github.com/apantazi/legislator_dashboard/tree/main)) by managing data in a Postgres database, integrating new sources of data, tracking historical changes in data, and improving the app's maintainability and scalability. I'm improving data integrity and reliability by re-shaping nested lists (from API-acquired JSONs and R scripts) into relational database format and creating curated views of processed data. My intent is to make it easier for web app developers and data visualization specialists to:
+This work builds on apantazi's prior work (see [prior web app](https://shiny.jaxtrib.org/) and [prior repo](https://github.com/apantazi/legislator_dashboard/tree/main)) by managing data in a Postgres database, integrating new sources of data, tracking historical changes in data, and improving the app's maintainability and scalability. I'm improving data integrity and reliability by re-shaping nested lists (from API-acquired JSONs and R scripts) into relational database format and creating curated views of processed data. My intent is to make it easier for web app developers and data visualization specialists to:
 * create new visualizations using any programming language (not just R) and connecting via Postgres/SQL or loading CSV files
 * quickly adapt to data elements (e.g. district demographics) that change over time
 * highlight contextual data (e.g. demographics and district electoral preferences) related to legislator voting records
