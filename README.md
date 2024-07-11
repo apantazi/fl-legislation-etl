@@ -67,7 +67,7 @@ This schema includes a limited amount of user-entered data as a prototype. This 
 <br>
 
 ## Processed Layer
-The processed layer tracks data transformed from LegiScan, census demographics, and election data. Following is a list of tables in this layer. Note that "origin data sources" is intended to eventually integrate LegiScan (state) data with LegiStar (city) data.
+The processed layer tracks data transformed from LegiScan, census demographics, and election data. Following is a list of tables in this layer. Primary keys are enforced at this stage; the ETL script should throw an error (intended to be helpful) when attempting to store duplicate records in any given table. 
 
 |Table|Primary Key|Origin Data Sources|Notes|
 |---|---|---|---|
@@ -79,11 +79,10 @@ The processed layer tracks data transformed from LegiScan, census demographics, 
 |p_districts|chamber,<br>district_number|Dave's Redistricting and user-entered data|One record per legislative district (Senate, House, City Council, etc.) in this case taking 2020 CVAP and  |
 |p_legislators|people_id|Summary info about each legislator, based on hist_legislator_sessions.|
 |p_legislator_votes|person_id,<br>roll_call_id|LegiScan (state)|Includes data on how the legislator voted (yea, nay, absent, no vote) and calculated **partisan_vote_type** (with their party, against their party, against both parties, etc.).|
-|p_leg_votes_partisan|person_id,<br>roll_call_id|LegiScan (state)|Legislator votes filtered for only yea and nay votes with additional partisan metrics.|
 |p_roll_calls|roll_call_id|LegiScan (state)|Includes summary data on roll calls. See [p_roll_calls data dictionary](docs/data-dictionary-p_roll_calls.csv).|
 |p_sessions|session_id|LegiScan (state)|Info about each legislative session, e.g. session name and session biennium.|
 |p_state_summary|district_id|Dave's Redistricting|Summary of demographics and election results from p_districts.|
-|view_legislators_incumbent|people_id|p_legislators|p_legislators filtered for only incumbents (i.e. with no termination date).|
+|view_legislators_incumbent|chamber,<br>district_number|p_legislators|p_legislators filtered for only incumbents (i.e. with no termination date).|
 
 
 

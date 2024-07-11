@@ -45,7 +45,16 @@ list_tables <- c(
   "p_state_summary"
 )
 
-write_tables_in_list(con, schema_name, list_tables)
+primary_keys <- list(
+  p_bills = 'bill_id',
+  p_districts = c('chamber','district_number'),
+  p_legislator_votes = c('people_id','roll_call_id'),
+  p_legislators = 'people_id',
+  p_roll_calls = 'roll_call_id',
+  p_sessions = 'session_id'
+)
+
+write_tables_in_list(con, schema_name, list_tables, primary_keys)
 
 ##########################
 #                        #  

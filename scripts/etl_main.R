@@ -48,6 +48,7 @@ source("02z_load_raw.R")
 
 #ETL for processed layer
 source("03_transform.R")
+source("03y_qa_checks.R")
 source("03z_load_processed.R")
 
 #ETL for app layer

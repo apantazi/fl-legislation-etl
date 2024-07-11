@@ -81,8 +81,8 @@ table_exists <- function(con, schema_name, table_name) {
 
 
 verify_table <- function(con, schema_name, table_name) {
-  print("review first three records")
-  print(dbGetQuery(con, paste0("SELECT * FROM ", schema_name, ".", table_name, " LIMIT 3")))
+  print("review first record")
+  print(dbGetQuery(con, paste0("SELECT * FROM ", schema_name, ".", table_name, " LIMIT 1")))
   
   # display recordcount
   sql_recordcount <- paste0("SELECT COUNT(*) as num_rows FROM ", schema_name, ".", table_name)
@@ -90,10 +90,22 @@ verify_table <- function(con, schema_name, table_name) {
   n <- as.numeric(recordcount_table$num_rows)
   cat(n, "records in", paste0(schema_name, ".", table_name), "\n")
 }
-  
 
 
-write_tables_in_list <- function(con, schema_name, list_tables) {
+
+create_pk <- function(con, schema_name, table_name, primary_keys) {
+  pk_columns <- primary_keys[[table_name]]
+  if (!is.null(pk_columns)) {
+    pk_columns_str <- paste(pk_columns, collapse = ", ")
+    dbExecute(con, paste0("ALTER TABLE ", schema_name, ".", table_name, 
+                          " ADD PRIMARY KEY (", pk_columns_str, ");"))
+    message("Adding primary key(s) (", pk_columns_str, ") to table ", schema_name, ".", table_name)
+  }
+}
+
+
+
+write_tables_in_list <- function(con, schema_name, list_tables, primary_keys) {
   for (table_name in list_tables) {
     cat("\n","---------------------\n",toupper(table_name),"\n","---------------------\n")
     df <- get(table_name)
@@ -108,5 +120,6 @@ write_tables_in_list <- function(con, schema_name, list_tables) {
     message("Adding new table ", schema_name, ".", table_name)
     write_table(df, con, schema_name, table_name)
     verify_table(con, schema_name, table_name)
+    create_pk(con, schema_name, table_name, primary_keys)
   }
 }
