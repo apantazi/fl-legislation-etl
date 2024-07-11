@@ -20,11 +20,11 @@ repeat {
   }
 }
 
-#############################################
-#                                           #  
-# 2) write views to Postgres and test       #
-#                                           #
-#############################################
+##################################################
+#                                                #  
+# 2) write processed tables to Postgres and test #
+#                                                #
+##################################################
 # db schema for Andrew's Shiny app legislative dashboard currently at https://shiny.jaxtrib.org/.
 schema_name <- "proc"
 dbExecute(con, paste0("CREATE SCHEMA IF NOT EXISTS ", schema_name))
@@ -46,6 +46,20 @@ list_tables <- c(
 )
 
 write_tables_in_list(con, schema_name, list_tables)
+
+##########################
+#                        #  
+# 3) create useful views #
+#                        #
+##########################
+# hardcoded the first one, should automate this as a list if it gets complex
+
+dbExecute(con, "
+CREATE OR REPLACE VIEW proc.view_legislators_incumbent AS
+SELECT * FROM proc.p_legislators
+WHERE termination_date IS NULL;
+")
+view_legislators_incumbent <- dbGetQuery(con, "SELECT * FROM proc.view_legislators_incumbent;")
 
 # Close the connection
 dbDisconnect(con)

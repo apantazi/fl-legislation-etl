@@ -37,7 +37,7 @@ calc_d_votes <- app01_vote_patterns %>% filter(party=="D") %>% group_by(roll_cal
 calc_r_votes <- app01_vote_patterns %>% filter(party=="R") %>% group_by(roll_call_id,vote_text) %>% summarize(n=n()) %>%  pivot_wider(names_from=vote_text,values_from=n,values_fill = 0) %>% mutate(y_pct = Yea/(Yea+Nay),n_pct = Nay/(Nay+Yea)) %>% filter(y_pct != 0 & y_pct != 1) %>% filter(as.character(roll_call_id) %in% as.character(calc_r_partisan_votes$roll_call_id))
 
 app01_vote_patterns <- app01_vote_patterns %>%
-  left_join(p_legislators %>%
+  left_join(view_legislators_incumbent %>%
               select(legislator_name, mean_partisanship), by = "legislator_name") %>%
   left_join(p_roll_calls %>%
               select(roll_call_id, rc_mean_partisanship), by = "roll_call_id") %>%
@@ -57,7 +57,7 @@ app01_vote_patterns <- app01_vote_patterns %>%
 # 2)     app_leg_activity       #
 #                               #
 #################################
-
+# filter this to just include incumbent legislators
 # to confirm whether this should be identical with first section of app 1  
 app02_leg_activity <- p_legislator_votes %>%
   filter(
@@ -66,10 +66,22 @@ app02_leg_activity <- p_legislator_votes %>%
       !is.na(session) & 
       (vote_text == "Yea" | vote_text == "Nay") &
       !is.na(partisan_vote_type)
-  )%>%
-  left_join(p_bills %>% select('bill_id','bill_desc'), by='bill_id') %>%
-  left_join(p_legislators %>% select('people_id','district_number','chamber', 'last_name', 'ballotpedia')) %>%
-  left_join(p_roll_calls %>% select('roll_call_id','D_pct_of_present','R_pct_of_present'))
+  ) %>%
+  left_join(
+    p_bills %>%
+      select(bill_id, bill_desc), by = 'bill_id'
+  ) %>%
+  left_join(
+    view_legislators_incumbent %>%
+      select(people_id, district_number, chamber, last_name, ballotpedia), 
+    by = 'people_id'
+  ) %>%
+  left_join(
+    p_roll_calls %>%
+      select(roll_call_id, D_pct_of_present, R_pct_of_present),
+    by = 'roll_call_id'
+  )
+
 
 
 
@@ -80,11 +92,8 @@ app02_leg_activity <- p_legislator_votes %>%
 #                               #
 #################################
 
-app03_district_context <- p_legislators %>%
+app03_district_context <- view_legislators_incumbent %>%
   select (people_id,party,legislator_name,last_name,ballotpedia,district_number,chamber,termination_date,mean_partisanship,n_votes_partisan) %>%
-  filter(
-    is.na(termination_date)
-  ) %>%
   left_join(p_districts) %>%
   mutate (
     RminusD = pct_R - pct_D,

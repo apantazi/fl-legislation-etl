@@ -141,7 +141,7 @@ p_legislators <- hist_leg_sessions %>%
   ungroup() %>%
   select(-role,-role_id,-party_id,-district, -committee_id, -committee_sponsor, -state_federal, -session)
 
-# flag for manual removal:
+# manually terminated two legislators
 # Hawkings (House 35) who resigned on 6/30/23, people_id = 21981
 # Fernandez-Barquin (House 118) who resigned on 6/16/23, people_id = 20023
 temp_legislators_terminated <- data.frame(
@@ -152,32 +152,40 @@ temp_legislators_terminated <- data.frame(
 p_legislators <- p_legislators %>%
   left_join(temp_legislators_terminated, by="people_id")
 
+# create p_districts based on demographic data and legislators
 p_districts <- hist_district_demo %>%
   filter(source_demo=='CVAP',year_demo==2022) %>%
-  inner_join(hist_district_elections, by=c('chamber','district_number'))
+  inner_join(hist_district_elections, by=c('chamber','district_number')) %>%
+  inner_join(
+    p_legislators %>%
+      filter (is.na(termination_date)) %>%
+      select (people_id, chamber, district_number),
+    by = c('chamber','district_number')
+  ) %>%
+  rename(incumb_people_id = people_id)
 
 p_state_summary <- rbind(t_districts_house, t_districts_senate) %>%
   select(chamber,ID,E_16_20_COMP_Total, E_16_20_COMP_Dem, E_16_20_COMP_Rep, V_22_CVAP_Total, V_22_CVAP_White, V_22_CVAP_Hispanic, V_22_CVAP_Black, V_22_CVAP_Asian, V_22_CVAP_Native, V_22_CVAP_Pacific,
   ) %>%
   summarise(
-    sum_22CVAP_White = sum(V_22_CVAP_White, na.rm = TRUE),
-    sum_22CVAP_Hispanic = sum(V_22_CVAP_Hispanic, na.rm = TRUE),
-    sum_22CVAP_Black = sum(V_22_CVAP_Black, na.rm = TRUE),
-    sum_22CVAP_Asian = sum(V_22_CVAP_Asian, na.rm = TRUE),
-    sum_22CVAP_Pacific = sum(V_22_CVAP_Pacific, na.rm = TRUE),
-    sum_22CVAP_Total = sum(V_22_CVAP_Total, na.rm = TRUE),
-    sum_E1620COMP_Dem = sum(E_16_20_COMP_Dem, na.rm = TRUE),
-    sum_E1620COMP_Rep = sum(E_16_20_COMP_Rep, na.rm = TRUE),
-    sum_E1620COMP_Total = sum(E_16_20_COMP_Total, na.rm = TRUE)
+    sum_white = sum(V_22_CVAP_White, na.rm = TRUE),
+    sum_hispanic = sum(V_22_CVAP_Hispanic, na.rm = TRUE),
+    sum_black = sum(V_22_CVAP_Black, na.rm = TRUE),
+    sum_asian = sum(V_22_CVAP_Asian, na.rm = TRUE),
+    sum_napi = sum(V_22_CVAP_Pacific, na.rm = TRUE),
+    sum_total = sum(V_22_CVAP_Total, na.rm = TRUE),
+    sum_D = sum(E_16_20_COMP_Dem, na.rm = TRUE),
+    sum_R = sum(E_16_20_COMP_Rep, na.rm = TRUE),
+    sum_E_total = sum(E_16_20_COMP_Total, na.rm = TRUE)
   ) %>%
   mutate(
-    pct_white = sum_22CVAP_White / sum_22CVAP_Total,
-    pct_hispanic = sum_22CVAP_Hispanic / sum_22CVAP_Total,
-    pct_black = sum_22CVAP_Black / sum_22CVAP_Total,
-    pct_asian = sum_22CVAP_Asian / sum_22CVAP_Total,
-    pct_napi = sum_22CVAP_Pacific / sum_22CVAP_Total,
-    pct_D = sum_E1620COMP_Dem / sum_E1620COMP_Total,
-    pct_R = sum_E1620COMP_Rep / sum_E1620COMP_Total,
+    pct_white = sum_white / sum_total,
+    pct_hispanic = sum_hispanic / sum_total,
+    pct_black = sum_black / sum_total,
+    pct_asian = sum_asian / sum_total,
+    pct_napi = sum_napi / sum_total,
+    pct_D = sum_D / sum_E_total,
+    pct_R = sum_R / sum_E_total,
     source_elec = "Daves 2016-2020 composite"
   ) %>%
   select(pct_white, pct_hispanic, pct_black, pct_asian, pct_napi)

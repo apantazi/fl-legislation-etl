@@ -74,15 +74,17 @@ The processed layer tracks data transformed from LegiScan, census demographics, 
 |hist_district_demo|chamber,<br>district_number, source|Dave's Redistricting|One record per legislative district (Senate, House, etc.) per source (2022 Citizen Age Voting Population, 2020 American Community Survey, etc.) with demographic data|
 |hist_district_elections|chamber,<br>district_number, election|Dave's Redistricting and user-entered data|One record per legislative district (Senate, House, etc.) per election (in this case, composite D vs. R vote for president and governor in 2016-2022)|
 |hist_leg_sessions|person_id,<br>session_year|LegiScan (state)|Session_year is part of key because legislators can change roles (i.e. move from the House to the Senate) over time|
+|jct_bill_categories|bill_id, category|Manual data entry (for now)|Includes data on how the legislator voted (aye, nay, absent, no vote) and calculated partisan metrics (with their party, against their party, against both parties, etc.).|
 |p_bills|bill_id|LegiScan (state)|Cleans up and aligns bill data from LegiScan and LegiStar|
 |p_districts|chamber,<br>district_number|Dave's Redistricting and user-entered data|One record per legislative district (Senate, House, City Council, etc.) in this case taking 2020 CVAP and  |
-|p_legislators|district_id|Summary info about most current legislator for each district, based on hist_legislator_sessions.|
+|p_legislators|people_id|Summary info about each legislator, based on hist_legislator_sessions.|
 |p_legislator_votes|person_id,<br>roll_call_id|LegiScan (state)|Includes data on how the legislator voted (yea, nay, absent, no vote) and calculated **partisan_vote_type** (with their party, against their party, against both parties, etc.).|
 |p_leg_votes_partisan|person_id,<br>roll_call_id|LegiScan (state)|Legislator votes filtered for only yea and nay votes with additional partisan metrics.|
 |p_roll_calls|roll_call_id|LegiScan (state)|Includes summary data on roll calls. See [p_roll_calls data dictionary](docs/data-dictionary-p_roll_calls.csv).|
 |p_sessions|session_id|LegiScan (state)|Info about each legislative session, e.g. session name and session biennium.|
 |p_state_summary|district_id|Dave's Redistricting|Summary of demographics and election results from p_districts.|
-|jct_bill_categories|bill_id, category|Manual data entry (for now)|Includes data on how the legislator voted (aye, nay, absent, no vote) and calculated partisan metrics (with their party, against their party, against both parties, etc.).|
+|view_legislators_incumbent|people_id|p_legislators|p_legislators filtered for only incumbents (i.e. with no termination date).|
+
 
 
 
@@ -174,6 +176,7 @@ Clear and consistent naming conventions are essential to code maintainability. F
 |p_|proc|**P**rocessed data, either directly processed or queried from the most recent record for each entity in the corresponding hist_* table.|
 |t_|raw|**T**ables of raw data kept intact in their original source format.|
 |user_|raw|**User**-entered data, e.g. on bill categorization or contested districts.|
+|view_|proc|**View**, i.e. a query that organizes existing data in a useful way. For example, view_legislators_incumbents filters p_legislators for only active legislators.|
 
 
 ## Running the ETL Script

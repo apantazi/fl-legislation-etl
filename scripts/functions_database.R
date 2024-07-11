@@ -81,8 +81,7 @@ table_exists <- function(con, schema_name, table_name) {
 
 
 verify_table <- function(con, schema_name, table_name) {
-  #display first five records, but it prints the same thing for every table
-  print("first three records")
+  print("review first three records")
   print(dbGetQuery(con, paste0("SELECT * FROM ", schema_name, ".", table_name, " LIMIT 3")))
   
   # display recordcount
