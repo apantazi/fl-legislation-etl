@@ -35,7 +35,7 @@ ETL in the context of this legislative dashboard database means:
 <br>
 
 ### Naming Conventions
-Clear and consistent naming conventions are essential to code maintainability. Following are naming conventions used within this data pipeline.
+Clear and consistent naming conventions are essential to code maintainability. Following are naming conventions used within R data frames and Postgres database tables.
 
 |Schema|Prefix|Purpose|
 |---|---|---|
@@ -44,7 +44,7 @@ Clear and consistent naming conventions are essential to code maintainability. F
 |proc|hist_|**P**rocessed data, cleaned and organized from original tables and adding newly-introduced calculated fields.|
 |proc|jct_|**J**unction table, for example jct_bill_categories cross-references which categories (e.g. education, environment) each bill belongs to.|
 |proc|p_|**P**rocessed data, either directly processed or queried from the most recent record for each entity in the corresponding hist_* table.|
-|proc,<br>app|calc_|Performs intermediate **calc**ulations (e.g., partisanship metrics), not stored in Postgres.|
+|proc,<br>app|calc_|Data frames including intermediate **calc**ulations (e.g., partisanship metrics), which are not stored in Postgres.|
 |app|qry_|**Query**, i.e. a foundational view of data supporting all apps. For example, qry_legislators_incumbents filters p_legislators for only active legislators.|
 |app|app_|**App**lication data, which has been filtered and organized from processed data. It's intended to support specific web applications but could also support data visualizations.|
 
@@ -110,12 +110,12 @@ App settings determine how partisanship and demographics are measured. These are
 * **Party loyalty metric**. For/against metric weighting is currently selected- (0 for with party against opposing party, 1 for against party and with same party). Other partisan metric options may include for/against/indy and [nominate](https://en.wikipedia.org/wiki/NOMINATE_(scaling_method)). 
 
 ### Queries Supporting All Apps
-Based on these settings, the app layer includes the following foundational queries supporting all apps. Soft primary keys are not (yet) strictly enforced.
-|Query|Soft Primary Key|Origin Data Sources|Notes|
+Based on these settings, the app layer includes the following foundational queries supporting all apps. Primary keys are again strictly enforced.
+|Query|Primary Key|Origin Data Sources|Notes|
 |---|---|---|---|
 |qry_districts|chamber,<br>district_number|hist_district_demo,<br>hist_district_elections|District info including demographics and partisan lean.
-|qry_leg_votes|people_id,<br>roll_call_id|p_legislator_votes with weighted party loyalty counts dependent upon **partisan_vote_type** and **party loyalty metric** setting|
-|qry_legislators|chamber,<br>district_number|p_legislators|p_legislators filtered for only incumbents (i.e. those with no termination date).|
+|qry_leg_votes|people_id,<br>roll_call_id|p_legislator_votes|Adds weighted party loyalty counts dependent upon **partisan_vote_type** and **party loyalty metric** setting|
+|qry_legislators|chamber,<br>district_number|p_legislators|Filtered to include only incumbents (i.e. those with no termination date).|
 |qry_state_summary|---|Dave's Redistricting|Summary of demographics and election results from p_districts.|
 
 ### App #1: Voting Patterns
@@ -133,7 +133,7 @@ The two key metrics in this data are as follows:
     * 0 = voted with their own party, against the opposing party
     * 1 = voted against their own party, with the opposing party ("Maverick")
     * 99 = voted against both parties ("Independent")
-* **mean_partisanship** describes the legislators' mean average partisan_vote across all their votes with partisan_vote as 0 or 1 (independent votes not counted). Mean partisanship values closer to 0 indicate voting more in lock-step with their own party.
+* **leg_mean_partisanship** describes the legislators' mean average partisan_vote across all their votes with partisan_vote as 0 or 1 (independent votes not counted). Mean partisanship values closer to 0 indicate voting more in lock-step with their own party.
 
 See [Data Dictionary for app_voting_patterns](docs/data-dictionary-app-voting-patterns.csv).
 <br><br>
