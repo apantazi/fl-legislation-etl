@@ -1,5 +1,5 @@
 # Florida Legislative Voting Database
-7/9/24
+7/11/24
 
  This repo develops an existing data pipeline supporting the ongoing development of the Jacksonville Tributary's legislative voting dashboard (see dev versions of **[web app](https://mockingbird.shinyapps.io/fl-leg-app-postgres/)** and [web app repo](https://github.com/reliablerascal/fl-legislation-app-postgres)). The purpose of the dashboard is to highlight voting patterns of Florida legislators, which can help answer questions about:
 * actual voting records of legislators as a tangible measure of their political leanings (compared to campaign rhetoric)
@@ -25,12 +25,28 @@ Note that the database currently integrates data from only LegiScan, supporting 
 |---|---|
 |**Raw**|Raw data retrieved as JSON via API, then parsed into tables with data elements retained unmodified. This layer also includes some limited user-entered data.|
 |**Processed**|Cleaned and organized data including calculated fields. My intent is to also to align and integrate data between similar formats (e.g. LegiScan and LegiStar).|
-|**Application**|Data prepared for specific applications such as the legislator dashboard.|
+|**Application**|Data prepared for specific applications such as the legislator dashboard. As a rule, this layer should only access data from the processed layer.|
 
 ETL in the context of this legislative dashboard database means:
 * **Extract** data via API from Legiscan, then parse it into tables in the raw layer.
 * **Transform** data by cleaning, organizing, calculating, and aligning data so it's more useful and easier to understand
 * **Load** the transformed data into the Postgres database
+
+<br>
+
+### Naming Conventions
+Clear and consistent naming conventions are essential to code maintainability. Following are naming conventions used within this data pipeline.
+
+|Schema|Prefix|Purpose|
+|---|---|---|
+|raw|t_|**T**ables of raw data kept intact in their original source format.|
+|raw|user_|**User**-entered data, e.g. on bill categorization or contested districts.|
+|proc|hist_|**P**rocessed data, cleaned and organized from original tables and adding newly-introduced calculated fields.|
+|proc|jct_|**J**unction table, for example jct_bill_categories cross-references which categories (e.g. education, environment) each bill belongs to.|
+|proc|p_|**P**rocessed data, either directly processed or queried from the most recent record for each entity in the corresponding hist_* table.|
+|proc,<br>app|calc_|Performs intermediate **calc**ulations (e.g., partisanship metrics), not stored in Postgres.|
+|app|qry_|**Query**, i.e. a foundational view of data supporting all apps. For example, qry_legislators_incumbents filters p_legislators for only active legislators.|
+|app|app_|**App**lication data, which has been filtered and organized from processed data. It's intended to support specific web applications but could also support data visualizations.|
 
 <br>
 
@@ -53,8 +69,8 @@ The raw data layer stores data parsed from the original JSON files but otherwise
 State Congressional district data downloaded from [Dave's Redistricting](https://davesredistricting.org/). This includes American Community Survey (2020), Citizen Voting Age Population (2022), and metrics of partisan preference based on state governor and Presidential election results from 2016 to 2020.
 |Table|Primary Key|Description and Notes|
 |---|---|---|
-|t_districts_house|district_id|One record per house district based on 2022 district map.|
-|t_districts_senate|district_id|One record per senate district based on 2022 district map.|
+|t_dave_districts_house|district_id|One record per house district based on 2022 district map.|
+|t_dave_districts_senate|district_id|One record per senate district based on 2022 district map.|
 
 
 ### raw-user-entry schema ###
@@ -67,22 +83,19 @@ This schema includes a limited amount of user-entered data as a prototype. This 
 <br>
 
 ## Processed Layer
-The processed layer tracks data transformed from LegiScan, census demographics, and election data. Following is a list of tables in this layer. Primary keys are enforced at this stage; the ETL script should throw an error (intended to be helpful) when attempting to store duplicate records in any given table. 
+The processed layer tracks data transformed from LegiScan, census demographics, and election data. Following is a list of tables in this layer. Primary keys are enforced at this stage. To help prevent data integrity issues, the ETL script should throw an error if attempting to store records with duplicated keys in any given table. 
 
 |Table|Primary Key|Origin Data Sources|Notes|
 |---|---|---|---|
-|hist_district_demo|chamber,<br>district_number, source|Dave's Redistricting|One record per legislative district (Senate, House, etc.) per source (2022 Citizen Age Voting Population, 2020 American Community Survey, etc.) with demographic data|
+|hist_district_demo|chamber,<br>district_number, source|Dave's Redistricting|One record per legislative district (Senate, House, etc.) per source (e.g. CVAP, ACS) with demographic data|
 |hist_district_elections|chamber,<br>district_number, election|Dave's Redistricting and user-entered data|One record per legislative district (Senate, House, etc.) per election (in this case, composite D vs. R vote for president and governor in 2016-2022)|
 |hist_leg_sessions|person_id,<br>session_year|LegiScan (state)|Session_year is part of key because legislators can change roles (i.e. move from the House to the Senate) over time|
-|jct_bill_categories|bill_id, category|Manual data entry (for now)|Includes data on how the legislator voted (aye, nay, absent, no vote) and calculated partisan metrics (with their party, against their party, against both parties, etc.).|
-|p_bills|bill_id|LegiScan (state)|Cleans up and aligns bill data from LegiScan and LegiStar|
-|p_districts|chamber,<br>district_number|Dave's Redistricting and user-entered data|One record per legislative district (Senate, House, City Council, etc.) in this case taking 2020 CVAP and  |
-|p_legislators|people_id|Summary info about each legislator, based on hist_legislator_sessions.|
+|jct_bill_categories|bill_id, category|user-entered data|Categorization of bill by category, to support filtering options.|
+|p_bills|bill_id|LegiScan (state)|Description, title, url, etc. of bills|
+|p_legislators|people_id|Summary info about each legislator, based on hist_leg_sessions.|
 |p_legislator_votes|person_id,<br>roll_call_id|LegiScan (state)|Includes data on how the legislator voted (yea, nay, absent, no vote) and calculated **partisan_vote_type** (with their party, against their party, against both parties, etc.).|
 |p_roll_calls|roll_call_id|LegiScan (state)|Includes summary data on roll calls. See [p_roll_calls data dictionary](docs/data-dictionary-p_roll_calls.csv).|
 |p_sessions|session_id|LegiScan (state)|Info about each legislative session, e.g. session name and session biennium.|
-|p_state_summary|district_id|Dave's Redistricting|Summary of demographics and election results from p_districts.|
-|view_legislators_incumbent|chamber,<br>district_number|p_legislators|p_legislators filtered for only incumbents (i.e. with no termination date).|
 
 
 
@@ -90,6 +103,21 @@ The processed layer tracks data transformed from LegiScan, census demographics, 
 <br>
 
 ## App Layer
+### App Settings
+App settings determine how partisanship and demographics are measured. These are configured at the top of [04_prep_app.R](scripts/04_prep_app.R), and can readily be changed without breaking other aspects of the data pipeline:
+* **Demographic data source**. Which data source is used for determining race/ethnic makeup of districts.
+* **District partisan lean**. Choice of which election results to weigh when measuring percentage point difference in Republican vs. Democrat votes for district electorates.
+* **Party loyalty metric**. For/against metric weighting is currently selected- (0 for with party against opposing party, 1 for against party and with same party). Other partisan metric options may include for/against/indy and [nominate](https://en.wikipedia.org/wiki/NOMINATE_(scaling_method)). 
+
+### Queries Supporting All Apps
+Based on these settings, the app layer includes the following foundational queries supporting all apps. Soft primary keys are not (yet) strictly enforced.
+|Query|Soft Primary Key|Origin Data Sources|Notes|
+|---|---|---|---|
+|qry_districts|chamber,<br>district_number|hist_district_demo,<br>hist_district_elections|District info including demographics and partisan lean.
+|qry_leg_votes|people_id,<br>roll_call_id|p_legislator_votes with weighted party loyalty counts dependent upon **partisan_vote_type** and **party loyalty metric** setting|
+|qry_legislators|chamber,<br>district_number|p_legislators|p_legislators filtered for only incumbents (i.e. those with no termination date).|
+|qry_state_summary|---|Dave's Redistricting|Summary of demographics and election results from p_districts.|
+
 ### App #1: Voting Patterns
 The app layer currently supports the [Voting Patterns Analysis web app (dev version)](https://mockingbird.shinyapps.io/fl-leg-app-postgres/), a tool for Florida political journalists and policy wonks. This dataset filters for roll calls where one or more party member strayed from the party line.
 
@@ -163,19 +191,8 @@ Following is an overview of files in this repository:
 * **[notebooks](notebooks/)**- API exploration using Jupyter Notebook and Python
 * **[scripts](scripts/)**- ETL scripts
 
-## Naming Conventions
-Clear and consistent naming conventions are essential to code maintainability. Following are naming conventions used within this data pipeline.
 
-|Prefix|Saved in Schema|Purpose|
-|---|---|---|
-|app_|app|**App**lication data, which has been filtered and organized from processed data. It's intended to support specific web applications but could also support data visualizations.|
-|calc_|---|Performs intermediate **calc**ulations (e.g., partisanship metrics), not stored in Postgres.|
-|hist_|proc|**P**rocessed data, cleaned and organized from original tables and adding newly-introduced calculated fields.|
-|jct_|proc|**J**unction table, for example jct_bill_categories cross-references which categories (e.g. education, environment) each bill belongs to.|
-|p_|proc|**P**rocessed data, either directly processed or queried from the most recent record for each entity in the corresponding hist_* table.|
-|t_|raw|**T**ables of raw data kept intact in their original source format.|
-|user_|raw|**User**-entered data, e.g. on bill categorization or contested districts.|
-|view_|proc|**View**, i.e. a query that organizes existing data in a useful way. For example, view_legislators_incumbents filters p_legislators for only active legislators.|
+
 
 
 ## Running the ETL Script
@@ -200,13 +217,14 @@ To run these scripts, you'll need to know two passwords:
 |--------------------------|--------------------------|
 | [functions_database.R](scripts/functions_database.R)|scripts to connect to Postgres, write tables, and test inputs | 
 | [01_request_api_legiscan.R](scripts/01_request_api_legiscan.R)|requests data from LegiScan via API |
-| [02a_parse_legiscan.R](scripts/02a_parse_legiscan.R)|parses LegiScan JSON data|
-| [02b_read_csvs.R](scripts/02b_read_csvs.R)|reads csv files including user-entered data and exported Dave's Redistricting data|
-| [02z_load_raw.R](scripts/02z_load_raw.R)|saves all acquired data into Postgres as the raw layer|
-| [03_transform.R](scripts/03_transform.R)|organizes and adds calculations to parsed and user-entered data|
-| [03z_load_processed.R](scripts/03z_load_processed.R)|writes organized data frames (processed layer) to Postgres|
-| [04_prep_app.R](scripts/04_prep_app.R)|prepares and filters data for web apps|
-| [04z_load_app.R](scripts/04z_load_app.R)|writes app data to Postgres, and exports data to CSV|
+| [02a_raw_parse_legiscan.R](scripts/02a_raw_parse_legiscan.R)|parses LegiScan JSON data|
+| [02b_raw_read_csvs.R](scripts/02b_raw_read_csvs.R)|reads csv files including user-entered data and exported Dave's Redistricting data|
+| [02z_raw_load.R](scripts/02z_raw_load.R)|saves all acquired data into Postgres as the raw layer|
+| [03a_process.R](scripts/03a_process.R)|organizes and adds calculations to parsed and user-entered data|
+| [03z_process_load.R](scripts/03z_process_load.R)|writes organized data frames (processed layer) to Postgres|
+| [04a_app_settings.R](scripts/04a_app_settings.R)|creates views based on settings|
+| [04b_app_prep.R](scripts/04b_app_prep.R)|prepares and filters data for web apps|
+| [04z_app_load.R](scripts/04z_app_load.R)|writes app data to Postgres, and exports data to CSV|
 
 <br><br>
 

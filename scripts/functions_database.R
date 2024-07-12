@@ -45,7 +45,7 @@ write_table <- function(df, con, schema_name, table_name, chunk_size = 1000) {
     format = paste0("  writing table ", schema_name, ".", table_name, " [:bar] :percent in :elapsed"),
     total = n,
     clear = FALSE,
-    width = 60
+    width = 100
   )
   
   # Initialize the progress bar
@@ -105,7 +105,7 @@ create_pk <- function(con, schema_name, table_name, primary_keys) {
 
 
 
-write_tables_in_list <- function(con, schema_name, list_tables, primary_keys) {
+write_tables_in_list <- function(con, schema_name, list_tables, primary_keys= NULL) {
   for (table_name in list_tables) {
     cat("\n","---------------------\n",toupper(table_name),"\n","---------------------\n")
     df <- get(table_name)
@@ -120,6 +120,8 @@ write_tables_in_list <- function(con, schema_name, list_tables, primary_keys) {
     message("Adding new table ", schema_name, ".", table_name)
     write_table(df, con, schema_name, table_name)
     verify_table(con, schema_name, table_name)
-    create_pk(con, schema_name, table_name, primary_keys)
+    if (!is.null(primary_keys)) {
+      create_pk(con, schema_name, table_name, primary_keys)
+    }
   }
 }

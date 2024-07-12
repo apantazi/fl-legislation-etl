@@ -58,8 +58,8 @@ schema_name <- "raw_daves"
 dbExecute(con, paste0("CREATE SCHEMA IF NOT EXISTS ", schema_name))
 
 list_tables <- c(
-  "t_districts_house",
-  "t_districts_senate"
+  "t_daves_districts_house",
+  "t_daves_districts_senate"
 )
 
 write_tables_in_list(con, schema_name, list_tables)

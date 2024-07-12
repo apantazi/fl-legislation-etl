@@ -32,6 +32,12 @@ dbExecute(con, paste0("CREATE SCHEMA IF NOT EXISTS ", schema_name))
 #tables currently in testing
 
 list_tables <- c(
+  "qry_bills",
+  "qry_leg_votes",
+  "qry_legislators",
+  "qry_districts",
+  "qry_roll_calls",
+  "qry_state_summary",
   "app01_vote_patterns",
   "app02_leg_activity",
   "app03_district_context",
@@ -41,7 +47,15 @@ list_tables <- c(
   "viz_partisan_senate_r"
 )
 
-write_tables_in_list(con, schema_name, list_tables)
+primary_keys <- list(
+  qry_bills = 'bill_id',
+  qry_leg_votes = c('people_id','roll_call_id'),
+  qry_legislators = c('chamber','district_number'),
+  qry_districts = c('chamber','district_number'),
+  qry_roll_calls = 'roll_call_id'
+)
+
+write_tables_in_list(con, schema_name, list_tables, primary_keys)
 
 # Close the connection
 dbDisconnect(con)

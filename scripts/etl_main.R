@@ -42,15 +42,18 @@ source("functions_database.R") # functions to write to Postgres database
 #source("01_request_api_legiscan.R") #request LegiScan data from API 
 
 #ETL for raw layer
-source("02a_parse_legiscan.R")
-source("02b_read_csvs.R")
-source("02z_load_raw.R")
+source("02a_raw_parse_legiscan.R")
+source("02b_raw_read_csvs.R")
+source("02z_raw_load.R")
 
 #ETL for processed layer
-source("03_transform.R")
-source("03y_qa_checks.R")
-source("03z_load_processed.R")
+source("03a_process.R")
+source("03z_process_load.R")
 
 #ETL for app layer
-source("04_prep_app.R") # merge, prep, analyze data
-source("04z_load_app.R") # export dataframes to Postgres
+
+source("04a_app_settings.R") # integrate app settings into creating base query layer
+source("04b_app_prep.R") # merge, prep, analyze data
+source("04z_app_load.R") # export dataframes to Postgres
+
+source("qa_checks.R")

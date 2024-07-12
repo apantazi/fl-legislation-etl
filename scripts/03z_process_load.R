@@ -37,17 +37,14 @@ list_tables <- c(
   "hist_leg_sessions",
   "jct_bill_categories",
   "p_bills",
-  "p_districts",
   "p_legislator_votes",
   "p_legislators",
   "p_roll_calls",
-  "p_sessions",
-  "p_state_summary"
+  "p_sessions"
 )
 
 primary_keys <- list(
   p_bills = 'bill_id',
-  p_districts = c('chamber','district_number'),
   p_legislator_votes = c('people_id','roll_call_id'),
   p_legislators = 'people_id',
   p_roll_calls = 'roll_call_id',
@@ -55,20 +52,6 @@ primary_keys <- list(
 )
 
 write_tables_in_list(con, schema_name, list_tables, primary_keys)
-
-##########################
-#                        #  
-# 3) create useful views #
-#                        #
-##########################
-# hardcoded the first one, should automate this as a list if it gets complex
-
-dbExecute(con, "
-CREATE OR REPLACE VIEW proc.view_legislators_incumbent AS
-SELECT * FROM proc.p_legislators
-WHERE termination_date IS NULL;
-")
-view_legislators_incumbent <- dbGetQuery(con, "SELECT * FROM proc.view_legislators_incumbent;")
 
 # Close the connection
 dbDisconnect(con)
