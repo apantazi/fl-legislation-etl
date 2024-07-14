@@ -92,21 +92,22 @@ app02_leg_activity <- qry_leg_votes %>%
 #################################
 
 app03_district_context <- qry_legislators %>%
-  select (people_id,party,legislator_name,last_name,ballotpedia,district_number,chamber,termination_date,leg_mean_partisanship,leg_n_votes_partisan) %>%
+  select (
+    people_id,party,legislator_name,last_name,ballotpedia,district_number,chamber,termination_date,leg_mean_partisanship,
+    leg_n_votes_denominator, leg_n_votes_against_both,leg_n_votes_against_party,leg_n_votes_with_party) %>%
   left_join(qry_districts) %>%
   mutate (
-    RminusD = pct_R - pct_D,
-    DminusR = pct_D - pct_R 
-  )
+    setting_party_loyalty = setting_party_loyalty
+    )
 
 #rank senate partisanship
 calc_dist_senate_ranks <- app03_district_context %>%
   filter(
     chamber == "House"
   ) %>%
-  arrange(desc(RminusD)) %>%
+  arrange(desc(party_lean_points_R)) %>%
   mutate(rank_partisan_dist_R = row_number()) %>%
-  arrange(desc(DminusR)) %>%
+  arrange(party_lean_points_R) %>%
   mutate(rank_partisan_dist_D = row_number()) %>%
   select (district_number, chamber, rank_partisan_dist_R, rank_partisan_dist_D)
 
@@ -115,9 +116,9 @@ calc_dist_house_ranks <- app03_district_context %>%
   filter(
     chamber == "Senate"
   ) %>%
-  arrange(desc(RminusD)) %>%
+  arrange(desc(party_lean_points_R)) %>%
   mutate(rank_partisan_dist_R = row_number()) %>%
-  arrange(desc(DminusR)) %>%
+  arrange(party_lean_points_R) %>%
   mutate(rank_partisan_dist_D = row_number()) %>%
   select (district_number, chamber, rank_partisan_dist_R, rank_partisan_dist_D)  
 
@@ -157,14 +158,14 @@ app03_district_context_state <- qry_state_summary
 # first iteration: intent is to emulate the visual, though "partisanship" metric isn't identical
 
 viz_partisanship <- qry_legislators %>%
-      select(legislator_name, party, chamber, district_number, leg_n_votes_partisan, leg_mean_partisanship) %>%
+      select(legislator_name, party, chamber, district_number, leg_n_votes_denominator, leg_mean_partisanship) %>%
   mutate(
     sd_partisan_vote = qry_leg_votes %>%
       filter(!is.na(partisan_vote_type), is.na(termination_date), partisan_vote_type != 99, roll_call_date >= as.Date("2012-11-10")) %>%  # Combined filters
       group_by(legislator_name) %>%
       summarize(sd_partisan_vote = sd(partisan_vote_type, na.rm = TRUE)) %>%
       pull(sd_partisan_vote),
-    se_partisan_vote = sd_partisan_vote / sqrt(leg_n_votes_partisan),
+    se_partisan_vote = sd_partisan_vote / sqrt(leg_n_votes_denominator),
     lower_bound = leg_mean_partisanship - se_partisan_vote,
     upper_bound = leg_mean_partisanship + se_partisan_vote,
     leg_label = paste0(legislator_name, " (", substr(party,1,1), "-", district_number,")")

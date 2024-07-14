@@ -137,7 +137,7 @@ The two key metrics in this data are as follows:
 
 See [Data Dictionary for app_voting_patterns](docs/data-dictionary-app-voting-patterns.csv).
 <br><br>
-### App #3: Representation Alignment (work in progress)
+### App #3: District Context
 Data already incorporated in this data pipeline supports a new app which compares legislative partisanship with district political leanings and demographics. The audience for this app is prospective voters in [Florida's primary election](https://ballotpedia.org/Florida_elections,_2024#Offices_on_the_ballot) on August 20.
 
 Data supporting this app:
@@ -173,13 +173,14 @@ viz_partisan_senate_r <- viz_partisanship %>%
   filter(party == 'R', chamber == 'Senate')
  ```
 
-<img src="./docs/viz_partisan_dem_senate.png" width=600>
-<img src="./docs/viz_partisan_repub_senate.png" width=600>
+<img src="./viz/viz_partisan_dem_senate.png" width=600>
+<img src="./viz/viz_partisan_repub_senate.png" width=600>
 
 ### Ad-Hoc Data Analysis
 All tables from the processed layer (except p_legislator_votes, which is currently skipped due to file size) and the application layer are exported to **[data-app](data-app/)**, enabling ad-hoc data visualizations or app creation.
 
-
+For example, Andrew suggested that [data prepared for the district context app](data-app/app03_district_context.csv) could be used to create a scatterplot comparing party loyalty against electorate partisan lean. I did so in DataWrapper for Senate Democrats.<br><br>
+<img src="./viz/viz_leg_v_electorate_dem_senate.png" width=600>
 <br><br>
 
 # Guide to the Repository

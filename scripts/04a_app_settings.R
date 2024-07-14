@@ -21,7 +21,7 @@ setting_demo_year <- 2022
 # for_against- weighs 0 with party, 1 against. excludes against both
 # for_against_indy. similar to for_against, but votes against both weighed as 0.5
 # nominate. to be added later? https://en.wikipedia.org/wiki/NOMINATE_(scaling_method)
-setting_party_loyalty <- "for_against_indy"
+setting_party_loyalty <- "for_against"
 
 #choices TBD
 setting_district_lean <- "16_20_comp" #2016-2020 composite results of governor and presidential election results
@@ -105,8 +105,16 @@ calc_mean_partisan_leg <- qry_leg_votes %>%
   filter(roll_call_date >= as.Date("11/10/2012")) %>%
   summarize(
     leg_mean_partisanship=mean(partisan_vote_weight, na.rm = TRUE),
-    leg_n_votes_partisan = sum(!is.na(partisan_vote_weight))
+    leg_n_votes_denominator = sum(!is.na(partisan_vote_weight)),
+    leg_n_votes_with_party = sum(partisan_vote_type==0),
+    leg_n_votes_against_party= sum(partisan_vote_type==1),
+    leg_n_votes_against_both = sum(partisan_vote_type==99)
   )
+
+# legislator mean partisanship
+qry_legislators <- qry_legislators %>%
+  left_join(calc_mean_partisan_leg, by='legislator_name')
+
 
 # calculate mean roll-call-level partisan vote weight
 calc_mean_partisan_rc <- qry_leg_votes %>%
@@ -114,12 +122,11 @@ calc_mean_partisan_rc <- qry_leg_votes %>%
   filter(roll_call_date >= as.Date("11/10/2012")) %>%
   summarize(
     rc_mean_partisanship=mean(partisan_vote_weight, na.rm = TRUE),
-    rc_n_votes_partisan = sum(!is.na(partisan_vote_weight))
+    rc_n_votes_denominator = sum(!is.na(partisan_vote_weight)),
+    rc_n_votes_with_party = sum(partisan_vote_type==0),
+    rc_n_votes_against_party= sum(partisan_vote_type==1),
+    rc_n_votes_against_both = sum(partisan_vote_type==99)
   )
-
-# legislator mean partisanship
-qry_legislators <- qry_legislators %>%
-  left_join(calc_mean_partisan_leg, by='legislator_name')
 
 # roll call summaries, 6271
 qry_roll_calls <- qry_roll_calls %>%

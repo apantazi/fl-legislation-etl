@@ -147,13 +147,16 @@ get_election_results <- function(prefix, source_label, year) {
     ) %>%
     mutate(
       n_Dem  = !!sym(paste0(prefix, "Dem")),
-      n_Rep = !!sym(paste0(prefix, "Dem")),
-      n_Total_Elec = !!sym(paste0(prefix, "Dem")),
+      n_Rep = !!sym(paste0(prefix, "Rep")),
+      n_Total_Elec = !!sym(paste0(prefix, "Total")),
       pct_D = n_Dem / n_Total_Elec,
       pct_R = n_Rep / n_Total_Elec,
+      party_lean = ifelse(pct_D > pct_R, 'D','R'),
+      party_lean_points_abs = round(abs(pct_R-pct_D)*100,0),
+      party_lean_points_R = round((pct_R-pct_D)*100,0),
       source_elec = source_label,
     ) %>%
-    select(chamber,district_number,n_Dem, n_Rep, n_Total_Elec,pct_D,pct_R,source_elec)
+    select(chamber,district_number,n_Dem, n_Rep, n_Total_Elec,pct_D,pct_R,party_lean, party_lean_points_abs,party_lean_points_R, source_elec)
 }
 
 # get election results, then bind into one table if necessary
