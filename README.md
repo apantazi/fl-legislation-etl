@@ -15,6 +15,9 @@ Following are definitions of key terminology used throughout this project:
 * **Party loyalty** is a legislator’s tendency to vote with or against their party. 1 = most loyal, 0 = least loyal.
 * **Partisan lean** is a legislative electorate’s partisanship as measured by percentage point difference between voting for Democrats vs. Republicans.
 
+<img src="docs/etl-schematic.png" width = 800><br>
+
+*Figure 1: Overview of ETL pipeline, as described in [Database Architecture](docs/db_architecture.md)*
 <br><br>
 
 ## Documentation Table of Contents
@@ -38,18 +41,15 @@ Following is an overview of files in this repository:
 
 <br><br>
 
+
+## Appendix- Sample Visualizations
 <div align = "left">
-<img src="docs/etl-schematic.png" width = 800><br>
-
-*Figure 1: Overview of ETL pipeline, as described in [Database Architecture](docs/db_architecture.md)*
-
-
 
 <img src="viz/screenshot_voting_patterns.png" width = 800>
 
 *Figure 2: Dashboard view of voting patterns of Senate Democrats during 2024 legislative session, as described in the [Web App and Data Vidualization Guide](docs/app_dev_guide.md)*
 
-
+<br><br>
 
 <img src="viz/viz_leg_v_electorate_dem_senate.png" width = 800>
 
