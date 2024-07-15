@@ -1,5 +1,6 @@
 # Web App and Data Visualization Guide
 7/15/24
+*This section needs updating to reflect shift to "party loyalty" metric (vs. ambiguous "partisanship" metric), and to provide clear guidance for app developers.*
 
 ## App Settings
 App settings determine how partisanship and demographics are measured. These are configured at the top of [04_prep_app.R](../scripts/04_prep_app.R), and can readily be changed without breaking other aspects of the data pipeline:
