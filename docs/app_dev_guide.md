@@ -2,7 +2,7 @@
 7/15/24
 
 ## App Settings
-App settings determine how partisanship and demographics are measured. These are configured at the top of [04_prep_app.R](scripts/04_prep_app.R), and can readily be changed without breaking other aspects of the data pipeline:
+App settings determine how partisanship and demographics are measured. These are configured at the top of [04_prep_app.R](../scripts/04_prep_app.R), and can readily be changed without breaking other aspects of the data pipeline:
 * **Demographic data source**. Which data source is used for determining race/ethnic makeup of districts.
 * **District partisan lean**. Choice of which election results to weigh when measuring percentage point difference in Republican vs. Democrat votes for district electorates.
 * **Party loyalty metric**. For/against metric weighting is currently selected- (0 for with party against opposing party, 1 for against party and with same party). Other partisan metric options may include for/against/indy and [nominate](https://en.wikipedia.org/wiki/NOMINATE_(scaling_method)). 
@@ -28,19 +28,19 @@ Data is prepared to facilitate non-Shiny app development, and includes three typ
 
 The two key metrics in this data are as follows:
 * **partisan_vote_type** describes each legislator vote by partisanship
-    * 0 = voted with their own party, against the opposing party
-    * 1 = voted against their own party, with the opposing party ("Maverick")
-    * 99 = voted against both parties ("Independent")
-* **leg_mean_partisanship** describes the legislators' mean average partisan_vote across all their votes with partisan_vote as 0 or 1 (independent votes not counted). Mean partisanship values closer to 0 indicate voting more in lock-step with their own party.
+    * Party Line = voted with their own party, against the opposing party
+    * Cross Party = voted against their own party, with the opposing party ("Maverick")
+    * Against Both Parties = voted against both parties ("Independent")
+* **leg_party_loyalty** describes the legislators' mean average party loyalty across all their votes with values closer to 1 indicate voting more in lock-step with their own party.
 
-See [Data Dictionary for app_voting_patterns](docs/data-dictionary-app-voting-patterns.csv).
+See [Data Dictionary for app_voting_patterns](../docs/data-dictionary-app-voting-patterns.csv).
 <br><br>
 ### App #3: District Context
 Data already incorporated in this data pipeline supports a new app which compares legislative partisanship with district political leanings and demographics. The audience for this app is prospective voters in [Florida's primary election](https://ballotpedia.org/Florida_elections,_2024#Offices_on_the_ballot) on August 20.
 
 Data supporting this app:
-* [data-app/app03_district_context.csv](../data-app/app03_district_context.csv)
-* [data-app/app03_district_context_state.csv](../data-app/app03_district_context_state.csv)
+* [app03_district_context.csv](../data-app/app03_district_context.csv)
+* [app03_district_context_state.csv](../data-app/app03_district_context_state.csv)
 
 <!---
 >See [Data Dictionary for app03_district_context](docs/data-dictionary-app03_district_context.csv) and [Data Dictionary for  app03_district_context_state](docs/data-dictionary-app03_district_context_state.csv).
@@ -50,7 +50,7 @@ Data supporting this app:
 
 ## Partisanship Data Visualizations
 
-Here's a sample use case for creating a data visualization based on existing tables in the Postgres database. The resulting data frame is exported from this pipeline as [data-app/viz_partisanship.csv](data-app/viz_partisan_senate_d.csv) and then charted in DataWrapper (I need to review this methodology with someone with a better stats background):
+Here's a sample use case for creating a data visualization based on existing tables in the Postgres database. The resulting data frame is exported from this pipeline as [viz_partisanship.csv](../data-app/viz_partisan_senate_d.csv) and then charted in DataWrapper (I need to review this methodology with someone with a better stats background):
  ```
 viz_partisanship <- p_legislators %>%
       select(legislator_name, party, chamber, district_number, n_votes_partisan, mean_partisanship) %>%
@@ -78,8 +78,8 @@ viz_partisan_senate_r <- viz_partisanship %>%
 <img src="../viz/viz_partisan_repub_senate.png" width=600>
 
 ## Ad-Hoc Data Analysis
-All tables from the processed layer (except p_legislator_votes, which is currently skipped due to file size) and the application layer are exported to **[data-app](data-app/)**, enabling ad-hoc data visualizations or app creation.
+All tables from the processed layer (except p_legislator_votes, which is currently skipped due to file size) and the application layer are exported to **[data-app](../data-app/)**, enabling ad-hoc data visualizations or app creation.
 
-For example, Andrew suggested that [data prepared for the district context app](data-app/app03_district_context.csv) could be used to create a scatterplot comparing party loyalty against electorate partisan lean. I did so in DataWrapper for Senate Democrats.<br><br>
+For example, Andrew suggested that [data prepared for the district context app](../data-app/app03_district_context.csv) could be used to create a scatterplot comparing party loyalty against electorate partisan lean. I did so in DataWrapper for Senate Democrats.<br><br>
 <img src="../viz/viz_leg_v_electorate_dem_senate.png" width=600>
 <br><br>

@@ -36,7 +36,7 @@ Clear and consistent naming conventions are essential to code maintainability. F
 
 ## Raw Layer
 ### raw-legiscan schema ###
-* [Data Dictionary for raw_legiscan](docs/data-dictionary-raw-legiscan.xlsx)
+* [Data Dictionary for raw_legiscan](../docs/data_dictionaries/data-dictionary-raw-legiscan.xlsx)
 
 This database acquires only a portion of LegiScan data (see LegiScan's [entity relationship diagram](https://api.legiscan.com/dl/Database_ERD.png) and [API user manual](https://legiscan.com/misc/LegiScan_API_User_Manual.pdf) for info on all available data). LegiScan's data is provided as three folders of JSON files- votes (which are really roll calls, with individual votes nested within), people (i.e. legislators), and bills (with lots of related info nested within).
 
