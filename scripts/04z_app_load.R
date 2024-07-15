@@ -25,11 +25,9 @@ repeat {
 # 2) write app queries to Postgres and test #
 #                                           #
 #############################################
-# db schema for Andrew's Shiny app legislative dashboard currently at https://shiny.jaxtrib.org/.
+# db schema for Shiny app legislative dashboard dev site at https://mockingbird.shinyapps.io/fl-leg-app-postgres/.
 schema_name <- "app_shiny"
 dbExecute(con, paste0("CREATE SCHEMA IF NOT EXISTS ", schema_name))
-
-#tables currently in testing
 
 list_tables <- c(
   "qry_bills",
@@ -41,10 +39,10 @@ list_tables <- c(
   "app01_vote_patterns",
   "app02_leg_activity",
   "app03_district_context",
-  "app03_district_context_state",
-  "viz_partisanship",
-  "viz_partisan_senate_d",
-  "viz_partisan_senate_r"
+  "app03_district_context_state"
+  # "viz_partisanship",
+  # "viz_partisan_senate_d",
+  # "viz_partisan_senate_r"
 )
 
 primary_keys <- list(
@@ -71,9 +69,15 @@ list_export_df <- list(
   app02_leg_activity = app02_leg_activity,
   app03_district_context = app03_district_context,
   app03_district_context_state = app03_district_context_state,
-  viz_partisanship = viz_partisanship,
-  viz_partisan_senate_d = viz_partisan_senate_d,
-  viz_partisan_senate_r = viz_partisan_senate_r
+  qry_bills = qry_bills,
+  qry_leg_votes = qry_leg_votes,
+  qry_legislators = qry_legislators,
+  qry_districts = qry_districts,
+  qry_roll_calls = qry_roll_calls,
+  qry_state_summary = qry_state_summary
+  # viz_partisanship = viz_partisanship,
+  # viz_partisan_senate_d = viz_partisan_senate_d,
+  # viz_partisan_senate_r = viz_partisan_senate_r
 )
 
 # Loop through the list and write each data frame to its respective file

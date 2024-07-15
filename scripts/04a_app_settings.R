@@ -1,10 +1,11 @@
 #################################
 #                               #  
-# 04_APP_QUERIES.R              #
+# 04A_APP_QUERIES.R             #
 #                               #
 #################################
 # 7/11/24
-# This section added to enable configurable app settings without needing to modify code
+# This script builds on processed data (p_* and hist_*,), responds to settings,
+# then prepares queries (qry_*) for web applications and visualizations
 
 ###########################
 #                         #  
@@ -13,24 +14,24 @@
 ###########################
 #I may want to move this to a settings.yaml file, to separate settings from the script code
 
-#choices include CVAP 2022 and ACS 2022
+# Setting 1: Select source of demographic data (choices include CVAP 2022 and ACS 2022)
 setting_demo_src <- "CVAP"
 setting_demo_year <- 2022
 
-#choices include:
-# for_against- weighs 0 with party, 1 against. excludes against both
-# for_against_indy. similar to for_against, but votes against both weighed as 0.5
-# nominate. to be added later? https://en.wikipedia.org/wiki/NOMINATE_(scaling_method)
+# Setting 2: Select party loyalty metric. Choices include:
+# a) for_against- weighs 0 with party, 1 against. excludes against both
+# b) for_against_indy. similar to for_against, but votes against both weighed as 0.5
+# c) nominate. to be added later? https://en.wikipedia.org/wiki/NOMINATE_(scaling_method)
 setting_party_loyalty <- "for_against"
 
-#choices TBD
+# Setting 3: Select election result for calculating district partisan lean (choices TK)
 setting_district_lean <- "16_20_comp" #2016-2020 composite results of governor and presidential election results
 
-###########################################
-#                                         #  
-# 0a) base queries supporting all apps    #
-#                                         #
-###########################################
+##############################################
+#                                            #  
+# 1) create base queries supporting all apps #
+#                                            #
+##############################################
 
 # filter for incumbent legislators
 qry_legislators <- p_legislators %>%
@@ -38,8 +39,7 @@ qry_legislators <- p_legislators %>%
     is.na(termination_date)
   )
 
-# create qry_districts based on settings for prefered source of demographic data and election results
-# also link to incumbent legislators
+# create qry_districts based on setting_demo_src, setting_demo_year, setting_district_lean
 qry_districts <- hist_district_demo %>%
   filter(source_demo==setting_demo_src,year_demo==setting_demo_year) %>%
   inner_join(hist_district_elections, by=c('chamber','district_number')) %>%
@@ -50,6 +50,7 @@ qry_districts <- hist_district_demo %>%
   ) %>%
   rename(incumb_people_id = people_id)
 
+# summarize statewide
 qry_state_summary <- qry_districts %>%
   summarise(
     sum_white = sum(n_white, na.rm = TRUE),
@@ -74,17 +75,23 @@ qry_state_summary <- qry_districts %>%
     source_elec = setting_district_lean
   )
 
+# calculate party loyalty based on setting_party_loyalty
+# and fold into qry_leg_votes
 qry_leg_votes <- p_legislator_votes %>%
   mutate(
-    partisan_vote_weight = case_when(
-      setting_party_loyalty == "for_against" ~ ifelse(partisan_vote_type == 99, NA_real_, as.numeric(partisan_vote_type)),
-      setting_party_loyalty == "for_against_indy" ~ case_when(
-        partisan_vote_type == 99 ~ 0.5,
-        partisan_vote_type == 0 ~ 0,
-        partisan_vote_type == 1 ~ 1,
-        TRUE ~ NA_real_  # Default case for unmatched conditions within "for_against_indy"
+    party_loyalty_weight = case_when(
+      setting_party_loyalty == "for_against" ~ case_when(
+        partisan_vote_type == "Party Line" ~ 1,
+        partisan_vote_type == "Cross Party" ~ 0,
+        partisan_vote_type == "Against Both Parties" ~ NA_real_,
+        TRUE ~ NA_real_  # Default case for unmatched conditions within "for_against"
       ),
-      TRUE ~ NA_real_  # Default case for unmatched setting_party_loyalty
+      setting_party_loyalty == "for_against_indy" ~ case_when(
+        partisan_vote_type == "Party Line" ~ 1,
+        partisan_vote_type == "Cross Party" ~ 0,
+        partisan_vote_type == "Against Both Parties" ~ 0.5,
+        TRUE ~ NA_real_  # Default case for unmatched conditions within "for_against_indy"
+      )
     )
   )
 
@@ -104,11 +111,11 @@ calc_mean_partisan_leg <- qry_leg_votes %>%
   group_by(legislator_name) %>%
   filter(roll_call_date >= as.Date("11/10/2012")) %>%
   summarize(
-    leg_mean_partisanship=mean(partisan_vote_weight, na.rm = TRUE),
-    leg_n_votes_denominator = sum(!is.na(partisan_vote_weight)),
-    leg_n_votes_with_party = sum(partisan_vote_type==0),
-    leg_n_votes_against_party= sum(partisan_vote_type==1),
-    leg_n_votes_against_both = sum(partisan_vote_type==99)
+    leg_party_loyalty=mean(party_loyalty_weight, na.rm = TRUE),
+    leg_n_votes_denominator = sum(!is.na(party_loyalty_weight)),
+    leg_n_votes_party_line = sum(partisan_vote_type=="Party Line"),
+    leg_n_votes_cross_party= sum(partisan_vote_type=="Cross Party"),
+    leg_n_votes_independent = sum(partisan_vote_type=="Against Both Parties")
   )
 
 # legislator mean partisanship
@@ -121,11 +128,11 @@ calc_mean_partisan_rc <- qry_leg_votes %>%
   group_by(roll_call_id) %>%
   filter(roll_call_date >= as.Date("11/10/2012")) %>%
   summarize(
-    rc_mean_partisanship=mean(partisan_vote_weight, na.rm = TRUE),
-    rc_n_votes_denominator = sum(!is.na(partisan_vote_weight)),
-    rc_n_votes_with_party = sum(partisan_vote_type==0),
-    rc_n_votes_against_party= sum(partisan_vote_type==1),
-    rc_n_votes_against_both = sum(partisan_vote_type==99)
+    rc_mean_partisanship=mean(party_loyalty_weight, na.rm = TRUE),
+    rc_n_votes_denominator = sum(!is.na(party_loyalty_weight)),
+    rc_n_votes_party_line = sum(partisan_vote_type=="Party Line"),
+    rc_n_votes_cross_party= sum(partisan_vote_type=="Cross Party"),
+    rc_n_votes_independent = sum(partisan_vote_type=="Against Both Parties")
   )
 
 # roll call summaries, 6271

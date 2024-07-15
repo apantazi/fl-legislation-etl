@@ -1,7 +1,12 @@
-# WRITE-TO-POSTGRES.R
-# 6/11/24 RR
-# This script takes data that's already been extracted and transformed from LegiScan and other sources
-# and writes it into the Postgres database fl_leg_votes
+#################################
+#                               #  
+# 0Z_PROCESS_LOAD.R             #
+#                               #
+#################################
+
+# 7/14/24 RR
+# Write tables to processed layer of postgres database (see database functions in functions_database.R)
+# Primary keys are enforced to ensure data integrity- e.g. to catch problems with duplicate records
 
 ########################################
 #                                      #  
@@ -25,11 +30,9 @@ repeat {
 # 2) write processed tables to Postgres and test #
 #                                                #
 ##################################################
-# db schema for Andrew's Shiny app legislative dashboard currently at https://shiny.jaxtrib.org/.
+# db schema for processed layer of legislative data app at https://mockingbird.shinyapps.io/fl-leg-app-postgres/
 schema_name <- "proc"
 dbExecute(con, paste0("CREATE SCHEMA IF NOT EXISTS ", schema_name))
-
-#tables currently in testing
 
 list_tables <- c(
   "hist_district_demo",
@@ -44,6 +47,9 @@ list_tables <- c(
 )
 
 primary_keys <- list(
+  hist_district_demo = c('chamber','district_number','source_demo','year_demo'),
+  hist_district_elections = c('chamber','district_number','source_elec'),
+  hist_leg_sessions = c('people_id','session'),
   p_bills = 'bill_id',
   p_legislator_votes = c('people_id','roll_call_id'),
   p_legislators = 'people_id',

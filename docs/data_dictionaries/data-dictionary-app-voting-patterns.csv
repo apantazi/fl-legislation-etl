@@ -1,0 +1,30 @@
+field_name,data_type,purpose,key type,description,allowed_values,example_value,notes
+roll_call_id,text,axis label,primary key,x axis,,0.92,
+legislator_name,text,axis label,primary key,legislator's full name,,"""Vicki Lopez""",
+last_name,text,axis label,,legislator's last name,,,
+district_number,number,axis label,,"senate or house district, numeric only","1-40 (senate), 1-120 (house)",14,
+chamber,text,filter,,,"Senate, House",,
+partisan_vote_type,double precision,display value,,heatmap value for a single vote,"0,1,99",2,"0 = with party, against oppo party
+1 = against party, with oppo party
+99 = against both parties"
+mean_partisanship,double precision,sort,,average partisan metric for the legislator,between 0 and 1,,"legislator's mean partisanship across all bills. 0 = most partisan, 1 = least partisan"
+session_year,double precision,filter,,,,2023,
+final_vote,text,filter,,,"Y,N","""Y""",whether vote is the final (third) roll call
+party,text,filter,,,"R,D","""R""",
+is_include_d,number,filter,,,"True, False",1,"determines which roll calls to display for Democratic legislators. 0 = exclude, 1 = include"
+is_include_r,number,filter,,,"True, False",1,determines which roll calls to display for Republican legislators
+is_incumbent_primaried,bit,filter,,,"True, False",,
+bill_number,text,contextual info,,,,"""S1718""",
+bill_title,text,contextual info,,,,"""Immigration""",
+bill_desc,text,contextual info,,,,"""Prohibiting counties and municipalities, respectively, from providing funds to any person, entity, or organization to issue identification documents...""",
+bill_url,text,contextual info,,,,"""https://legiscan.com/FL/bill/H0731/2023""",
+roll_call_desc,text,contextual info,,,,"""House: Third Reading RCS#376""",
+roll_call_date,text,contextual info,,,,"""2023-05-02""",
+pct_of_total,text,contextual info,,,between 0 and 1,0.33333,"percent of roll call vote in favor amongst all votes (including absent, nv)"
+D_pct_of_present,number,contextual info,,,between 0 and 1,0.33333,for republicans = yea/(yea+nay)
+R_pct_of_present,number,contextual info,,,between 0 and 1,0.33333,for democrats =  yea/(yea+nay)
+vote_text,text,contextual info,,,"yea, nay, nv, absent",yea,
+,,,,,,,
+notes,,,,,,,
+last updated 7/1/24,,,,,,,
+"next steps: update data types (e.g. roll_call_id as number, partisan_metric as integer)",,,,,,,
