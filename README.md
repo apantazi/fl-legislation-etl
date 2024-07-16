@@ -23,7 +23,7 @@ Following are definitions of key terminology used throughout this project:
 ## Documentation Table of Contents
 Detailed documentation is provided in the following sections:
 - [Database Architecture](docs/db_architecture.md)- technical overview of data structures within the database's three layers (raw, processed, app)
-- [Web App and Data Vidualization Guide](docs/app_dev_guide.md)- specific details 
+- [Web App and Data Visualization Guide](docs/app_dev_guide.md)- specific details 
 - [ETL Script](docs/etl.md)- overview of the ETL script and how to run it
 - [Development Workplan](docs/dev_workplan.md)- notes about current and future development of this data pipeline
 
@@ -45,13 +45,13 @@ Following is an overview of files in this repository:
 ## Appendix- Sample Visualizations
 <div align = "left">
 
-<img src="viz/screenshot_voting_patterns.png" width = 800>
+<img src="viz/screenshot_voting_patterns.png" width = 800 style="border: 2px solid black;">
 
 *Figure 2: Dashboard view of voting patterns of Senate Democrats during 2024 legislative session, as described in the [Web App and Data Vidualization Guide](docs/app_dev_guide.md)*
 
 <br><br>
 
-<img src="viz/viz_leg_v_electorate_dem_senate.png" width = 800>
+<img src="viz/viz_leg_v_electorate_dem_senate.png" width = 800 style="border: 2px solid black;">
 
 *Figure 3: Ad-hoc Senate Democrat party loyalty vs. district electorate visualization, as described in the [Web App and Data Vidualization Guide](docs/app_dev_guide.md)*
 
