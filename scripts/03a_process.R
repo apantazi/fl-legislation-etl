@@ -269,18 +269,23 @@ calc_votes_partisan <- p_legislator_votes %>%
 
 calc_votes_partisan$priority_bills[abs(calc_votes_partisan$DminusR)>.85] <- "Y"
 
+# RR 7/16/24 added vote_with_both and vote_with_same
 calc_votes_partisan <- calc_votes_partisan %>%
-  mutate(vote_with_neither = ifelse((dem_majority == "Y" & gop_majority == "Y" & vote_text=="Nay") |
-                                      (dem_majority=="N" & gop_majority == "N" & vote_text=="Yea"),1,0),
-         vote_with_dem_majority = ifelse((dem_majority == "Y" & vote_text == "Yea")|dem_majority=="N" & vote_text=="Nay", 1, 0),
-         vote_with_gop_majority = ifelse((gop_majority == "Y" & vote_text == "Yea")|gop_majority=="N" & vote_text=="Nay", 1, 0),
-         vote_with_neither = ifelse(
-           (dem_majority == "Y" & gop_majority == "Y" & vote_text == "Nay") | (dem_majority == "N" & gop_majority == "N" & vote_text == "Yea"), 1, 0),
-         voted_at_all = vote_with_dem_majority+vote_with_gop_majority+vote_with_neither,
-         maverick_votes=ifelse((party=="D" & vote_text=="Yea" & dem_majority=="N" & gop_majority=="Y") |
+  mutate(
+    vote_with_dem_majority = ifelse((dem_majority == "Y" & vote_text == "Yea")|dem_majority=="N" & vote_text=="Nay", 1, 0),
+    vote_with_gop_majority = ifelse((gop_majority == "Y" & vote_text == "Yea")|gop_majority=="N" & vote_text=="Nay", 1, 0),
+    vote_with_neither = ifelse(
+      (dem_majority == "Y" & gop_majority == "Y" & vote_text == "Nay") | (dem_majority == "N" & gop_majority == "N" & vote_text == "Yea"), 1, 0),
+    voted_at_all = vote_with_dem_majority+vote_with_gop_majority+vote_with_neither,
+    maverick_votes=ifelse((party=="D" & vote_text=="Yea" & dem_majority=="N" & gop_majority=="Y") |
                                  (party=="D" & vote_text=="Nay" & dem_majority=="Y" & gop_majority=="N") |
                                  (party=="R" & vote_text=="Yea" & gop_majority=="N" & dem_majority=="Y") |
-                                 (party=="R" & vote_text=="Nay" & gop_majority=="Y" & dem_majority=="N"),1,0 ))
+                                 (party=="R" & vote_text=="Nay" & gop_majority=="Y" & dem_majority=="N"),1,0 ),
+    ## RR added 7/16/24
+    vote_with_both = ifelse((dem_majority == "Y" & gop_majority == "Y" & vote_text == "Yea")|dem_majority=="N" & gop_majority=="N" & vote_text=="Nay", 1, 0),
+    vote_with_same = ifelse((vote_with_dem_majority == "Y" & party == "D")|(vote_with_gop_majority & party == "R"), 1, 0),
+    
+    )
 
 calc_votes_partisan <- calc_votes_partisan %>%
   mutate(
@@ -299,8 +304,10 @@ calc_rc_party_majority <- calc_votes_partisan %>% filter(party!=""& !is.na(party
   summarize(majority_vote = if_else(sum(vote_text == "Yea") > sum(vote_text == "Nay"), "Yea", "Nay"), .groups = 'drop') %>% 
   pivot_wider(names_from = party,values_from = majority_vote,id_cols = roll_call_id,values_fill = "NA",names_prefix = "vote_")
 
+# diff_* calculations may not be used in the current app (check app 2)
 calc_leg_votes_partisan <- calc_votes_partisan %>%
   left_join(calc_rc_party_majority, by = c("roll_call_id")) %>%
+  select() %>%
   filter(
     !is.na(party) & party != "" & 
       !grepl("2010", session, ignore.case = TRUE) & 
@@ -327,14 +334,25 @@ calc_leg_votes_partisan <- calc_votes_partisan %>%
 # (Andrew Pantazi's work creating calc_leg_votes_partisan can be found at
 #      https://github.com/reliablerascal/fl-legislation-etl/blob/main/scripts/03a_process.R
 
+# QA check to ensure votes are categorized
+calc_votes_partisan <- calc_votes_partisan %>%
+  mutate(
+    qa_vote_present = ifelse((vote_text == "Yea" | vote_text== "Nay"),1,0),
+    qa_vote_categorized = vote_with_both + vote_with_same + maverick_votes + vote_with_neither,
+    qa_match = (qa_vote_present == qa_vote_categorized)
+  )
+
+# consolidate vote pattern into a single variable partisan_vote_type
 calc_leg_votes_partisan <- calc_votes_partisan %>%
   mutate(
     partisan_vote_type = case_when(
       vote_with_neither == 1 ~ "Against Both Parties",
       maverick_votes == 1 ~ "Cross Party",
-      TRUE ~ "Party Line"
+      vote_with_same == 1 ~ "Party Line",
+      vote_with_both == 1 ~ "With Both Parties",
+      TRUE ~ "Unknown"
     ) %>% 
-      factor(levels = c("Against Both Parties", "Cross Party", "Party Line"))
+      factor(levels = c("Against Both Parties", "Cross Party", "Party Line", "With Both Parties", "Unknown"))
   )
 
 # fold calculated partisan_vote_type into p_legislator_votes data frame
