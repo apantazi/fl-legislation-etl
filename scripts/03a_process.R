@@ -166,11 +166,12 @@ hist_district_elections <- get_election_results("E_16_20_COMP_", "16_20_COMP")
 
 #######################################
 #                                     #  
-# 2a) roll call partisanship analysis  #
+# 2a) roll call partisanship analysis #
 #                                     #
 #######################################
-# These two sections are mostly Andrew's work.
-# I'm unsure about whether some fields are used, but I'm leaving it mostly intact pending more discussion.
+# The following two partisanship analysis sections are adapted from Andrew's work.
+# 7/16/24 I purged code and fields (e.g. partisan_desc, bill_alignment, priority_bills) which aren't used anywhere in the current app
+# These could be added back later, for data throughput efficiency
 
 # primary key is roll_call_id, party
 # some records will be dropped here if n_present = 0
@@ -185,74 +186,15 @@ calc_rc_by_party <- p_legislator_votes %>%
   filter(n_present >0) %>% 
   mutate(
     party_pct_of_present = Yea/(n_present),
-    party_pct_of_present_nay = Nay/(n_present),
-    margin=party_pct_of_present-party_pct_of_present_nay,
-    )
+    ) %>%
+  select(party,roll_call_id,party_pct_of_present)
 
 # primary key is roll_call_id
-# party counts are pivoted to create partisanship variables 
-calc_rc_partisan <- calc_rc_by_party %>%   select(party,roll_call_id,party_pct_of_present) %>% 
+# roll up party counts to get one row per roll call with partisanship descriptors
+calc_rc_partisan <- calc_rc_by_party %>%
   pivot_wider(names_from = party,values_from=party_pct_of_present,values_fill = NA,id_cols = c(roll_call_id)) %>% 
   mutate(
     DminusR = D - R,
-    # Partisan = NA_character_,
-    # GOP = NA_character_,
-    # DEM = NA_character_,
-    partisan_desc = case_when(
-      is.na(DminusR) ~ "Unclear",
-      DminusR < -0.75 ~ "Very GOP",
-      DminusR < -0.25 ~ "GOP",
-      DminusR < 0 ~ "Somewhat GOP",
-      DminusR == 0 ~ "Split",
-      DminusR > 0.75 ~ "Very DEM",
-      DminusR > 0.25 ~ "DEM",
-      DminusR > 0 ~ "Somewhat DEM",
-      TRUE ~ NA_character_
-    ),
-    r_support_desc = case_when(
-      R == 1 ~ "GOP Unanimously Support",
-      R > 0.9 ~ "GOP Very Strongly Support",
-      R > 0.75 ~ "GOP Moderately Support",
-      R > 0.5 ~ "GOP Support",
-      R == 0.5 ~ "GOP Split",
-      R < 0.1 ~ "GOP Very Strongly Oppose",
-      R < 0.25 ~ "GOP Moderately Oppose",
-      R < 0.5 ~ "GOP Oppose",
-      R == 0 ~ "GOP Unanimously Oppose",
-      TRUE ~ NA_character_
-    ),
-    d_support_desc = case_when(
-      D == 1 ~ "DEM Unanimously Support",
-      D > 0.9 ~ "DEM Very Strongly Support",
-      D > 0.75 ~ "DEM Strongly Support",
-      D > 0.5 ~ "DEM Support",
-      D == 0.5 ~ "DEM Split",
-      D < 0.1 ~ "DEM Very Strongly Oppose",
-      D < 0.25 ~ "DEM Moderately Oppose",
-      D < 0.5 ~ "DEM Oppose",
-      D == 0 ~ "DEM Unanimously Oppose",
-      is.na(D) ~ "DEM No Votes",
-      TRUE ~ NA_character_
-    )
-  )
-
-#############################################
-#                                           #  
-# 2b) legislator vote partisanship analysis #
-#                                           #
-#############################################
-# join partisanship analysis to p_legislator_votes
-# remove nulls
-calc_votes_partisan <- p_legislator_votes %>%
-  filter(!is.na(roll_call_date)&n_total>0) %>% 
-  left_join(
-    calc_rc_partisan,
-    by = 'roll_call_id'
-  ) %>%
-  filter(!is.na(D) & !is.na(R) & !is.na(DminusR)) %>%
-  arrange(desc(abs(DminusR))) %>%
-  mutate(
-    priority_bills = "N",
     dem_majority = case_when(
       D > 0.5 ~ "Y",
       D < 0.5 ~ "N",
@@ -267,8 +209,22 @@ calc_votes_partisan <- p_legislator_votes %>%
     )
   )
 
-calc_votes_partisan$priority_bills[abs(calc_votes_partisan$DminusR)>.85] <- "Y"
+#############################################
+#                                           #  
+# 2b) legislator-vote partisanship analysis #
+#                                           #
+#############################################
+# join partisanship analysis to p_legislator_votes to contextualize individual votes within party-level analysis
+# remove roll calls with no date or no vote total
+calc_votes_partisan <- p_legislator_votes %>%
+  filter(!is.na(roll_call_date)&n_total>0) %>% 
+  left_join(
+    calc_rc_partisan,
+    by = 'roll_call_id'
+  ) %>%
+  filter(!is.na(D) & !is.na(R) & !is.na(DminusR))
 
+# for individual votes, classify relationship between individual votes and party-level majorities
 # RR 7/16/24 added vote_with_both and vote_with_same
 calc_votes_partisan <- calc_votes_partisan %>%
   mutate(
@@ -276,51 +232,25 @@ calc_votes_partisan <- calc_votes_partisan %>%
     vote_with_gop_majority = ifelse((gop_majority == "Y" & vote_text == "Yea")|gop_majority=="N" & vote_text=="Nay", 1, 0),
     vote_with_neither = ifelse(
       (dem_majority == "Y" & gop_majority == "Y" & vote_text == "Nay") | (dem_majority == "N" & gop_majority == "N" & vote_text == "Yea"), 1, 0),
-    voted_at_all = vote_with_dem_majority+vote_with_gop_majority+vote_with_neither,
-    maverick_votes=ifelse((party=="D" & vote_text=="Yea" & dem_majority=="N" & gop_majority=="Y") |
-                                 (party=="D" & vote_text=="Nay" & dem_majority=="Y" & gop_majority=="N") |
-                                 (party=="R" & vote_text=="Yea" & gop_majority=="N" & dem_majority=="Y") |
-                                 (party=="R" & vote_text=="Nay" & gop_majority=="Y" & dem_majority=="N"),1,0 ),
-    ## RR added 7/16/24
-    vote_with_both = ifelse((dem_majority == "Y" & gop_majority == "Y" & vote_text == "Yea")|dem_majority=="N" & gop_majority=="N" & vote_text=="Nay", 1, 0),
-    vote_with_same = ifelse((vote_with_dem_majority == "Y" & party == "D")|(vote_with_gop_majority & party == "R"), 1, 0),
-    
+    voted_at_all = (vote_with_dem_majority+vote_with_gop_majority+vote_with_neither)>=1,
+    maverick_votes=ifelse(
+      (party=="D" & vote_text=="Yea" & dem_majority=="N" & gop_majority=="Y") |
+        (party=="D" & vote_text=="Nay" & dem_majority=="Y" & gop_majority=="N") |
+        (party=="R" & vote_text=="Yea" & gop_majority=="N" & dem_majority=="Y") |
+        (party=="R" & vote_text=="Nay" & gop_majority=="Y" & dem_majority=="N"),
+      1,0 ),
+    ## RR added 7/16/24, vote with same party's majority regardless of oppo party majority 
+    vote_with_same = ifelse(
+      (vote_with_dem_majority == "Y" & party == "D")|
+        (vote_with_gop_majority & party == "R")
+      , 1, 0),
     )
 
-calc_votes_partisan <- calc_votes_partisan %>%
-  mutate(
-    bill_alignment = case_when(
-      D == 0.5 | R == 0.5 ~ "at least one party even",
-      D > 0.5 & R < 0.5 ~ "DEM",
-      D < 0.5 & R > 0.5 ~ "GOP",
-      D < 0.5 & R < 0.5 ~ "Both",
-      D > 0.5 & R > 0.5 ~ "Both",
-      TRUE ~ NA_character_
-    )
-  )
-
+# for each roll call, summarize party majority vote for R and D
 calc_rc_party_majority <- calc_votes_partisan %>% filter(party!=""& !is.na(party)) %>% 
   group_by(roll_call_id, party) %>%
   summarize(majority_vote = if_else(sum(vote_text == "Yea") > sum(vote_text == "Nay"), "Yea", "Nay"), .groups = 'drop') %>% 
   pivot_wider(names_from = party,values_from = majority_vote,id_cols = roll_call_id,values_fill = "NA",names_prefix = "vote_")
-
-# diff_* calculations may not be used in the current app (check app 2)
-calc_leg_votes_partisan <- calc_votes_partisan %>%
-  left_join(calc_rc_party_majority, by = c("roll_call_id")) %>%
-  select() %>%
-  filter(
-    !is.na(party) & party != "" & 
-      !grepl("2010", session, ignore.case = TRUE) & 
-      !is.na(session) & 
-      (vote_text == "Yea" | vote_text == "Nay")
-  ) %>%
-  mutate(diff_party_vote_d = if_else(vote_text != vote_D, 1, 0),diff_party_vote_r = if_else(vote_text != vote_R, 1, 0),
-         diff_both_parties = if_else(diff_party_vote_d == 1 & diff_party_vote_r == 1,1,0),
-         diff_d_not_r=if_else(diff_party_vote_d==1 & diff_party_vote_r==0,1,0),
-         diff_r_not_d=if_else(diff_party_vote_d==0&diff_party_vote_r==1,1,0),
-         #partisan_metric_a = ifelse(party=="R",diff_r_not_d,ifelse(party=="D",diff_d_not_r,NA)), #old defunct metric
-  )
-
 
 ##################################################
 #                                                #  
@@ -334,13 +264,6 @@ calc_leg_votes_partisan <- calc_votes_partisan %>%
 # (Andrew Pantazi's work creating calc_leg_votes_partisan can be found at
 #      https://github.com/reliablerascal/fl-legislation-etl/blob/main/scripts/03a_process.R
 
-# QA check to ensure votes are categorized
-calc_votes_partisan <- calc_votes_partisan %>%
-  mutate(
-    qa_vote_present = ifelse((vote_text == "Yea" | vote_text== "Nay"),1,0),
-    qa_vote_categorized = vote_with_both + vote_with_same + maverick_votes + vote_with_neither,
-    qa_match = (qa_vote_present == qa_vote_categorized)
-  )
 
 # consolidate vote pattern into a single variable partisan_vote_type
 calc_leg_votes_partisan <- calc_votes_partisan %>%
@@ -349,10 +272,9 @@ calc_leg_votes_partisan <- calc_votes_partisan %>%
       vote_with_neither == 1 ~ "Against Both Parties",
       maverick_votes == 1 ~ "Cross Party",
       vote_with_same == 1 ~ "Party Line",
-      vote_with_both == 1 ~ "With Both Parties",
-      TRUE ~ "Unknown"
+      TRUE ~ "Unclear"
     ) %>% 
-      factor(levels = c("Against Both Parties", "Cross Party", "Party Line", "With Both Parties", "Unknown"))
+      factor(levels = c("Against Both Parties", "Cross Party", "Party Line", "Unclear"))
   )
 
 # fold calculated partisan_vote_type into p_legislator_votes data frame

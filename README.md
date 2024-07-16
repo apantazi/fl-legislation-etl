@@ -18,9 +18,13 @@ This project is a work in progress, with the following intended timeline:
 
 ### Key Terminology
 Following are definitions of key terminology used throughout this project:
-* **Party loyalty** is a legislator’s tendency to vote with or against their party. 1 = most loyal, 0 = least loyal.
-    * Calculations for party loyalty are based on classifying and weighing each present (yea or nay) vote as **party line**, **cross party**, **with both parties**, or **against both parties** 
+* **Party loyalty** is a legislator’s tendency to vote with or against their party. 1 = most loyal, 0 = least loyal. 
 * **Partisan lean** is a legislative electorate’s partisanship as measured by percentage point difference between voting for Democrats vs. Republicans.
+
+Calculations for **party loyalty** are based on classifying and weighing each present (yea or nay) vote as:
+* **party line**- voting with the same party's majority, regardless of the opposing party's majority vote
+* **cross party**- voting against the same party's majority and with the opposing party's majority
+* **against both parties**- voting against both party majorities
 
 <img src="docs/etl-schematic.png" width = 800><br>
 
