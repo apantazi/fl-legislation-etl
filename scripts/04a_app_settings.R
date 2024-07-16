@@ -113,9 +113,10 @@ calc_mean_partisan_leg <- qry_leg_votes %>%
   summarize(
     leg_party_loyalty=mean(party_loyalty_weight, na.rm = TRUE),
     leg_n_votes_denominator = sum(!is.na(party_loyalty_weight)),
-    leg_n_votes_party_line = sum(partisan_vote_type=="Party Line"),
-    leg_n_votes_cross_party= sum(partisan_vote_type=="Cross Party"),
-    leg_n_votes_independent = sum(partisan_vote_type=="Against Both Parties")
+    leg_n_votes_party_line = sum(partisan_vote_type == "Party Line", na.rm = TRUE),
+    leg_n_votes_cross_party = sum(partisan_vote_type == "Cross Party", na.rm = TRUE),
+    leg_n_votes_independent = sum(partisan_vote_type == "Against Both Parties", na.rm = TRUE),
+    leg_n_votes_missing = sum(is.na(partisan_vote_type))
   )
 
 # legislator mean partisanship
