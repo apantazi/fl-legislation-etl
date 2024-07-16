@@ -21,3 +21,7 @@ Following are some data pipeline maintenance tasks:
 
 And some expansions to the data pipeline:
 * Incorporate LegiStar voting data for Jacksonville and align this with state data, so it can be visualized with existing web apps
+
+Each web app contains its own development notes:
+* [District Context](https://docs.google.com/document/d/1e3KDrnpXjKL4OJqFR49hqti77TntPRL7k4AkqSfsefU/edit?usp=drive_link) development notes
+* [Voting Patterns](https://docs.google.com/document/d/1OGiJH7B_0j3B38gEtgt_FDhkxzL84ZtGistdup2yYHI/edit?usp=drive_link) development notes

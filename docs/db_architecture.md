@@ -78,9 +78,9 @@ The processed layer tracks data transformed from LegiScan, census demographics, 
 |p_bills|bill_id|LegiScan (state)|Description, title, url, etc. of bills|
 |p_legislators|people_id|Summary info about each legislator, based on hist_leg_sessions.|
 |p_legislator_votes|person_id,<br>roll_call_id|LegiScan (state)|Includes data on how the legislator voted (yea, nay, absent, no vote) and calculated **partisan_vote_type** (with their party, against their party, against both parties, etc.).|
-|p_roll_calls|roll_call_id|LegiScan (state)|Includes summary data on roll calls. See [p_roll_calls data dictionary](../docs/data_dictionaries/data-dictionary-p_roll_calls.csv).|
+|p_roll_calls|roll_call_id|LegiScan (state)|Includes summary data on roll calls.|
 |p_sessions|session_id|LegiScan (state)|Info about each legislative session, e.g. session name and session biennium.|
 
 ## App Layer
-See [Web App and Data Vidualization Guide](../docs/app_dev_guide.md) for more info about data sources for existing and new web apps and data visualizations.
+See [Web App and Data Visualization Guide](../docs/app_dev_guide.md) for more info about data sources for existing and new web apps and data visualizations.
 
