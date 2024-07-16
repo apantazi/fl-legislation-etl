@@ -70,7 +70,8 @@ For more info about all apps and visualizations, see [Web App and Data Visualiza
 <br><br>
 
 ### Ad-Hoc Data Visualization from District Context Data
-<img src="viz/viz_leg_v_electorate_dem_senate.png" width = 800 style="border: 2px solid black; padding-left: 20px;">
+<div style = " padding-left: 20px;">
+<img src="viz/viz_leg_v_electorate_dem_senate.png" width = 800 style="border: 2px solid black;">
 
 
 
