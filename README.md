@@ -55,17 +55,21 @@ For more info about all apps and visualizations, see [Web App and Data Visualiza
 <div align = "left">
 
 ### Voting Patterns Dashboard
-    
-<img src="viz/screenshot_voting_patterns.png" width = 800 style="border: 2px solid black; padding-left: 20px;">
+
+<div style = "padding-left: 20px;">
+<img src="viz/screenshot_voting_patterns.png" width = 800 style="border: 2px solid black;">
 
 *Figure 2: Dashboard view of **Voting Patterns** web app of Senate Democrats during 2024 legislative session*
+</div>
 
 <br><br>
 
 ### District Context Web App
-<img src="viz/screenshot_district_context.png" width = 800 style="border: 2px solid black; padding-left: 20px;">
+<div style = "padding-left: 20px;">
+<img src="viz/screenshot_district_context.png" width = 800 style="border: 2px solid black;">
 
 *Figure 3: **District Context** web app comparing a legislator's voting record with their electorate's partisan leaning*
+</div>
 
 <br><br>
 
@@ -73,9 +77,8 @@ For more info about all apps and visualizations, see [Web App and Data Visualiza
 <div style = " padding-left: 20px;">
 <img src="viz/viz_leg_v_electorate_dem_senate.png" width = 800 style="border: 2px solid black;">
 
-
-
 *Figure 4: Ad-hoc Senate Democrat party loyalty vs. district electorate visualization, based on data from the **District Context** web app*
+</div>
 
 </div>
 
