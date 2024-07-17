@@ -266,15 +266,16 @@ calc_rc_party_majority <- calc_votes_partisan %>% filter(party!=""& !is.na(party
 
 
 # consolidate vote pattern into a single variable partisan_vote_type
+# "Other" includes absent, no vote, same party vote split equally, or nay vote when oppo party split equally (see qa_checks.R)
 calc_leg_votes_partisan <- calc_votes_partisan %>%
   mutate(
     partisan_vote_type = case_when(
       vote_with_neither == 1 ~ "Against Both Parties",
       maverick_votes == 1 ~ "Cross Party",
       vote_with_same == 1 ~ "Party Line",
-      TRUE ~ "Unclear"
+      TRUE ~ "Other"
     ) %>% 
-      factor(levels = c("Against Both Parties", "Cross Party", "Party Line", "Unclear"))
+      factor(levels = c("Against Both Parties", "Cross Party", "Party Line", "Other"))
   )
 
 # fold calculated partisan_vote_type into p_legislator_votes data frame
