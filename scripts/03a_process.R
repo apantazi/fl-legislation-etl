@@ -215,7 +215,7 @@ calc_rc_partisan <- calc_rc_by_party %>%
 #                                           #
 #############################################
 # join partisanship analysis to p_legislator_votes to contextualize individual votes within party-level analysis
-# remove roll calls with no date or no vote total
+# remove roll calls with no date or no vote total, but in my test case the # of records is identically 213,203
 calc_votes_partisan <- p_legislator_votes %>%
   filter(!is.na(roll_call_date)&n_total>0) %>% 
   left_join(
@@ -241,9 +241,9 @@ calc_votes_partisan <- calc_votes_partisan %>%
       1,0 ),
     ## RR added 7/16/24, vote with same party's majority regardless of oppo party majority 
     vote_with_same = ifelse(
-      (vote_with_dem_majority == "Y" & party == "D")|
+      (vote_with_dem_majority & party == "D")|
         (vote_with_gop_majority & party == "R")
-      , 1, 0),
+      , 1, 0)
     )
 
 # for each roll call, summarize party majority vote for R and D
