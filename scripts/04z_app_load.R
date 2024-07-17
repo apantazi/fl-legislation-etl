@@ -32,7 +32,7 @@ dbExecute(con, paste0("CREATE SCHEMA IF NOT EXISTS ", schema_name))
 list_tables <- c(
   "qry_bills",
   "qry_leg_votes",
-  "qry_legislators",
+  "qry_legislators_incumbent",
   "qry_districts",
   "qry_roll_calls",
   "qry_state_summary",
@@ -71,7 +71,7 @@ list_export_df <- list(
   app03_district_context_state = app03_district_context_state,
   qry_bills = qry_bills,
   qry_leg_votes = qry_leg_votes,
-  qry_legislators = qry_legislators,
+  qry_legislators_incumbent = qry_legislators_incumbent,
   qry_districts = qry_districts,
   qry_roll_calls = qry_roll_calls,
   qry_state_summary = qry_state_summary

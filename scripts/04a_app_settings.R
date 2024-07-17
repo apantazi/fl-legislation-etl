@@ -9,7 +9,7 @@
 
 ###########################
 #                         #  
-# configure app settings  #
+# 1) configure app settings  #
 #                         #
 ###########################
 #I may want to move this to a settings.yaml file, to separate settings from the script code
@@ -29,12 +29,12 @@ setting_district_lean <- "16_20_comp" #2016-2020 composite results of governor a
 
 ##############################################
 #                                            #  
-# 1) create base queries supporting all apps #
+# 2a) create base queries supporting all apps #
 #                                            #
 ##############################################
 
 # filter for incumbent legislators
-qry_legislators <- p_legislators %>%
+qry_legislators_incumbent <- p_legislators %>%
   filter(
     is.na(termination_date)
   )
@@ -44,7 +44,7 @@ qry_districts <- hist_district_demo %>%
   filter(source_demo==setting_demo_src,year_demo==setting_demo_year) %>%
   inner_join(hist_district_elections, by=c('chamber','district_number')) %>%
   inner_join(
-    qry_legislators %>%
+    qry_legislators_incumbent %>%
       select (people_id, chamber, district_number),
     by = c('chamber','district_number')
   ) %>%
@@ -120,7 +120,7 @@ calc_mean_partisan_leg <- qry_leg_votes %>%
   )
 
 # legislator mean partisanship
-qry_legislators <- qry_legislators %>%
+qry_legislators_incumbent <- qry_legislators_incumbent %>%
   left_join(calc_mean_partisan_leg, by='legislator_name')
 
 

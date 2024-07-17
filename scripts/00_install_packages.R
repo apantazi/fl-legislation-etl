@@ -11,8 +11,8 @@ install.packages(c(
   "oc",
   "jsonlite",
   "SnowballC",
-  "future.apply,"
-  "RPostgres,"
+  "future.apply",
+  "RPostgres",
   "progress",
   "dplyr"
 ))
@@ -28,3 +28,7 @@ remotes::install_github('wmay/dwnominate')
 
 # to install an individual package:
 # install.packages("dplyr")
+
+#packages for scraping IDs of Florida reps
+# install.packages("rvest")
+# install.packages("httr")

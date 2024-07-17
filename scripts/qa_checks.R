@@ -43,3 +43,15 @@ qa_leg_votes_unclear_present <- qa_leg_votes_partisan %>%
     partisan_vote_type == "Unclear" & !vote_text %in% c('Absent','NV')  
   )
 nrow(qa_leg_votes_unclear_present)
+
+###############################
+#                             #  
+# Review party loyalty ranks  #
+#                             #
+###############################
+# 7/17/24
+# rankings now incorporate n_leg_votes_denominator as tiebreaker for legislators with identical party loyalty
+
+# review partisan ranks by chamber
+qa_loyalty_ranks <- qry_legislators %>%
+  arrange(chamber, party, )

@@ -22,7 +22,7 @@ app01_vote_patterns <- qry_leg_votes %>%
       !is.na(partisan_vote_type)
   )%>%
   left_join(qry_bills %>% select('bill_id','bill_desc'), by='bill_id') %>%
-  left_join(qry_legislators %>% select('people_id','district_number','chamber', 'last_name', 'ballotpedia')) %>%
+  left_join(qry_legislators_incumbent %>% select('people_id','district_number','chamber', 'last_name', 'ballotpedia')) %>%
   left_join(qry_roll_calls %>% select('roll_call_id','D_pct_of_present','R_pct_of_present'))
 
 #filter out unanimous votes
@@ -45,7 +45,7 @@ calc_r_partisan_rc <- calc_leg_votes_partisan %>%
 # calc_r_votes <- app01_vote_patterns %>% filter(party=="R") %>% group_by(roll_call_id,vote_text) %>% summarize(n=n()) %>%  pivot_wider(names_from=vote_text,values_from=n,values_fill = 0) %>% mutate(y_pct = Yea/(Yea+Nay),n_pct = Nay/(Nay+Yea)) %>% filter(y_pct != 0 & y_pct != 1) %>% filter(as.character(roll_call_id) %in% as.character(calc_r_partisan_rc$roll_call_id))
 
 app01_vote_patterns <- app01_vote_patterns %>%
-  left_join(qry_legislators %>%
+  left_join(qry_legislators_incumbent %>%
               select(legislator_name, leg_party_loyalty), by = "legislator_name") %>%
   left_join(qry_roll_calls %>%
               select(roll_call_id, rc_mean_partisanship), by = "roll_call_id") %>%
@@ -86,7 +86,7 @@ app02_leg_activity <- qry_leg_votes %>%
       select(bill_id, bill_desc), by = 'bill_id'
   ) %>%
   left_join(
-    qry_legislators %>%
+    qry_legislators_incumbent %>%
       select(people_id, district_number, chamber, last_name, ballotpedia), 
     by = 'people_id'
   ) %>%
@@ -106,17 +106,14 @@ app02_leg_activity <- qry_leg_votes %>%
 #                               #
 #################################
 
-app03_district_context <- qry_legislators %>%
+app03_district_context <- qry_legislators_incumbent %>%
   select (
     people_id,party,legislator_name,last_name,ballotpedia,district_number,chamber,termination_date,leg_party_loyalty,
     leg_n_votes_denominator, leg_n_votes_party_line,leg_n_votes_cross_party,leg_n_votes_independent) %>%
-  left_join(qry_districts) %>%
-  mutate (
-    setting_party_loyalty = setting_party_loyalty
-    )
+  left_join(qry_districts)
 
 #rank senate partisanship
-calc_dist_senate_ranks <- app03_district_context %>%
+calc_dist_house_ranks <- app03_district_context %>%
   filter(
     chamber == "House"
   ) %>%
@@ -127,7 +124,7 @@ calc_dist_senate_ranks <- app03_district_context %>%
   select (district_number, chamber, rank_partisan_dist_R, rank_partisan_dist_D)
 
 #rank house partisanship
-calc_dist_house_ranks <- app03_district_context %>%
+calc_dist_senate_ranks <- app03_district_context %>%
   filter(
     chamber == "Senate"
   ) %>%
@@ -143,7 +140,7 @@ calc_dist_ranks <- rbind(calc_dist_senate_ranks,calc_dist_house_ranks)
 calculate_leg_ranks <- function(data, chamber, party, rank_column) {
   data %>%
     filter(chamber == !!chamber, party == !!party) %>%
-    arrange(desc(leg_party_loyalty)) %>%
+    arrange(desc(leg_party_loyalty), desc(leg_n_votes_denominator)) %>%
     mutate(!!rank_column := row_number()) %>%
     select(district_number, chamber, !!rank_column)
 }
@@ -172,7 +169,7 @@ app03_district_context_state <- qry_state_summary
 # recreating Yuriko Schumacher's partisanship visual from https://www.texastribune.org/2023/12/18/mark-jones-texas-senate-special-2023-liberal-conservative-scores/
 # first iteration: intent is to emulate the visual, though "partisanship" metric isn't identical
 
-# viz_partisanship <- qry_legislators %>%
+# viz_partisanship <- qry_legislators_incumbent %>%
 #       select(legislator_name, party, chamber, district_number, leg_n_votes_denominator, leg_party_loyalty) %>%
 #   mutate(
 #     sd_partisan_vote = qry_leg_votes %>%
