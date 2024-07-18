@@ -35,24 +35,13 @@ nrow(qa_leg_votes_absent_nv)
 qa_leg_votes_other_other <- qa_leg_votes_other %>%
   filter(!vote_text %in% c('Absent','NV') )
 
-###############################
-#                             #  
-# Review party loyalty ranks  #
-#                             #
-###############################
-# 7/17/24
-# rankings now incorporate n_leg_votes_denominator as tiebreaker for legislators with identical party loyalty
 
-# review partisan ranks by chamber
-qa_loyalty_ranks <- qry_legislators_incumbent %>%
-  arrange(chamber, party, rank_partisan_leg_R, rank_partisan_leg_D, leg_party_loyalty, leg_n_votes_denom_loyalty) %>%
-  select(chamber, party, rank_partisan_leg_R, rank_partisan_leg_D, leg_party_loyalty, leg_n_votes_denom_loyalty)
 
-##################################
-#                                #  
-# Review raw data for anomalies  #
-#                                #
-##################################
+
+
+print ("############################################")
+print ("Reviewing processed dataframes for anomalies")
+print ("############################################")
 # roll calls: no problems with missing date or no votes
 qa_roll_calls <- p_roll_calls %>%
   filter(
@@ -67,4 +56,18 @@ qa_legislator_votes <- p_legislator_votes %>%
   mutate(
     n_present=sum(yea,nay)
   ) %>% 
-  filter(n_present >0)
+  filter(n_present ==0)
+print(paste0(nrow(qa_legislator_votes)," legislator-votes with no present votes"))
+
+
+
+print ("############################################")
+print ("Reviewing party loyalty ranks")
+print ("############################################")
+print ("Note that total number of votes is used as a tiebreaker for legislators with identical party loyalty")
+
+# review partisan ranks by chamber
+qa_loyalty_ranks <- qry_legislators_incumbent %>%
+  arrange(chamber, party, rank_partisan_leg_R, rank_partisan_leg_D, leg_party_loyalty, leg_n_votes_denom_loyalty) %>%
+  select(chamber, party, rank_partisan_leg_R, rank_partisan_leg_D, leg_party_loyalty, leg_n_votes_denom_loyalty)
+print(qa_loyalty_ranks, n = 160)

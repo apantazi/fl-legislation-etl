@@ -30,3 +30,4 @@ To run these scripts, you'll need to know two passwords:
 | [04a_app_settings.R](scripts/04a_app_settings.R)|creates views based on settings|
 | [04b_app_prep.R](scripts/04b_app_prep.R)|prepares and filters data for web apps|
 | [04z_app_load.R](scripts/04z_app_load.R)|writes app data to Postgres, and exports data to CSV|
+| [qa_checks.R](scripts/qa_checks.R)|Reviews raw and processed data frames for missing records and other anomalies|
