@@ -12,7 +12,7 @@ This repo contains the data pipeline which:
 
 ### Project Status
 This project is a work in progress, with the following intended timeline:
-* comprehensively review data quality and document data definitions for web app data sources (mid-to-late July)
+* comprehensively [review data quality](scripts/qa_checks.R) and document data definitions for web app data sources (mid-to-late July)
 * review app with journalists at partner outlets (mid-to-late July)
 * publish the web app (in advance of August 20 Florida primaries)
 * build stories based on web app data analysis (September leading up to November 5 elections)

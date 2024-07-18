@@ -175,7 +175,7 @@ hist_district_elections <- get_election_results("E_16_20_COMP_", "16_20_COMP")
 
 # primary key is roll_call_id, party
 # some records will be dropped here if n_present = 0
-calc_rc_by_party <- p_legislator_votes %>%
+calc_rc01_by_party <- p_legislator_votes %>%
   group_by(party,roll_call_id, vote_text) %>%
   summarize(n=n()) %>% arrange(desc(n)) %>% 
   pivot_wider(values_from = n,names_from = vote_text,values_fill = 0) %>% 
@@ -191,7 +191,7 @@ calc_rc_by_party <- p_legislator_votes %>%
 
 # primary key is roll_call_id
 # roll up party counts to get one row per roll call with partisanship descriptors
-calc_rc_partisan <- calc_rc_by_party %>%
+calc_rc02_partisanship <- calc_rc01_by_party %>%
   pivot_wider(names_from = party,values_from=party_pct_of_present,values_fill = NA,id_cols = c(roll_call_id)) %>% 
   mutate(
     DminusR = D - R,
@@ -216,17 +216,16 @@ calc_rc_partisan <- calc_rc_by_party %>%
 #############################################
 # join partisanship analysis to p_legislator_votes to contextualize individual votes within party-level analysis
 # remove roll calls with no date or no vote total, but in my test case the # of records is identically 213,203
-calc_votes_partisan <- p_legislator_votes %>%
-  filter(!is.na(roll_call_date)&n_total>0) %>% 
+calc_votes01_both_parties_present <- p_legislator_votes %>%
   left_join(
-    calc_rc_partisan,
+    calc_rc02_partisanship,
     by = 'roll_call_id'
   ) %>%
   filter(!is.na(D) & !is.na(R) & !is.na(DminusR))
 
 # for individual votes, classify relationship between individual votes and party-level majorities
 # RR 7/16/24 added vote_with_both and vote_with_same
-calc_votes_partisan <- calc_votes_partisan %>%
+calc_votes02_w_partisan_stats <- calc_votes01_both_parties_present %>%
   mutate(
     vote_with_dem_majority = ifelse((dem_majority == "Y" & vote_text == "Yea")|dem_majority=="N" & vote_text=="Nay", 1, 0),
     vote_with_gop_majority = ifelse((gop_majority == "Y" & vote_text == "Yea")|gop_majority=="N" & vote_text=="Nay", 1, 0),
@@ -247,7 +246,7 @@ calc_votes_partisan <- calc_votes_partisan %>%
     )
 
 # for each roll call, summarize party majority vote for R and D
-calc_rc_party_majority <- calc_votes_partisan %>% filter(party!=""& !is.na(party)) %>% 
+calc_rc03_party_majority <- calc_votes02_w_partisan_stats %>% filter(party!=""& !is.na(party)) %>% 
   group_by(roll_call_id, party) %>%
   summarize(majority_vote = if_else(sum(vote_text == "Yea") > sum(vote_text == "Nay"), "Yea", "Nay"), .groups = 'drop') %>% 
   pivot_wider(names_from = party,values_from = majority_vote,id_cols = roll_call_id,values_fill = "NA",names_prefix = "vote_")
@@ -267,7 +266,7 @@ calc_rc_party_majority <- calc_votes_partisan %>% filter(party!=""& !is.na(party
 
 # consolidate vote pattern into a single variable partisan_vote_type
 # "Other" includes absent, no vote, same party vote split equally, or nay vote when oppo party split equally (see qa_checks.R)
-calc_leg_votes_partisan <- calc_votes_partisan %>%
+calc_votes03_categorized <- calc_votes02_w_partisan_stats %>%
   mutate(
     partisan_vote_type = case_when(
       vote_with_neither == 1 ~ "Against Both Parties",
@@ -280,14 +279,14 @@ calc_leg_votes_partisan <- calc_votes_partisan %>%
 
 # fold calculated partisan_vote_type into p_legislator_votes data frame
 p_legislator_votes <- p_legislator_votes %>%
-  left_join(calc_leg_votes_partisan %>%
+  left_join(calc_votes03_categorized %>%
               select(people_id,roll_call_id,partisan_vote_type),
             by = c('people_id','roll_call_id')
   )
 
 # roll call summaries, 6271
 p_roll_calls <- p_roll_calls %>%
-  left_join(calc_rc_partisan %>%
+  left_join(calc_rc02_partisanship %>%
               select(roll_call_id,R,D),
             by = 'roll_call_id'
   ) %>%
