@@ -53,5 +53,6 @@ nrow(qa_leg_votes_unclear_present)
 # rankings now incorporate n_leg_votes_denominator as tiebreaker for legislators with identical party loyalty
 
 # review partisan ranks by chamber
-qa_loyalty_ranks <- qry_legislators %>%
-  arrange(chamber, party, )
+qa_loyalty_ranks <- qry_legislators_incumbent %>%
+  arrange(chamber, party, rank_partisan_leg_R, rank_partisan_leg_D, leg_party_loyalty, leg_n_votes_denom_loyalty) %>%
+  select(chamber, party, rank_partisan_leg_R, rank_partisan_leg_D, leg_party_loyalty, leg_n_votes_denom_loyalty)

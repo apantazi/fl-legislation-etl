@@ -7,11 +7,11 @@
 # This script builds on processed data (p_* and hist_*,), responds to settings,
 # then prepares queries (qry_*) for web applications and visualizations
 
-###########################
-#                         #  
-# 1) configure app settings  #
-#                         #
-###########################
+##############################
+#                            #  
+# 1a) configure app settings #
+#                            #
+##############################
 #I may want to move this to a settings.yaml file, to separate settings from the script code
 
 # Setting 1: Select source of demographic data (choices include CVAP 2022 and ACS 2022)
@@ -27,19 +27,73 @@ setting_party_loyalty <- "for_against"
 # Setting 3: Select election result for calculating district partisan lean (choices TK)
 setting_district_lean <- "16_20_comp" #2016-2020 composite results of governor and presidential election results
 
-##############################################
-#                                            #  
-# 2a) create base queries supporting all apps #
-#                                            #
-##############################################
-
-# filter for incumbent legislators
-qry_legislators_incumbent <- p_legislators %>%
-  filter(
-    is.na(termination_date)
+#####################################
+#                                   #  
+# 2) calculate partisanship stats   #
+#                                   #
+#####################################
+# calculate party loyalty based on setting_party_loyalty
+# and fold into qry_leg_votes
+qry_leg_votes <- p_legislator_votes %>%
+  mutate(
+    party_loyalty_weight = case_when(
+      setting_party_loyalty == "for_against" ~ case_when(
+        partisan_vote_type == "Party Line" ~ 1,
+        partisan_vote_type == "Cross Party" ~ 0,
+        TRUE ~ NA_real_  # Default case for unmatched conditions within "for_against"
+      ),
+      setting_party_loyalty == "for_against_indy" ~ case_when(
+        partisan_vote_type == "Party Line" ~ 1,
+        partisan_vote_type == "Cross Party" ~ 0,
+        partisan_vote_type == "Against Both Parties" ~ 0.5,
+        TRUE ~ NA_real_  # Default case for unmatched conditions within "for_against_indy"
+      )
+    )
   )
 
+# calculate mean legislator-level partisan vote weight for ALL their votes
+# filters for dates >= 11/10/12 (data has some issues prior to that, per Andrew)
+calc_mean_partisan_leg <- qry_leg_votes %>%
+  group_by(legislator_name) %>%
+  filter(roll_call_date >= as.Date("11/10/2012")) %>%
+  summarize(
+    leg_party_loyalty=mean(party_loyalty_weight, na.rm = TRUE),
+    leg_n_votes_denom_loyalty = sum(!is.na(party_loyalty_weight)),
+    leg_n_votes_party_line = sum(partisan_vote_type == "Party Line", na.rm = TRUE),
+    leg_n_votes_cross_party = sum(partisan_vote_type == "Cross Party", na.rm = TRUE),
+    leg_n_votes_independent = sum(partisan_vote_type == "Against Both Parties", na.rm = TRUE),
+    leg_n_votes_other = sum(partisan_vote_type == "Other", na.rm = TRUE),
+    leg_n_votes_missing = sum(is.na(partisan_vote_type))
+  )
+
+# calculate mean roll-call-level partisan vote weight
+calc_mean_partisan_rc <- qry_leg_votes %>%
+  group_by(roll_call_id) %>%
+  filter(roll_call_date >= as.Date("11/10/2012")) %>%
+  summarize(
+    rc_mean_partisanship=mean(party_loyalty_weight, na.rm = TRUE),
+    rc_n_votes_denominator = sum(!is.na(party_loyalty_weight)),
+    rc_n_votes_party_line = sum(partisan_vote_type=="Party Line"),
+    rc_n_votes_cross_party= sum(partisan_vote_type=="Cross Party"),
+    rc_n_votes_cross_party= sum(partisan_vote_type=="Other"),
+    rc_n_votes_independent = sum(partisan_vote_type=="Against Both Parties")
+  )
+
+# roll call summaries, 6271
+qry_roll_calls <- p_roll_calls %>%
+  left_join(calc_mean_partisan_rc,
+            by = 'roll_call_id'
+  )
+
+###########################
+#                         #  
+# 3a) create districts query  #
+#                         #
+###########################
+
 # create qry_districts based on setting_demo_src, setting_demo_year, setting_district_lean
+# and incorporating partisanship metrics
+
 qry_districts <- hist_district_demo %>%
   filter(source_demo==setting_demo_src,year_demo==setting_demo_year) %>%
   inner_join(hist_district_elections, by=c('chamber','district_number')) %>%
@@ -49,6 +103,33 @@ qry_districts <- hist_district_demo %>%
     by = c('chamber','district_number')
   ) %>%
   rename(incumb_people_id = people_id)
+
+#rank senate partisanship
+calc_dist_house_ranks <- qry_districts %>%
+  filter(
+    chamber == "House"
+  ) %>%
+  arrange(desc(party_lean_points_R)) %>%
+  mutate(rank_partisan_dist_R = row_number()) %>%
+  arrange(party_lean_points_R) %>%
+  mutate(rank_partisan_dist_D = row_number()) %>%
+  select (district_number, chamber, rank_partisan_dist_R, rank_partisan_dist_D)
+
+#rank house partisanship
+calc_dist_senate_ranks <- qry_districts %>%
+  filter(
+    chamber == "Senate"
+  ) %>%
+  arrange(desc(party_lean_points_R)) %>%
+  mutate(rank_partisan_dist_R = row_number()) %>%
+  arrange(party_lean_points_R) %>%
+  mutate(rank_partisan_dist_D = row_number()) %>%
+  select (district_number, chamber, rank_partisan_dist_R, rank_partisan_dist_D)  
+
+calc_dist_ranks <- rbind(calc_dist_senate_ranks,calc_dist_house_ranks)
+
+qry_districts <- qry_districts %>%
+  left_join(calc_dist_ranks, by = c('district_number','chamber'))
 
 # summarize statewide
 qry_state_summary <- qry_districts %>%
@@ -75,69 +156,48 @@ qry_state_summary <- qry_districts %>%
     source_elec = setting_district_lean
   )
 
-# calculate party loyalty based on setting_party_loyalty
-# and fold into qry_leg_votes
-qry_leg_votes <- p_legislator_votes %>%
+#############################
+#                           #  
+# 3b) create legislators query  #
+#                           #
+#############################
+
+# filter for incumbent legislators then incorporate partisanship data
+qry_legislators_incumbent <- p_legislators %>%
+  filter(
+    is.na(termination_date)
+  ) %>%
+  left_join(calc_mean_partisan_leg, by='legislator_name') %>%
   mutate(
-    party_loyalty_weight = case_when(
-      setting_party_loyalty == "for_against" ~ case_when(
-        partisan_vote_type == "Party Line" ~ 1,
-        partisan_vote_type == "Cross Party" ~ 0,
-        partisan_vote_type == "Against Both Parties" ~ NA_real_,
-        TRUE ~ NA_real_  # Default case for unmatched conditions within "for_against"
-      ),
-      setting_party_loyalty == "for_against_indy" ~ case_when(
-        partisan_vote_type == "Party Line" ~ 1,
-        partisan_vote_type == "Cross Party" ~ 0,
-        partisan_vote_type == "Against Both Parties" ~ 0.5,
-        TRUE ~ NA_real_  # Default case for unmatched conditions within "for_against_indy"
-      )
-    )
+    setting_party_loyalty = setting_party_loyalty # add setting in here for future reference
   )
 
-# save unchanged views to qry_* upfront to avoid downstream confusion about layers
-qry_roll_calls <- p_roll_calls
-qry_bills <- p_bills
+# calculate legislator ranks for each party and for each chamber
+calculate_leg_ranks <- function(data, chamber, party, rank_column) {
+  data %>%
+    filter(chamber == !!chamber, party == !!party) %>%
+    arrange(desc(leg_party_loyalty), desc(leg_n_votes_denom_loyalty)) %>%
+    mutate(!!rank_column := row_number()) %>%
+    select(district_number, chamber, !!rank_column)
+}
+calc_leg_house_R_ranks <- calculate_leg_ranks(qry_legislators_incumbent, "House", "R", "rank_partisan_leg_R")
+calc_leg_house_D_ranks <- calculate_leg_ranks(qry_legislators_incumbent, "House", "D", "rank_partisan_leg_D")
+calc_leg_senate_R_ranks <- calculate_leg_ranks(qry_legislators_incumbent, "Senate", "R", "rank_partisan_leg_R")
+calc_leg_senate_D_ranks <- calculate_leg_ranks(qry_legislators_incumbent, "Senate", "D", "rank_partisan_leg_D")
 
-#####################################
-#                                   #  
-# 0b) base queries 2- partisanship  #
-#                                   #
-#####################################
+# Bind the House and Senate R ranks together
+calc_leg_R_ranks <- bind_rows(calc_leg_house_R_ranks, calc_leg_senate_R_ranks)
+calc_leg_D_ranks <- bind_rows(calc_leg_house_D_ranks, calc_leg_senate_D_ranks)
+calc_leg_ranks <- bind_rows(calc_leg_R_ranks, calc_leg_D_ranks)
 
-# calculate mean legislator-level partisan vote weight for ALL their votes
-# filters for dates >= 11/10/12 (data has some issues prior to that, per Andrew)
-calc_mean_partisan_leg <- qry_leg_votes %>%
-  group_by(legislator_name) %>%
-  filter(roll_call_date >= as.Date("11/10/2012")) %>%
-  summarize(
-    leg_party_loyalty=mean(party_loyalty_weight, na.rm = TRUE),
-    leg_n_votes_denominator = sum(!is.na(party_loyalty_weight)),
-    leg_n_votes_party_line = sum(partisan_vote_type == "Party Line", na.rm = TRUE),
-    leg_n_votes_cross_party = sum(partisan_vote_type == "Cross Party", na.rm = TRUE),
-    leg_n_votes_independent = sum(partisan_vote_type == "Against Both Parties", na.rm = TRUE),
-    leg_n_votes_missing = sum(is.na(partisan_vote_type))
-  )
-
-# legislator mean partisanship
 qry_legislators_incumbent <- qry_legislators_incumbent %>%
-  left_join(calc_mean_partisan_leg, by='legislator_name')
+  left_join(calc_leg_ranks, by = c('district_number','chamber')) 
 
+###########################
+#                         #  
+# 3c) create bills query  #
+#                         #
+###########################
 
-# calculate mean roll-call-level partisan vote weight
-calc_mean_partisan_rc <- qry_leg_votes %>%
-  group_by(roll_call_id) %>%
-  filter(roll_call_date >= as.Date("11/10/2012")) %>%
-  summarize(
-    rc_mean_partisanship=mean(party_loyalty_weight, na.rm = TRUE),
-    rc_n_votes_denominator = sum(!is.na(party_loyalty_weight)),
-    rc_n_votes_party_line = sum(partisan_vote_type=="Party Line"),
-    rc_n_votes_cross_party= sum(partisan_vote_type=="Cross Party"),
-    rc_n_votes_independent = sum(partisan_vote_type=="Against Both Parties")
-  )
-
-# roll call summaries, 6271
-qry_roll_calls <- qry_roll_calls %>%
-  left_join(calc_mean_partisan_rc,
-            by = 'roll_call_id'
-  )
+# create simple queries with unaltered views of processed data
+qry_bills <- p_bills

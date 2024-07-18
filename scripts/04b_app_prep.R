@@ -22,13 +22,13 @@ app01_vote_patterns <- qry_leg_votes %>%
       !is.na(partisan_vote_type)
   )%>%
   left_join(qry_bills %>% select('bill_id','bill_desc'), by='bill_id') %>%
-  left_join(qry_legislators_incumbent %>% select('people_id','district_number','chamber', 'last_name', 'ballotpedia')) %>%
+  left_join(qry_legislators_incumbent %>% select('people_id','district_number','chamber', 'last_name', 'ballotpedia', 'rank_partisan_leg_D', 'rank_partisan_leg_R')) %>%
   left_join(qry_roll_calls %>% select('roll_call_id','D_pct_of_present','R_pct_of_present'))
 
 #filter out unanimous votes
 app01_vote_patterns <- app01_vote_patterns %>%
   filter(pct_of_present != 0 & pct_of_present != 1) %>%
-  select(roll_call_id, legislator_name, last_name, chamber, partisan_vote_type, session_year, final_vote, party, bill_number, roll_call_desc, bill_title, roll_call_date, bill_desc, bill_url, pct_of_total, pct_of_present, vote_text, legislator_name, bill_id, district_number, D_pct_of_present,R_pct_of_present, ballotpedia)
+  select(roll_call_id, legislator_name, last_name, chamber, partisan_vote_type, session_year, final_vote, party, bill_number, roll_call_desc, bill_title, roll_call_date, bill_desc, bill_url, pct_of_total, pct_of_present, vote_text, legislator_name, bill_id, district_number, D_pct_of_present,R_pct_of_present, ballotpedia, 'rank_partisan_leg_D', 'rank_partisan_leg_R')
 
 # filter for roll calls that had some dissension from party-line; exclude 1 = with party; include 99 = against both parties and 0 = against party 
 calc_d_partisan_rc <- calc_leg_votes_partisan %>%
@@ -108,56 +108,10 @@ app02_leg_activity <- qry_leg_votes %>%
 
 app03_district_context <- qry_legislators_incumbent %>%
   select (
-    people_id,party,legislator_name,last_name,ballotpedia,district_number,chamber,termination_date,leg_party_loyalty,
-    leg_n_votes_denominator, leg_n_votes_party_line,leg_n_votes_cross_party,leg_n_votes_independent) %>%
+    people_id,party,legislator_name,last_name,ballotpedia,district_number,chamber,termination_date,leg_party_loyalty, setting_party_loyalty,
+    leg_n_votes_denom_loyalty, leg_n_votes_party_line,leg_n_votes_cross_party,leg_n_votes_independent, leg_n_votes_other, rank_partisan_leg_R, rank_partisan_leg_D
+    ) %>%
   left_join(qry_districts)
-
-#rank senate partisanship
-calc_dist_house_ranks <- app03_district_context %>%
-  filter(
-    chamber == "House"
-  ) %>%
-  arrange(desc(party_lean_points_R)) %>%
-  mutate(rank_partisan_dist_R = row_number()) %>%
-  arrange(party_lean_points_R) %>%
-  mutate(rank_partisan_dist_D = row_number()) %>%
-  select (district_number, chamber, rank_partisan_dist_R, rank_partisan_dist_D)
-
-#rank house partisanship
-calc_dist_senate_ranks <- app03_district_context %>%
-  filter(
-    chamber == "Senate"
-  ) %>%
-  arrange(desc(party_lean_points_R)) %>%
-  mutate(rank_partisan_dist_R = row_number()) %>%
-  arrange(party_lean_points_R) %>%
-  mutate(rank_partisan_dist_D = row_number()) %>%
-  select (district_number, chamber, rank_partisan_dist_R, rank_partisan_dist_D)  
-
-calc_dist_ranks <- rbind(calc_dist_senate_ranks,calc_dist_house_ranks)
-
-# calculate legislator ranks for each party and for each chamber
-calculate_leg_ranks <- function(data, chamber, party, rank_column) {
-  data %>%
-    filter(chamber == !!chamber, party == !!party) %>%
-    arrange(desc(leg_party_loyalty), desc(leg_n_votes_denominator)) %>%
-    mutate(!!rank_column := row_number()) %>%
-    select(district_number, chamber, !!rank_column)
-}
-calc_leg_house_R_ranks <- calculate_leg_ranks(app03_district_context, "House", "R", "rank_partisan_leg_R")
-calc_leg_house_D_ranks <- calculate_leg_ranks(app03_district_context, "House", "D", "rank_partisan_leg_D")
-calc_leg_senate_R_ranks <- calculate_leg_ranks(app03_district_context, "Senate", "R", "rank_partisan_leg_R")
-calc_leg_senate_D_ranks <- calculate_leg_ranks(app03_district_context, "Senate", "D", "rank_partisan_leg_D")
-
-# Bind the House and Senate R ranks together
-calc_leg_R_ranks <- bind_rows(calc_leg_house_R_ranks, calc_leg_senate_R_ranks)
-calc_leg_D_ranks <- bind_rows(calc_leg_house_D_ranks, calc_leg_senate_D_ranks)
-calc_leg_ranks <- bind_rows(calc_leg_R_ranks, calc_leg_D_ranks)
-
-
-app03_district_context <- app03_district_context %>%
-  left_join(calc_dist_ranks, by = c('district_number','chamber')) %>%
-  left_join(calc_leg_ranks, by = c('district_number','chamber')) 
 
 app03_district_context_state <- qry_state_summary
 
