@@ -55,7 +55,10 @@ source("03z_process_load.R")
 source("04a_app_settings.R") # integrate app settings into creating base query layer
 source("04b_app_prep.R") # merge, prep, analyze data
 
+# check data quality and write to log file
 qa_log <- "../qa/qa_checks.log"
+fileConn <- file(qa_log, "w")
+close(fileConn)
 sink(qa_log, split = TRUE)
 source("qa_checks.R")
 sink()

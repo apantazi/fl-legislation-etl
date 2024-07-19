@@ -179,19 +179,15 @@ calc_rc01_by_party <- p_legislator_votes %>%
   mutate(
     n_total=sum(Yea,Nay,NV,Absent,na.rm = TRUE),
     n_present=sum(Yea,Nay)
-    )
-
-# drop records with no denominator, i.e. n_present = 0
-calc_rc01a_by_party_valid <- calc_rc01_by_party %>%
-  filter(n_present >0) %>% 
+    ) %>%
   mutate(
     party_pct_of_present = Yea/(n_present),
     ) %>%
-  select(party,roll_call_id,party_pct_of_present)
+  select(party,roll_call_id,party_pct_of_present, n_present)
 
 # primary key is roll_call_id
 # roll up party counts to get one row per roll call with partisanship descriptors
-calc_rc02_partisanship <- calc_rc01a_by_party_valid %>%
+calc_rc02_partisan_pivot <- calc_rc01_by_party %>%
   pivot_wider(names_from = party,values_from=party_pct_of_present,values_fill = NA,id_cols = c(roll_call_id)) %>% 
   mutate(
     dem_majority = case_when(
@@ -217,7 +213,7 @@ calc_rc02_partisanship <- calc_rc01a_by_party_valid %>%
 # remove roll calls with no date or no vote total, but in my test case the # of records is identically 213,203
 calc_votes01_both_parties_present <- p_legislator_votes %>%
   left_join(
-    calc_rc02_partisanship,
+    calc_rc02_partisan_pivot,
     by = 'roll_call_id'
   ) %>%
   filter(!is.na(D) & !is.na(R))
@@ -245,10 +241,10 @@ calc_votes02_w_partisan_stats <- calc_votes01_both_parties_present %>%
     )
 
 # for each roll call, summarize party majority vote for R and D
-calc_rc03_party_majority <- calc_votes02_w_partisan_stats %>% filter(party!=""& !is.na(party)) %>% 
-  group_by(roll_call_id, party) %>%
-  summarize(majority_vote = if_else(sum(vote_text == "Yea") > sum(vote_text == "Nay"), "Yea", "Nay"), .groups = 'drop') %>% 
-  pivot_wider(names_from = party,values_from = majority_vote,id_cols = roll_call_id,values_fill = "NA",names_prefix = "vote_")
+# calc_rc03_party_majority <- calc_votes02_w_partisan_stats %>%
+#   group_by(roll_call_id, party) %>%
+#   summarize(majority_vote = if_else(sum(vote_text == "Yea") > sum(vote_text == "Nay"), "Yea", "Nay"), .groups = 'drop') %>% 
+#   pivot_wider(names_from = party,values_from = majority_vote,id_cols = roll_call_id,values_fill = "NA",names_prefix = "vote_")
 
 ##################################################
 #                                                #  
@@ -285,7 +281,7 @@ p_legislator_votes <- p_legislator_votes %>%
 
 # roll call summaries, 6271
 p_roll_calls <- p_roll_calls %>%
-  left_join(calc_rc02_partisanship %>%
+  left_join(calc_rc02_partisan_pivot %>%
               select(roll_call_id,R,D),
             by = 'roll_call_id'
   ) %>%

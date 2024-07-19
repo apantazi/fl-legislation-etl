@@ -1,5 +1,5 @@
 # Florida Legislative Voting Database
-7/16/24
+7/19/24
 
 ## Project Overview
 The Jacksonville Tributary is developing a **[legislative voting dashboard](https://mockingbird.shinyapps.io/fl-leg-app-postgres/)** to analyze roll call voting patterns of Florida state legislators, including legislators' **party loyalty** and congressional district electorates' **partisan lean** and demographics. The dashboard is intended to support development of a voter guide, reporting on party polarization, and disparities between legislators and the districts they represent.
@@ -7,13 +7,14 @@ The Jacksonville Tributary is developing a **[legislative voting dashboard](http
 This repo contains the data pipeline which:
 * extracts [legislative voting data from LegiScan](https://legiscan.com/FL/datasets), and census and demographics data from [Daves Redistricting Maps](https://davesredistricting.org/maps#state::FL).
 * transforms data by organizing and integrating data sources
+* [reviews data quality](qa/qa_checks.log) to identify and explain anomalies
 * loads data into a Postgres database while exporting key tables as [.csv files](data-app/)
 * prepares data for use by the [legislator dashboard web app](https://mockingbird.shinyapps.io/fl-leg-app-postgres/) (see also the [repo for the web app](https://github.com/reliablerascal/fl-legislation-app-postgres))
 
 ### Project Status
 This project is a work in progress, with the following intended timeline:
-* comprehensively [review data quality](scripts/qa_checks.R) and document data definitions for web app data sources (mid-to-late July)
 * review app with journalists at partner outlets (mid-to-late July)
+* document data definitions for web app data sources (mid-to-late July)
 * publish the web app (in advance of August 20 Florida primaries)
 * build stories based on web app data analysis (September leading up to November 5 elections)
 
@@ -47,7 +48,7 @@ Following is an overview of files in this repository:
 * **[data-app](data-app/)**- data supporting web applications, in csv format
 * **data-raw**- raw data in JSON format, as bulk downloaded from LegiScan's API
 * **[docs](docs/)**- data dictionaries, diagrams, and documentation
-* **[qa](qa/)**- tables of data anomalies for quality assurance review (see [scripts/qa_checks.R](scripts/qa_checks.R))
+* **[qa](qa/)**- includes [quality assurance log](https://github.com/reliablerascal/fl-legislation-etl/blob/main/qa/qa_checks.log) and tables of data anomalies. See QA script at [scripts/qa_checks.R](scripts/qa_checks.R).
 * **[scripts](scripts/)**- ETL scripts
 
 <!-- * **[notebooks](notebooks/)**- API exploration using Jupyter Notebook and Python-->

@@ -81,8 +81,8 @@ table_exists <- function(con, schema_name, table_name) {
 
 
 verify_table <- function(con, schema_name, table_name) {
-  print("review first record")
-  print(dbGetQuery(con, paste0("SELECT * FROM ", schema_name, ".", table_name, " LIMIT 1")))
+  #print("review first record")
+  #print(dbGetQuery(con, paste0("SELECT * FROM ", schema_name, ".", table_name, " LIMIT 1")))
   
   # display recordcount
   sql_recordcount <- paste0("SELECT COUNT(*) as num_rows FROM ", schema_name, ".", table_name)

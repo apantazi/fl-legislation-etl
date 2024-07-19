@@ -1,7 +1,6 @@
 # QA_CHECKS.R
 #7/19/24 working on this data quality check "in earnest," as they say
 
-
 cat ("\n############################################")
 cat ("\n#")
 cat ("\n# Quality Assurance Check")
@@ -11,7 +10,6 @@ cat ("\n")
 cat ("\n")
 print("To manually review edge cases that explain record count disparities, refer to the following folder:")
 print("https://github.com/reliablerascal/fl-legislation-etl/tree/main/qa")
-cat ("\n")
 
 cat ("\n############################################")
 cat ("\n#")
@@ -28,15 +26,17 @@ qa_roll_calls <- p_roll_calls %>%
       n_total == 0 |
       is.na(n_total)
   )
-print(paste0('Of ', nrow(p_roll_calls)," roll calls,"))
-print(paste0(nrow(qa_roll_calls)," roll calls with missing date or no votes"))
+print(paste0(nrow(p_roll_calls)," roll calls in raw parsed data,"))
+print(paste0(nrow(qa_roll_calls)," of these with missing date or no votes"))
 cat ("\n")
 
 # legislator votes: 
 qa_legislator_votes_none_present <- p_legislator_votes %>%
   filter(n_present ==0 | is.na(n_present))
-print(paste0('Of ', nrow(p_legislator_votes)," legislator-votes,"))
-print(paste0(nrow(qa_legislator_votes_none_present)," legislator-votes are tied to roll calls with zero 'present' (aye or nay) votes"))
+print(paste0(nrow(p_legislator_votes)," legislator-votes in raw parsed data,"))
+print(paste0(nrow(qa_legislator_votes_none_present)," of these are tied to roll calls with no 'present' (aye or nay) votes from either party."))
+
+
 
 
 
@@ -83,12 +83,16 @@ n_other_unexplained <- qa_leg_votes_other %>%
   filter(vote_type_other == "Unexplained") %>%
   nrow()
 n_other_unexplained <- format(n_other_unexplained, big.mark= ",", scientific = FALSE)
-print(paste0("Of " , n_leg_votes, " legislator-votes"))
+print(paste0("Of " , n_leg_votes, " legislator-votes in raw parsed data:"))
 print(paste0(n_leg_votes_other, " were categorized as 'Other.' Of these:"))
 print(paste0(n_other_absent, " absent"))
 print(paste0(n_other_no_vote, " no vote"))
-print(paste0(n_other_dems_split, " undefined because legislator's own party split their vote equally"))
+print(paste0(n_other_same_split, " undefined because legislator's own party split their vote equally"))
+print(paste0(n_other_same_split, " undefined because opposition party split their vote equally"))
 print(paste0(n_other_unexplained, " unexplained"))
+
+
+
 
 
 cat ("\n############################################")
@@ -114,8 +118,6 @@ print(paste0(qa_n_districts," districts in p_districts, of which ", qa_n_distric
 
 
 
-
-
 cat ("\n############################################")
 cat ("\n#")
 cat ("\n# Review party loyalty rankings")
@@ -130,8 +132,11 @@ qa_loyalty_ranks <- qry_legislators_incumbent %>%
   arrange(chamber, party, rank_partisan_leg_R, rank_partisan_leg_D, leg_party_loyalty, leg_n_votes_denom_loyalty) %>%
   select(chamber, party, rank_partisan_leg_D, rank_partisan_leg_R, legislator_name, district_number, leg_party_loyalty, leg_n_votes_denom_loyalty)
 cat('To review all loyalty ranks, see qa_loyalty_ranks.csv. Here are the first five:')
-print(head(qa_loyalty_ranks))
 cat ("\n")
+print(head(qa_loyalty_ranks))
+
+
+
 
 
 cat ("\n############################################")
@@ -150,14 +155,22 @@ print(paste0(n_lv01," legislator votes in calc_votes01_both_parties_present."))
 print(paste0(n_lv02," legislator votes in calc_votes02_w_partisan_stats."))
 print(paste0(n_lv03," legislator votes in calc_votes03_categorized."))
 
-qa_roll_calls_missing_party_total <- calc_rc02_partisanship %>%
+qa_rc_missing_party <- calc_rc02_partisan_pivot %>%
   filter(is.na(D) | is.na(R)) %>%
   left_join (p_roll_calls, by = "roll_call_id")
 
-n_rc_missing_party = nrow(qa_roll_calls_missing_party_total)
-n_rc_missing_party_votes = sum(qa_roll_calls_missing_party_total$n_total, na.rm = TRUE)
+qa_rc_missing_party_both <- calc_rc02_partisan_pivot %>%
+  filter(is.na(D) & is.na(R)) %>%
+  left_join (p_roll_calls, by = "roll_call_id")
+
+n_rc_missing_party = nrow(qa_rc_missing_party)
+n_rc_missing_party_votes = sum(qa_rc_missing_party$n_total, na.rm = TRUE)
+n_rc_missing_party_both = nrow(qa_rc_missing_party_both)
+n_rc_missing_party_both_votes = sum(qa_rc_missing_party_both$n_total, na.rm = TRUE)
 print(paste0(n_rc_missing_party," roll calls had no votes for one or both parties"))
-print(paste0("So ", n_rc_missing_party_votes," votes were removed"))
+print(paste0("This accounts for ", n_rc_missing_party_votes," legislator-votes removed, because they couldn't be weighted for partisan alignment."))
+print(paste0("Including ", n_rc_missing_party_both_votes," legislator-votes removed, because neither party voted."))
+print("See qa_rc_missing_party.csv to review those roll calls.")
 
 cat ("\n############################################")
 cat ("\n#")
@@ -167,26 +180,29 @@ cat ("\n############################################")
 cat ("\n\n")
 
 n_rc = nrow(qry_roll_calls)
-n_rc01a = nrow(calc_rc01a_by_party_valid)
+n_rc01 = nrow(calc_rc01_by_party)
 n_rc01a_expected = n_rc * 2
-n_rc01a_diff = n_rc01_expected - n_rc01
-qa_rc_no_present_votes <- calc_rc01_by_party %>%
-  anti_join(calc_rc01a_by_party_valid, by = c("roll_call_id","party"))
-n_rc01a_diff_no_present = nrow(qa_rc_no_present_votes)
-n_rc02 = nrow(calc_rc02_partisanship)
-n_rc03 = nrow(calc_rc03_party_majority)
+qa_rc_party_none_present <- calc_rc01_by_party %>%
+  filter(n_present==0)
+n_rc01_invalid = nrow(qa_rc_party_none_present)
+n_rc02 = nrow(calc_rc02_partisan_pivot)
+# n_rc03 = nrow(calc_rc03_party_majority)
 print(paste0(n_rc," roll calls."))
-print(paste0(n_rc01a," roll calls by party in calc_rc01_by_party. We'd expect two records per roll call, or ", n_rc01a_expected, " records."))
-print(paste0("The difference is ", n_rc01a_diff, " records."))
-print(paste0(n_rc01a_diff_no_present, " dropped records can be explained by no votes present for a party."))
-print("See qa_rc_no_present_votes.csv to review those records.")
-cat("\n\n")
+print(paste0(n_rc01," roll calls by party in calc_rc01_by_party. We'd expect two records per roll call, or ", n_rc01a_expected, " records."))
+print(paste0(n_rc01_invalid, " records where no party members are present for a given roll call."))
+print("See qa_rc_party_none_present.csv to review those records.")
+cat("\n")
 
-qa_rc_no_present_votes <- calc_rc01_by_party %>%
-  anti_join(calc_rc01a_by_party_valid, by = c("roll_call_id","party"))
+print(paste0(n_rc02," roll calls in calc_rc02_partisanship"))
+# print(paste0(n_rc03," roll calls by party in calc_rc03_party_majority"))
 
-print(paste0(n_rc02," roll calls by party in calc_rc02_partisanship"))
-print(paste0(n_rc03," roll calls by party in calc_rc03_party_majority"))
+# qa_party_majority_probs <- calc_rc02_partisan_pivot %>%
+#   anti_join(calc_rc03_party_majority, by = "roll_call_id")
 
-qa_rc_no_present_votes <- calc_rc01_by_party %>%
-  anti_join(calc_rc01a_by_party_valid, by = "roll_call_id")
+
+
+
+
+
+
+

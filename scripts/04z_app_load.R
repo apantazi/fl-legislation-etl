@@ -30,8 +30,6 @@ schema_name <- "app_shiny"
 dbExecute(con, paste0("CREATE SCHEMA IF NOT EXISTS ", schema_name))
 
 list_tables <- c(
-  "qa_loyalty_ranks",
-  "qa_rc_no_present_votes",
   "qry_bills",
   "qry_leg_votes",
   "qry_legislators_incumbent",
@@ -62,11 +60,11 @@ dbDisconnect(con)
 
 #############################################
 #                                           #  
-# 2) export app data to CSV                 #
+# export queries data to CSV                 #
 #                                           #
 #############################################
 # export to CSV for those who don't want to deal with postgres
-list_export_data_app <- list(
+list_export_df <- list(
   app01_vote_patterns = app01_vote_patterns,
   app02_leg_activity = app02_leg_activity,
   app03_district_context = app03_district_context,
@@ -83,24 +81,24 @@ list_export_data_app <- list(
 )
 
 # Loop through the list and write each data frame to its respective file
-for (name in names(list_export_data_app)) {
+for (name in names(list_export_df)) {
   file_path <- paste0("../data-app/", name, ".csv")
   write.csv(list_export_df[[name]], file_path, row.names = FALSE)
 }
 
-#############################################
-#                                           #  
-# 3) export QA results to csv               #
-#                                           #
-#############################################
-list_export_qa <- list(
+##########################################
+#                                        #  
+# export QA results to csv               #
+#                                        #
+##########################################
+list_export_df <- list(
   qa_leg_votes_other = qa_leg_votes_other,
   qa_loyalty_ranks = qa_loyalty_ranks,
-  qa_rc_no_present_votes = qa_rc_no_present_votes
+  qa_rc_party_none_present = qa_rc_party_none_present
 )
 
 # Loop through the list and write each data frame to its respective file
-for (name in names(list_export_qa)) {
+for (name in names(list_export_df)) {
   file_path <- paste0("../qa/", name, ".csv")
   write.csv(list_export_df[[name]], file_path, row.names = FALSE)
 }

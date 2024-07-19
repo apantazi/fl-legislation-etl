@@ -21,7 +21,7 @@ setwd(script_dir <- dirname(rstudioapi::getActiveDocumentContext()$path))
 # this is set up to return a list, in case I later want to unpack the many related tables for bills (amendments, sasts, etc.)
 parse_bills <- function(bill_json_paths) {
   pb <- progress::progress_bar$new(
-    format = "  parsing bill metadata [:bar] :percent in :elapsed.",
+    format = "  parsing bill jsons [:bar] :percent in :elapsed.",
     total = length(bill_json_paths), clear = FALSE, width = 100
   )
   pb$tick(0)
@@ -77,7 +77,7 @@ extract_bill <- function(input_bill_path, pb) {
 #note that legislators$session tracks a once-per-session snapshot as accessed via jsons in API, but it's possible that some legislator info such as roles can change continuously
 parse_legislator_sessions <- function (people_json_paths) {
   pb <- progress::progress_bar$new(
-    format = "  parsing legislator-sessions [:bar] :percent in :elapsed.",
+    format = "  parsing legislator-sessions from people jsons [:bar] :percent in :elapsed.",
     total = length(people_json_paths), clear = FALSE, width = 100
     )
   pb$tick(0)
