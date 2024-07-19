@@ -1,7 +1,17 @@
 # QA_CHECKS.R
-#7/18/24 working on this data quality check "in earnest," as they say
+#7/19/24 working on this data quality check "in earnest," as they say
 
 
+cat ("\n############################################")
+cat ("\n#")
+cat ("\n# Quality Assurance Check")
+cat ("\n#")
+cat ("\n############################################")
+cat ("\n")
+cat ("\n")
+print("To manually review edge cases that explain record count disparities, refer to the following folder:")
+print("https://github.com/reliablerascal/fl-legislation-etl/tree/main/qa")
+cat ("\n")
 
 cat ("\n############################################")
 cat ("\n#")
@@ -23,13 +33,10 @@ print(paste0(nrow(qa_roll_calls)," roll calls with missing date or no votes"))
 cat ("\n")
 
 # legislator votes: 
-qa_legislator_votes <- p_legislator_votes %>%
-  mutate(
-    n_present=sum(yea,nay)
-  ) %>% 
-  filter(n_present ==0)
+qa_legislator_votes_none_present <- p_legislator_votes %>%
+  filter(n_present ==0 | is.na(n_present))
 print(paste0('Of ', nrow(p_legislator_votes)," legislator-votes,"))
-print(paste0(nrow(qa_legislator_votes)," legislator-votes are tied to roll calls with zero 'present' (aye or nay) votes"))
+print(paste0(nrow(qa_legislator_votes_none_present)," legislator-votes are tied to roll calls with zero 'present' (aye or nay) votes"))
 
 
 
@@ -122,8 +129,8 @@ cat ("\n")
 qa_loyalty_ranks <- qry_legislators_incumbent %>%
   arrange(chamber, party, rank_partisan_leg_R, rank_partisan_leg_D, leg_party_loyalty, leg_n_votes_denom_loyalty) %>%
   select(chamber, party, rank_partisan_leg_D, rank_partisan_leg_R, legislator_name, district_number, leg_party_loyalty, leg_n_votes_denom_loyalty)
-cat('To review loyalty ranks, see')
-cat('\nhttps://github.com/reliablerascal/fl-legislation-etl/blob/main/data-app/qa_loyalty_ranks.csv')
+cat('To review all loyalty ranks, see qa_loyalty_ranks.csv. Here are the first five:')
+print(head(qa_loyalty_ranks))
 cat ("\n")
 
 
@@ -162,16 +169,18 @@ cat ("\n\n")
 n_rc = nrow(qry_roll_calls)
 n_rc01a = nrow(calc_rc01a_by_party_valid)
 n_rc01a_expected = n_rc * 2
-n_rc01a_diff = n_rc01_expected - n_rc01 
+n_rc01a_diff = n_rc01_expected - n_rc01
+qa_rc_no_present_votes <- calc_rc01_by_party %>%
+  anti_join(calc_rc01a_by_party_valid, by = c("roll_call_id","party"))
+n_rc01a_diff_no_present = nrow(qa_rc_no_present_votes)
 n_rc02 = nrow(calc_rc02_partisanship)
 n_rc03 = nrow(calc_rc03_party_majority)
 print(paste0(n_rc," roll calls."))
 print(paste0(n_rc01a," roll calls by party in calc_rc01_by_party. We'd expect two records per roll call, or ", n_rc01a_expected, " records."))
-if (n_rc01a_diff == 0) {
-  print("Expectations matched.")
-} else {
-  print(paste0("This means that ", n_rc01a_diff, " records were dropped. See qa_rc_no_present_votes for those records."))
-}
+print(paste0("The difference is ", n_rc01a_diff, " records."))
+print(paste0(n_rc01a_diff_no_present, " dropped records can be explained by no votes present for a party."))
+print("See qa_rc_no_present_votes.csv to review those records.")
+cat("\n\n")
 
 qa_rc_no_present_votes <- calc_rc01_by_party %>%
   anti_join(calc_rc01a_by_party_valid, by = c("roll_call_id","party"))

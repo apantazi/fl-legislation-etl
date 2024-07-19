@@ -54,5 +54,10 @@ source("03z_process_load.R")
 
 source("04a_app_settings.R") # integrate app settings into creating base query layer
 source("04b_app_prep.R") # merge, prep, analyze data
+
+qa_log <- "../qa/qa_checks.log"
+sink(qa_log, split = TRUE)
 source("qa_checks.R")
-source("04z_app_load.R") # export dataframes to Postgres
+sink()
+
+source("04z_app_load.R") # export dataframes, including QA data frames, to Postgres
