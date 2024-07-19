@@ -30,6 +30,7 @@ Clear and consistent naming conventions are essential to code maintainability. F
 |proc|p_|**P**rocessed data, either directly processed or queried from the most recent record for each entity in the corresponding hist_* table.|
 |proc,<br>app|calc_|Data frames including intermediate **calc**ulations (e.g., partisanship metrics), which are not stored in Postgres.|
 |app|qry_|**Query**, i.e. a foundational view of data supporting all apps. For example, qry_legislators_incumbents filters p_legislators for only active legislators.|
+|app|qa_|**Q**uality **A**ssurance queries to facilitate further review of calculations.|
 |app|app_|**App**lication data, which has been filtered and organized from processed data. It's intended to support specific web applications but could also support data visualizations.|
 
 <br>

@@ -21,7 +21,7 @@ setwd(script_dir <- dirname(rstudioapi::getActiveDocumentContext()$path))
 # this is set up to return a list, in case I later want to unpack the many related tables for bills (amendments, sasts, etc.)
 parse_bills <- function(bill_json_paths) {
   pb <- progress::progress_bar$new(
-    format = "  parsing bill metadata and bill-votes [:bar] :percent in :elapsed.",
+    format = "  parsing bill metadata [:bar] :percent in :elapsed.",
     total = length(bill_json_paths), clear = FALSE, width = 100
   )
   pb$tick(0)
@@ -118,7 +118,7 @@ extract_people <- function(input_people_json_path, pb) {
 #adds "session" field (e.g. "2023-2024_Regular_Session") based on file pathname
 parse_roll_calls <- function (vote_json_paths) {
   pb <- progress::progress_bar$new(
-    format = "  parsing vote jsons [:bar] :percent in :elapsed.",
+    format = "  parsing roll calls and leg-votes from vote jsons [:bar] :percent in :elapsed.",
     total = length(vote_json_paths), clear = FALSE, width = 100
   )
   pb$tick(0)
@@ -232,6 +232,6 @@ t_legislator_sessions <- parse_legislator_sessions(text_paths_legislators) # one
 
 # parse vote jsons as "roll calls" (pk = roll_call_id) and "legislator votes" (pk = roll_call_id, people_id)
 temp_roll_calls_parsed <- parse_roll_calls(text_paths_votes)
-t_roll_calls <- parse_roll_calls(text_paths_votes)$meta
+t_roll_calls <- temp_roll_calls_parsed$meta
 t_legislator_votes <- temp_roll_calls_parsed$votes
 rm("temp_roll_calls_parsed")

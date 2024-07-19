@@ -30,6 +30,7 @@ schema_name <- "app_shiny"
 dbExecute(con, paste0("CREATE SCHEMA IF NOT EXISTS ", schema_name))
 
 list_tables <- c(
+  "qa_loyalty_ranks",
   "qry_bills",
   "qry_leg_votes",
   "qry_legislators_incumbent",

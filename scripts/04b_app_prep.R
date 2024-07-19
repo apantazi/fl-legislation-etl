@@ -31,11 +31,11 @@ app01_vote_patterns <- app01_vote_patterns %>%
   select(roll_call_id, legislator_name, last_name, chamber, partisan_vote_type, session_year, final_vote, party, bill_number, roll_call_desc, bill_title, roll_call_date, bill_desc, bill_url, pct_of_total, pct_of_present, vote_text, legislator_name, bill_id, district_number, D_pct_of_present,R_pct_of_present, ballotpedia, 'rank_partisan_leg_D', 'rank_partisan_leg_R')
 
 # filter for roll calls that had some dissension from party-line; exclude 1 = with party; include 99 = against both parties and 0 = against party 
-calc_d_partisan_rc <- calc_leg_votes_partisan %>%
+calc_d_partisan_rc <- qry_leg_votes %>%
   filter(party == "D") %>%  # Filter for Democratic votes and non-NA partisan_vote_type
   filter(partisan_vote_type %in% c("Cross Party", "Against Both Parties"))%>%
   distinct (roll_call_id)
-calc_r_partisan_rc <- calc_leg_votes_partisan %>%
+calc_r_partisan_rc <- qry_leg_votes %>%
   filter(party == "R") %>%  # Filter for Democratic votes and non-NA partisan_vote_type
   filter(partisan_vote_type %in% c("Cross Party", "Against Both Parties"))%>%
   distinct (roll_call_id)

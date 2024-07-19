@@ -91,9 +91,14 @@ qry_roll_calls <- p_roll_calls %>%
 #                         #
 ###########################
 
+# initial filtering for incumbent legislators
+qry_legislators_incumbent <- p_legislators %>%
+  filter(
+    is.na(termination_date)
+  )
+
 # create qry_districts based on setting_demo_src, setting_demo_year, setting_district_lean
 # and incorporating partisanship metrics
-
 qry_districts <- hist_district_demo %>%
   filter(source_demo==setting_demo_src,year_demo==setting_demo_year) %>%
   inner_join(hist_district_elections, by=c('chamber','district_number')) %>%
@@ -162,11 +167,8 @@ qry_state_summary <- qry_districts %>%
 #                           #
 #############################
 
-# filter for incumbent legislators then incorporate partisanship data
-qry_legislators_incumbent <- p_legislators %>%
-  filter(
-    is.na(termination_date)
-  ) %>%
+# continue building out incumbent legislators query
+qry_legislators_incumbent <- qry_legislators_incumbent %>%
   left_join(calc_mean_partisan_leg, by='legislator_name') %>%
   mutate(
     setting_party_loyalty = setting_party_loyalty # add setting in here for future reference

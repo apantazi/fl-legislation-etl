@@ -31,6 +31,7 @@ p_sessions <- p_bills %>%
     )
   )
 
+# roll_call_id should remain as an integer- see ls_bill_vote at https://api.legiscan.com/dl/Database_ERD.png
 p_roll_calls <- t_roll_calls %>%
   left_join(p_bills %>% select(bill_id, bill_title, bill_number, session_year, bill_url), by = "bill_id") %>%
   rename(
@@ -43,7 +44,6 @@ p_roll_calls <- t_roll_calls %>%
     pct_of_total = yea/n_total,
     n_present = yea+nay,
     pct_of_present = yea/n_present,
-    roll_call_id = as.character(roll_call_id),
     final_vote = ifelse(grepl("third", roll_call_desc, ignore.case = TRUE), "Y", "N")
     ) %>%
   select(-chamber_id)
@@ -78,9 +78,7 @@ p_legislators <- hist_leg_sessions %>%
   left_join(temp_legislators_terminated, by="people_id") %>%
   select(-role,-role_id,-party_id,-district, -committee_id, -committee_sponsor, -state_federal, -session)
 
-#not clear why roll call id was converted to character here, should be able to revert to integer
 p_legislator_votes <- t_legislator_votes %>%
-  mutate(roll_call_id = as.character(roll_call_id))  %>%
   inner_join(hist_leg_sessions %>%
                select(people_id, session, party, legislator_name), by = c("people_id", "session")) %>%
   inner_join(p_roll_calls, by = c("roll_call_id", "session"))  %>%
@@ -194,7 +192,6 @@ calc_rc01_by_party <- p_legislator_votes %>%
 calc_rc02_partisanship <- calc_rc01_by_party %>%
   pivot_wider(names_from = party,values_from=party_pct_of_present,values_fill = NA,id_cols = c(roll_call_id)) %>% 
   mutate(
-    DminusR = D - R,
     dem_majority = case_when(
       D > 0.5 ~ "Y",
       D < 0.5 ~ "N",
@@ -221,7 +218,7 @@ calc_votes01_both_parties_present <- p_legislator_votes %>%
     calc_rc02_partisanship,
     by = 'roll_call_id'
   ) %>%
-  filter(!is.na(D) & !is.na(R) & !is.na(DminusR))
+  filter(!is.na(D) & !is.na(R))
 
 # for individual votes, classify relationship between individual votes and party-level majorities
 # RR 7/16/24 added vote_with_both and vote_with_same

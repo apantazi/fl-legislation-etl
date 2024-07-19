@@ -37,7 +37,7 @@ cat ("\n#")
 cat ("\n############################################")
 cat ("\n")
 
-qa_leg_votes_other <- calc_leg_votes_partisan %>%
+qa_leg_votes_other <- calc_votes03_categorized %>%
   filter(partisan_vote_type == "Other") %>%
   select (party, vote_text, dem_majority, gop_majority, partisan_vote_type)
 print(paste0(nrow(qa_leg_votes_other)," legislator-votes categorized as 'other'"))
@@ -86,7 +86,7 @@ cat ("\nNote that total number of votes is used as a tiebreaker for legislators 
 # review partisan ranks by chamber
 qa_loyalty_ranks <- qry_legislators_incumbent %>%
   arrange(chamber, party, rank_partisan_leg_R, rank_partisan_leg_D, leg_party_loyalty, leg_n_votes_denom_loyalty) %>%
-  select(chamber, party, rank_partisan_leg_R, rank_partisan_leg_D, leg_party_loyalty, leg_n_votes_denom_loyalty)
+  select(chamber, party, rank_partisan_leg_D, rank_partisan_leg_R, legislator_name, district_number, leg_party_loyalty, leg_n_votes_denom_loyalty)
 print(qa_loyalty_ranks, n = 160)
 
 
@@ -98,7 +98,23 @@ cat ("\n#")
 cat ("\n############################################")
 cat ("\n")
 
+n_lv = format(nrow(qry_leg_votes), big.mark = ",", scientific = FALSE)
+n_lv01 = format(nrow(calc_votes01_both_parties_present), big.mark = ",", scientific = FALSE)
+n_lv02 = format(nrow(calc_votes02_w_partisan_stats), big.mark = ",", scientific = FALSE)
+n_lv03 = format(nrow(calc_votes03_categorized), big.mark = ",", scientific = FALSE)
+print(paste0(n_lv," legislator votes."))
+print(paste0(n_lv01," legislator votes in calc_votes01_both_parties_present."))
+print(paste0(n_lv02," legislator votes in calc_votes02_w_partisan_stats."))
+print(paste0(n_lv03," legislator votes in calc_votes03_categorized."))
 
+qa_roll_calls_missing_party_total <- calc_rc02_partisanship %>%
+  filter(is.na(D) | is.na(R)) %>%
+  left_join (p_roll_calls, by = "roll_call_id")
+
+n_rc_missing_party = nrow(qa_roll_calls_missing_party_total)
+n_rc_missing_party_votes = sum(qa_roll_calls_missing_party_total$n_total, na.rm = TRUE)
+print(paste0(n_rc_missing_party," roll calls had no votes for one or both parties"))
+print(paste0("So ", n_rc_missing_party_votes," votes were removed"))
 
 cat ("\n############################################")
 cat ("\n#")
@@ -114,7 +130,7 @@ n_rc01_diff = n_rc01_expected - n_rc01
 n_rc02 = nrow(calc_rc02_partisanship)
 n_rc03 = nrow(calc_rc03_party_majority)
 print(paste0(n_rc," roll calls."))
-print(paste0(n_rc01," roll calls by party in calc_rc01_by_party (we'd expect double)"))
+print(paste0(n_rc01," roll calls by party in calc_rc01_by_party. We'd expect two records per roll call:", 2 * n_rc))
 if (n_rc01_diff == 0) {
   print("as expected")
 } else {
