@@ -1,6 +1,6 @@
 # Web App and Data Visualization Guide
 7/15/24
-*This section needs updating to reflect shift to "party loyalty" metric (vs. ambiguous "partisanship" metric), and to provide clear guidance for app developers.*
+*This section needs updating to reflect shift to "party loyalty" metric (vs. ambiguous "partisanship" metric), and to provide clear guidance for app developers. The Partisanship Data Analysis also needs to be re-created.*
 
 ## App Settings
 App settings determine how partisanship and demographics are measured. These are configured at the top of [04_prep_app.R](../scripts/04_prep_app.R), and can readily be changed without breaking other aspects of the data pipeline:
@@ -14,7 +14,7 @@ Based on these settings, the app layer includes the following foundational queri
 |---|---|---|---|
 |qry_districts|chamber,<br>district_number|hist_district_demo,<br>hist_district_elections|District info including demographics and partisan lean.
 |qry_leg_votes|people_id,<br>roll_call_id|p_legislator_votes|Adds weighted party loyalty counts dependent upon **partisan_vote_type** and **party loyalty metric** setting|
-|qry_legislators|chamber,<br>district_number|p_legislators|Filtered to include only incumbents (i.e. those with no termination date).|
+|qry_legislators_incumbent|chamber,<br>district_number|p_legislators|Filtered to include only incumbents (i.e. those with no termination date).|
 |qry_state_summary|---|Dave's Redistricting|Summary of demographics and election results from p_districts.|
 
 ## App #1: Voting Patterns
