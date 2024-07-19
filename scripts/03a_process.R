@@ -172,7 +172,6 @@ hist_district_elections <- get_election_results("E_16_20_COMP_", "16_20_COMP")
 # These could be added back later, for data throughput efficiency
 
 # primary key is roll_call_id, party
-# some records will be dropped here if n_present = 0
 calc_rc01_by_party <- p_legislator_votes %>%
   group_by(party,roll_call_id, vote_text) %>%
   summarize(n=n()) %>% arrange(desc(n)) %>% 
@@ -180,7 +179,10 @@ calc_rc01_by_party <- p_legislator_votes %>%
   mutate(
     n_total=sum(Yea,Nay,NV,Absent,na.rm = TRUE),
     n_present=sum(Yea,Nay)
-    ) %>% 
+    )
+
+# drop records with no denominator, i.e. n_present = 0
+calc_rc01a_by_party_valid <- calc_rc01_by_party %>%
   filter(n_present >0) %>% 
   mutate(
     party_pct_of_present = Yea/(n_present),
@@ -189,7 +191,7 @@ calc_rc01_by_party <- p_legislator_votes %>%
 
 # primary key is roll_call_id
 # roll up party counts to get one row per roll call with partisanship descriptors
-calc_rc02_partisanship <- calc_rc01_by_party %>%
+calc_rc02_partisanship <- calc_rc01a_by_party_valid %>%
   pivot_wider(names_from = party,values_from=party_pct_of_present,values_fill = NA,id_cols = c(roll_call_id)) %>% 
   mutate(
     dem_majority = case_when(

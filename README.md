@@ -47,6 +47,7 @@ Following is an overview of files in this repository:
 * **[data-app](data-app/)**- data supporting web applications, in csv format
 * **data-raw**- raw data in JSON format, as bulk downloaded from LegiScan's API
 * **[docs](docs/)**- data dictionaries, diagrams, and documentation
+* **[qa](qa/)**- tables of data anomalies for quality assurance review (see [scripts/qa_checks.R](scripts/qa_checks.R))
 * **[scripts](scripts/)**- ETL scripts
 
 <!-- * **[notebooks](notebooks/)**- API exploration using Jupyter Notebook and Python-->
