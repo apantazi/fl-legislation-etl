@@ -77,7 +77,7 @@ extract_bill <- function(input_bill_path, pb) {
 #note that legislators$session tracks a once-per-session snapshot as accessed via jsons in API, but it's possible that some legislator info such as roles can change continuously
 parse_legislator_sessions <- function (people_json_paths) {
   pb <- progress::progress_bar$new(
-    format = "  parsing legislator-sessions from people jsons [:bar] :percent in :elapsed.",
+    format = "  parsing people jsons into legislator-sessions [:bar] :percent in :elapsed.",
     total = length(people_json_paths), clear = FALSE, width = 100
     )
   pb$tick(0)
@@ -118,7 +118,7 @@ extract_people <- function(input_people_json_path, pb) {
 #adds "session" field (e.g. "2023-2024_Regular_Session") based on file pathname
 parse_roll_calls <- function (vote_json_paths) {
   pb <- progress::progress_bar$new(
-    format = "  parsing roll calls and leg-votes from vote jsons [:bar] :percent in :elapsed.",
+    format = "  parsing vote jsons into roll calls and leg-votes [:bar] :percent in :elapsed.",
     total = length(vote_json_paths), clear = FALSE, width = 100
   )
   pb$tick(0)

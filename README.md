@@ -2,7 +2,7 @@
 7/19/24
 
 ## Project Overview
-The Jacksonville Tributary is developing a **[legislative voting dashboard](https://mockingbird.shinyapps.io/fl-leg-app-postgres/)** to analyze roll call voting patterns of Florida state legislators, including legislators' **party loyalty** and congressional district electorates' **partisan lean** and demographics. The dashboard is intended to support development of a voter guide, reporting on party polarization, and disparities between legislators and the districts they represent.
+The Jacksonville Tributary is developing a **[legislative voting dashboard](https://mockingbird.shinyapps.io/fl-leg-app-postgres/)** to analyze roll call voting patterns of Florida state legislators, including legislators' **party loyalty** and congressional district electorates' **partisan lean** and demographics. Building on a Shiny app [originally developed by apantazi](https://github.com/apantazi/legislator_dashboard), the dashboard is intended to support development of a voter guide, reporting on party polarization, and disparities between legislators and the districts they represent.
 
 This repo contains the data pipeline which:
 * extracts [legislative voting data from LegiScan](https://legiscan.com/FL/datasets), and census and demographics data from [Daves Redistricting Maps](https://davesredistricting.org/maps#state::FL).
