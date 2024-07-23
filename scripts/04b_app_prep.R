@@ -23,14 +23,14 @@ app01_vote_patterns <- qry_leg_votes %>%
   )%>%
   left_join(qry_bills %>% select('bill_id','bill_desc'), by='bill_id') %>%
   left_join(qry_legislators_incumbent %>% select('people_id','district_number','chamber', 'last_name', 'ballotpedia', 'rank_partisan_leg_D', 'rank_partisan_leg_R')) %>%
-  left_join(qry_roll_calls %>% select('roll_call_id','D_pct_of_present','R_pct_of_present'))
-
-#filter out unanimous votes
-app01_vote_patterns <- app01_vote_patterns %>%
-  filter(pct_of_present != 0 & pct_of_present != 1) %>%
+  left_join(qry_roll_calls %>% select('roll_call_id','D_pct_of_present','R_pct_of_present')) %>%
   select(roll_call_id, legislator_name, last_name, chamber, partisan_vote_type, session_year, final_vote, party, bill_number, roll_call_desc, bill_title, roll_call_date, bill_desc, bill_url, pct_of_total, pct_of_present, vote_text, legislator_name, bill_id, district_number, D_pct_of_present,R_pct_of_present, ballotpedia, 'rank_partisan_leg_D', 'rank_partisan_leg_R')
 
-# filter for roll calls that had some dissension from party-line; exclude 1 = with party; include 99 = against both parties and 0 = against party 
+#filter out votes from unanimous roll calls
+app01_vote_patterns <- app01_vote_patterns %>%
+  filter(pct_of_present != 0 & pct_of_present != 1)
+  
+#determine which roll calls had dissension within Republicans or Democrats. These will be displayed on the heatmap.
 calc_d_partisan_rc <- qry_leg_votes %>%
   filter(party == "D") %>%  # Filter for Democratic votes and non-NA partisan_vote_type
   filter(partisan_vote_type %in% c("Cross Party", "Against Both Parties"))%>%
@@ -40,10 +40,7 @@ calc_r_partisan_rc <- qry_leg_votes %>%
   filter(partisan_vote_type %in% c("Cross Party", "Against Both Parties"))%>%
   distinct (roll_call_id)
 
-# filter for roll calls that had some intra-party dissension
-# calc_d_votes <- app01_vote_patterns %>% filter(party=="D") %>% group_by(roll_call_id,vote_text) %>% summarize(n=n()) %>%  pivot_wider(names_from=vote_text,values_from=n,values_fill = 0) %>% mutate(y_pct = Yea/(Yea+Nay),n_pct = Nay/(Nay+Yea)) %>% filter(y_pct != 0 & y_pct != 1) %>% filter(as.character(roll_call_id) %in% as.character(calc_d_partisan_rc$roll_call_id))
-# calc_r_votes <- app01_vote_patterns %>% filter(party=="R") %>% group_by(roll_call_id,vote_text) %>% summarize(n=n()) %>%  pivot_wider(names_from=vote_text,values_from=n,values_fill = 0) %>% mutate(y_pct = Yea/(Yea+Nay),n_pct = Nay/(Nay+Yea)) %>% filter(y_pct != 0 & y_pct != 1) %>% filter(as.character(roll_call_id) %in% as.character(calc_r_partisan_rc$roll_call_id))
-
+# this step determines which roll calls are displayed for each party, based on when one or more legislator voted against their party or against both parties
 app01_vote_patterns <- app01_vote_patterns %>%
   left_join(qry_legislators_incumbent %>%
               select(legislator_name, leg_party_loyalty), by = "legislator_name") %>%
