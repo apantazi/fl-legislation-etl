@@ -140,7 +140,7 @@ hist_district_demo <- rbind(calc_hist_district_demo_cvap, calc_hist_district_dem
 #                                            #
 ##############################################
 #define function to pull demographic group data based on field name prefix
-get_election_results <- function(prefix, source_label, year) {
+get_election_results <- function(prefix, source_label, is_include) {
   calc_daves_districts_combined %>%
     rename(
       district_number = ID
@@ -151,16 +151,17 @@ get_election_results <- function(prefix, source_label, year) {
       n_Total_Elec = !!sym(paste0(prefix, "Total")),
       pct_D = n_Dem / n_Total_Elec,
       pct_R = n_Rep / n_Total_Elec,
-      party_lean = ifelse(pct_D > pct_R, 'D','R'),
-      party_lean_points_abs = round(abs(pct_R-pct_D)*100,0),
-      party_lean_points_R = round((pct_R-pct_D)*100,0),
-      source_elec = source_label,
+      source_elec = source_label
     ) %>%
-    select(chamber,district_number,n_Dem, n_Rep, n_Total_Elec,pct_D,pct_R,party_lean, party_lean_points_abs,party_lean_points_R, source_elec)
+    select(chamber,district_number,n_Dem, n_Rep, n_Total_Elec,pct_D,pct_R,source_elec)
 }
 
 # get election results, then bind into one table if necessary
-hist_district_elections <- get_election_results("E_16_20_COMP_", "16_20_COMP")
+hist_district_elections_16_20_COMP <- get_election_results("E_16_20_COMP_", "16_20_COMP")
+hist_district_elections_20_PRES <- get_election_results("E_20_PRES_", "20_PRES")
+hist_district_elections_22_GOV <- get_election_results("E_22_GOV_", "22_GOV")
+hist_district_elections <- rbind(hist_district_elections_16_20_COMP, hist_district_elections_20_PRES, hist_district_elections_22_GOV)
+
 
 #######################################
 #                                     #  
@@ -240,12 +241,6 @@ calc_votes02_w_partisan_stats <- calc_votes01_both_parties_present %>%
       , 1, 0)
     )
 
-# for each roll call, summarize party majority vote for R and D
-# calc_rc03_party_majority <- calc_votes02_w_partisan_stats %>%
-#   group_by(roll_call_id, party) %>%
-#   summarize(majority_vote = if_else(sum(vote_text == "Yea") > sum(vote_text == "Nay"), "Yea", "Nay"), .groups = 'drop') %>% 
-#   pivot_wider(names_from = party,values_from = majority_vote,id_cols = roll_call_id,values_fill = "NA",names_prefix = "vote_")
-
 ##################################################
 #                                                #  
 # 3) label each legislator-vote by partisanship  #
@@ -266,11 +261,29 @@ calc_votes03_categorized <- calc_votes02_w_partisan_stats %>%
     partisan_vote_type = case_when(
       vote_with_neither == 1 ~ "Against Both Parties",
       maverick_votes == 1 ~ "Cross Party",
-      vote_with_same == 1 ~ "Party Line",
+      party=="D" & vote_with_dem_majority == 1 & vote_with_gop_majority == 0 ~ "Party Line Partisan",
+      party=="R" & vote_with_dem_majority == 0 & vote_with_gop_majority == 1 ~ "Party Line Partisan",
+      vote_with_same == 1 ~ "Party Line Bipartisan",
+      vote_text == "NV" ~ "Absent/NV",
+      vote_text == "Absent" ~ "Absent/NV",
       TRUE ~ "Other"
     ) %>% 
+      factor(levels = c("Against Both Parties", "Cross Party", "Party Line Partisan", "Party Line Bipartisan", "Absent/NV", "Other"))
+  )
+
+#7/26/24 RR can get rid of this section when we confirm the new partisan_vote_type calculation is good
+calc_votes03_categorized <- calc_votes03_categorized %>%
+  mutate(
+    partisan_vote_type_OLD = case_when(
+      vote_with_neither == 1 ~ "Against Both Parties",
+      maverick_votes == 1 ~ "Cross Party",
+      vote_with_same == 1 ~ "Party Line",
+      TRUE ~ "Other"
+    ) %>%
       factor(levels = c("Against Both Parties", "Cross Party", "Party Line", "Other"))
   )
+
+table(calc_votes03_categorized$partisan_vote_type_OLD,calc_votes03_categorized$partisan_vote_type)
 
 # fold calculated partisan_vote_type into p_legislator_votes data frame
 p_legislator_votes <- p_legislator_votes %>%

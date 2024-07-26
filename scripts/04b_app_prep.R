@@ -53,13 +53,14 @@ app01_vote_patterns <- app01_vote_patterns %>%
 
 app01_vote_patterns <- app01_vote_patterns %>%
   left_join(qry_districts %>%
-              select(district_number, chamber), by = c("district_number", "chamber"))
+              select(district_number, chamber, rank_partisan_dist_R, rank_partisan_dist_D), by = c("district_number", "chamber"))
 
 # speed up ggplot scalefillgradient2 method by assigning numeric values
 app01_vote_patterns$partisan_vote_plot <- case_when(
   app01_vote_patterns$partisan_vote_type == "Against Both Parties" ~ 2,
   app01_vote_patterns$partisan_vote_type == "Cross Party" ~ 1,
-  app01_vote_patterns$partisan_vote_type == "Party Line" ~ 0
+  app01_vote_patterns$partisan_vote_type == "Party Line Partisan" ~ 0,
+  app01_vote_patterns$partisan_vote_type == "Party Line Bipartisan" ~ 0
 )
 
 
@@ -105,8 +106,9 @@ app02_leg_activity <- qry_leg_votes %>%
 
 app03_district_context <- qry_legislators_incumbent %>%
   select (
-    people_id,party,legislator_name,last_name,ballotpedia,district_number,chamber,termination_date,leg_party_loyalty, setting_party_loyalty,
-    leg_n_votes_denom_loyalty, leg_n_votes_party_line,leg_n_votes_cross_party,leg_n_votes_independent, leg_n_votes_other, rank_partisan_leg_R, rank_partisan_leg_D
+    people_id,party,legislator_name,last_name,ballotpedia,district_number,chamber,termination_date, setting_party_loyalty,leg_party_loyalty,leg_n_votes_denom_loyalty,
+    leg_n_votes_party_line_partisan,leg_n_votes_party_line_bipartisan,leg_n_votes_cross_party,leg_n_votes_absent_nv,leg_n_votes_independent, leg_n_votes_other,
+    rank_partisan_leg_R, rank_partisan_leg_D
     ) %>%
   left_join(qry_districts)
 

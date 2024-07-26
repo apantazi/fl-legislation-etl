@@ -1,6 +1,4 @@
 
-> source("qa_checks.R")
-
 ############################################
 #
 # Quality Assurance Check
@@ -29,9 +27,9 @@
 ############################################
 
 [1] "Of 213,203 legislator-votes in raw parsed data:"
-[1] "14,311 were categorized as 'Other.' Of these:"
-[1] "7,744 absent"
-[1] "6,314 no vote"
+[1] "253 were categorized as 'Other.' Of these:"
+[1] "0 absent"
+[1] "0 no vote"
 [1] "246 undefined because legislator's own party split their vote equally"
 [1] "246 undefined because opposition party split their vote equally"
 [1] "0 unexplained"
@@ -56,12 +54,12 @@ To review all loyalty ranks, see qa_loyalty_ranks.csv. Here are the first five:
 # A tibble: 6 × 8
   chamber party rank_partisan_leg_D rank_partisan_leg_R legislator_name        district_number leg_party_loyalty leg_n_votes_denom_loyalty
   <chr>   <chr>               <int>               <int> <chr>                            <int>             <dbl>                     <int>
-1 House   D                       1                  NA LaVon Bracy Davis                   40             0.998                      1221
-2 House   D                       2                  NA Angela Nixon                        13             0.998                      1009
-3 House   D                       3                  NA Dotie Joseph                       108             0.998                       942
-4 House   D                       4                  NA Dianne Hart                         63             0.997                      1137
-5 House   D                       5                  NA Jennifer Harris                     44             0.996                      1120
-6 House   D                       6                  NA Michele Rayner-Goolsby              62             0.995                      1110
+1 House   D                       1                  NA LaVon Bracy Davis                   40             0.991                       233
+2 House   D                       2                  NA Angela Nixon                        13             0.989                       183
+3 House   D                       3                  NA Dotie Joseph                       108             0.987                       156
+4 House   D                       4                  NA Dianne Hart                         63             0.985                       196
+5 House   D                       5                  NA Michele Rayner-Goolsby              62             0.977                       216
+6 House   D                       6                  NA Jennifer Harris                     44             0.974                       189
 
 ############################################
 #
@@ -90,5 +88,3 @@ To review all loyalty ranks, see qa_loyalty_ranks.csv. Here are the first five:
 [1] "See qa_rc_party_none_present.csv to review those records."
 
 [1] "6271 roll calls in calc_rc02_partisanship"
-
-> sink()

@@ -22,10 +22,14 @@ setting_demo_year <- 2022
 # a) for_against- weighs 0 with party, 1 against. excludes against both
 # b) for_against_indy. similar to for_against, but votes against both weighed as 0.5
 # c) nominate. to be added later? https://en.wikipedia.org/wiki/NOMINATE_(scaling_method)
-setting_party_loyalty <- "for_against"
+# d) partisan_cross: 0 party line partisan, 1 cross party. excludes party line bipartisan
+setting_party_loyalty <- "partisan_cross"
 
-# Setting 3: Select election result for calculating district partisan lean (choices TK)
-setting_district_lean <- "16_20_comp" #2016-2020 composite results of governor and presidential election results
+# Setting 3: Select election result for calculating district partisan lean. Should be a list of two or more elections, chosen from:
+#a) 16_20_COMP # composite of 16 pres, 20 pres, 18 gov
+#b) 20_PRES
+#c) 22_GOV
+setting_district_lean <- c("20_PRES","22_GOV") #2016-2020 composite results of governor and presidential election results
 
 #####################################
 #                                   #  
@@ -37,13 +41,20 @@ setting_district_lean <- "16_20_comp" #2016-2020 composite results of governor a
 qry_leg_votes <- p_legislator_votes %>%
   mutate(
     party_loyalty_weight = case_when(
+      setting_party_loyalty == "partisan_cross" ~ case_when(
+        partisan_vote_type == "Party Line Partisan" ~ 1,
+        partisan_vote_type == "Cross Party" ~ 0,
+        TRUE ~ NA_real_  # Default case for unmatched conditions within "partisan_cross"
+      ),
       setting_party_loyalty == "for_against" ~ case_when(
-        partisan_vote_type == "Party Line" ~ 1,
+        partisan_vote_type == "Party Line Partisan" ~ 1,
+        partisan_vote_type == "Party Line Bipartisan" ~ 1,
         partisan_vote_type == "Cross Party" ~ 0,
         TRUE ~ NA_real_  # Default case for unmatched conditions within "for_against"
       ),
       setting_party_loyalty == "for_against_indy" ~ case_when(
-        partisan_vote_type == "Party Line" ~ 1,
+        partisan_vote_type == "Party Line Partisan" ~ 1,
+        partisan_vote_type == "Party Line Bipartisan" ~ 1,
         partisan_vote_type == "Cross Party" ~ 0,
         partisan_vote_type == "Against Both Parties" ~ 0.5,
         TRUE ~ NA_real_  # Default case for unmatched conditions within "for_against_indy"
@@ -59,8 +70,10 @@ calc_mean_partisan_leg <- qry_leg_votes %>%
   summarize(
     leg_party_loyalty=mean(party_loyalty_weight, na.rm = TRUE),
     leg_n_votes_denom_loyalty = sum(!is.na(party_loyalty_weight)),
-    leg_n_votes_party_line = sum(partisan_vote_type == "Party Line", na.rm = TRUE),
+    leg_n_votes_party_line_partisan = sum(partisan_vote_type == "Party Line Partisan", na.rm = TRUE),
+    leg_n_votes_party_line_bipartisan = sum(partisan_vote_type == "Party Line Bipartisan", na.rm = TRUE),
     leg_n_votes_cross_party = sum(partisan_vote_type == "Cross Party", na.rm = TRUE),
+    leg_n_votes_absent_nv = sum(partisan_vote_type == "Absent/NV", na.rm = TRUE),
     leg_n_votes_independent = sum(partisan_vote_type == "Against Both Parties", na.rm = TRUE),
     leg_n_votes_other = sum(partisan_vote_type == "Other", na.rm = TRUE),
     leg_n_votes_missing = sum(is.na(partisan_vote_type))
@@ -73,10 +86,12 @@ calc_mean_partisan_rc <- qry_leg_votes %>%
   summarize(
     rc_mean_partisanship=mean(party_loyalty_weight, na.rm = TRUE),
     rc_n_votes_denominator = sum(!is.na(party_loyalty_weight)),
-    rc_n_votes_party_line = sum(partisan_vote_type=="Party Line"),
-    rc_n_votes_cross_party= sum(partisan_vote_type=="Cross Party"),
-    rc_n_votes_cross_party= sum(partisan_vote_type=="Other"),
-    rc_n_votes_independent = sum(partisan_vote_type=="Against Both Parties")
+    rc_n_votes_party_line_partisan = sum(partisan_vote_type=="Party Line Partisan", na.rm = TRUE),
+    rc_n_votes_party_line_bipartisan = sum(partisan_vote_type=="Party Line Bipartisan", na.rm = TRUE),
+    rc_n_votes_cross_party= sum(partisan_vote_type=="Cross Party", na.rm = TRUE),
+    rc_n_votes_absent_nv = sum(partisan_vote_type == "Absent/NV", na.rm = TRUE),
+    rc_n_votes_independent = sum(partisan_vote_type=="Against Both Parties", na.rm = TRUE),
+    rc_n_votes_other= sum(partisan_vote_type=="Other", na.rm = TRUE)
   )
 
 # roll call summaries, 6271
@@ -99,9 +114,26 @@ qry_legislators_incumbent <- p_legislators %>%
 
 # create qry_districts based on setting_demo_src, setting_demo_year, setting_district_lean
 # and incorporating partisanship metrics
+calc_elections_avg <- hist_district_elections %>%
+  filter(source_elec %in% setting_district_lean) %>%
+  group_by(chamber,district_number) %>%
+  summarize(
+    avg_pct_D = mean(pct_D),
+    avg_pct_R = mean(pct_R)
+  ) %>%
+  mutate(
+    avg_party_lean = ifelse(avg_pct_D > avg_pct_R, 'D','R'),
+    avg_party_lean_points_abs = round(abs(avg_pct_R-avg_pct_D)*100,0),
+    avg_party_lean_points_R = round((avg_pct_R-avg_pct_D)*100,0)
+  )
+
+
+
 qry_districts <- hist_district_demo %>%
   filter(source_demo==setting_demo_src,year_demo==setting_demo_year) %>%
-  inner_join(hist_district_elections, by=c('chamber','district_number')) %>%
+  inner_join(
+    calc_elections_avg,
+    by=c('chamber','district_number')) %>%
   inner_join(
     qry_legislators_incumbent %>%
       select (people_id, chamber, district_number),
@@ -114,9 +146,9 @@ calc_dist_house_ranks <- qry_districts %>%
   filter(
     chamber == "House"
   ) %>%
-  arrange(desc(party_lean_points_R)) %>%
+  arrange(desc(avg_party_lean_points_R)) %>%
   mutate(rank_partisan_dist_R = row_number()) %>%
-  arrange(party_lean_points_R) %>%
+  arrange(avg_party_lean_points_R) %>%
   mutate(rank_partisan_dist_D = row_number()) %>%
   select (district_number, chamber, rank_partisan_dist_R, rank_partisan_dist_D)
 
@@ -125,9 +157,9 @@ calc_dist_senate_ranks <- qry_districts %>%
   filter(
     chamber == "Senate"
   ) %>%
-  arrange(desc(party_lean_points_R)) %>%
+  arrange(desc(avg_party_lean_points_R)) %>%
   mutate(rank_partisan_dist_R = row_number()) %>%
-  arrange(party_lean_points_R) %>%
+  arrange(avg_party_lean_points_R) %>%
   mutate(rank_partisan_dist_D = row_number()) %>%
   select (district_number, chamber, rank_partisan_dist_R, rank_partisan_dist_D)  
 
@@ -145,10 +177,10 @@ qry_state_summary <- qry_districts %>%
     sum_asian = sum(n_asian, na.rm = TRUE),
     sum_pacific = sum(n_pacific, na.rm = TRUE),
     sum_native = sum(n_native, na.rm = TRUE),
-    sum_total_demo = sum(n_total_demo, na.rm = TRUE),
-    sum_D = sum(n_Dem, na.rm = TRUE),
-    sum_R = sum(n_Rep, na.rm = TRUE),
-    sum_Total_Elec = sum(n_Total_Elec, na.rm = TRUE)
+    sum_total_demo = sum(n_total_demo, na.rm = TRUE)
+    # sum_D = sum(n_Dem, na.rm = TRUE),
+    # sum_R = sum(n_Rep, na.rm = TRUE),
+    # sum_Total_Elec = sum(n_Total_Elec, na.rm = TRUE)
   ) %>%
   mutate(
     pct_white = sum_white / sum_total_demo,
@@ -156,9 +188,9 @@ qry_state_summary <- qry_districts %>%
     pct_black = sum_black / sum_total_demo,
     pct_asian = sum_asian / sum_total_demo,
     pct_napi = (sum_pacific + sum_native) / sum_total_demo,
-    pct_D = sum_D / sum_Total_Elec,
-    pct_R = sum_R / sum_Total_Elec,
-    source_elec = setting_district_lean
+    # pct_D = sum_D / sum_Total_Elec,
+    # pct_R = sum_R / sum_Total_Elec
+    #source_elec = setting_district_lean
   )
 
 #############################
