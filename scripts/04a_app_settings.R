@@ -84,14 +84,19 @@ calc_mean_partisan_rc <- qry_leg_votes %>%
   group_by(roll_call_id) %>%
   filter(roll_call_date >= as.Date("11/10/2012")) %>%
   summarize(
-    rc_mean_partisanship=mean(party_loyalty_weight, na.rm = TRUE),
-    rc_n_votes_denominator = sum(!is.na(party_loyalty_weight)),
+    #rc_mean_partisanship=mean(party_loyalty_weight, na.rm = TRUE),
+    #rc_n_votes_denominator = sum(!is.na(party_loyalty_weight)),
     rc_n_votes_party_line_partisan = sum(partisan_vote_type=="Party Line Partisan", na.rm = TRUE),
     rc_n_votes_party_line_bipartisan = sum(partisan_vote_type=="Party Line Bipartisan", na.rm = TRUE),
     rc_n_votes_cross_party= sum(partisan_vote_type=="Cross Party", na.rm = TRUE),
     rc_n_votes_absent_nv = sum(partisan_vote_type == "Absent/NV", na.rm = TRUE),
     rc_n_votes_independent = sum(partisan_vote_type=="Against Both Parties", na.rm = TRUE),
     rc_n_votes_other= sum(partisan_vote_type=="Other", na.rm = TRUE)
+  ) %>%
+  mutate(
+    rc_with_party = (rc_n_votes_party_line_partisan + rc_n_votes_party_line_bipartisan),
+    rc_against_party = (rc_n_votes_cross_party + rc_n_votes_independent),
+    rc_mean_partisanship = rc_with_party/(rc_with_party + rc_against_party)
   )
 
 # roll call summaries, 6271

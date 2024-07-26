@@ -1,4 +1,6 @@
 
+> source("qa_checks.R")
+
 ############################################
 #
 # Quality Assurance Check
@@ -88,3 +90,5 @@ To review all loyalty ranks, see qa_loyalty_ranks.csv. Here are the first five:
 [1] "See qa_rc_party_none_present.csv to review those records."
 
 [1] "6271 roll calls in calc_rc02_partisanship"
+
+> sink()
