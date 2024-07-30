@@ -13,9 +13,9 @@ This repo contains the data pipeline which:
 
 ### Project Status
 This project is a work in progress, with the following intended timeline:
-* review app with journalists at partner outlets (mid-to-late July)
-* document data definitions for web app data sources (mid-to-late July)
+* review app with journalists at partner outlets (August 2)
 * publish the web app (in advance of August 20 Florida primaries)
+* document data definitions for web app data sources (mid-August)
 * build stories based on web app data analysis (September leading up to November 5 elections)
 
 ### Key Terminology
