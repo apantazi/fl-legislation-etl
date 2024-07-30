@@ -26,10 +26,17 @@ setting_demo_year <- 2022
 setting_party_loyalty <- "partisan_cross"
 
 # Setting 3: Select election result for calculating district partisan lean. Should be a list of two or more elections, chosen from:
-#a) 16_20_COMP # composite of 16 pres, 20 pres, 18 gov
-#b) 20_PRES
-#c) 22_GOV
-setting_district_lean <- c("20_PRES","22_GOV") #2016-2020 composite results of governor and presidential election results
+# 16_PRES
+# 18_GOV
+# 20_PRES
+# 22_GOV
+# see 03a_process.R to make more election results available
+#setting_district_lean <- c("20_PRES","22_GOV") #2016-2020 composite results of governor and presidential election results
+setting_district_lean <- data.frame(
+  source = c("16_PRES", "18_GOV", "20_PRES", "22_GOV"),
+  weight = c(0.10,0.10,0.5,0.3),
+  stringsAsFactors = FALSE
+)
 
 #####################################
 #                                   #  
@@ -119,17 +126,19 @@ qry_legislators_incumbent <- p_legislators %>%
 
 # create qry_districts based on setting_demo_src, setting_demo_year, setting_district_lean
 # and incorporating partisanship metrics
-calc_elections_avg <- hist_district_elections %>%
-  filter(source_elec %in% setting_district_lean) %>%
-  group_by(chamber,district_number) %>%
+calc_elections_weighted <- hist_district_elections %>%
+  inner_join(setting_district_lean, by = c("source_elec" = "source"))
+
+calc_elections_avg <- calc_elections_weighted %>%
+  group_by(chamber, district_number) %>%
   summarize(
-    avg_pct_D = mean(pct_D),
-    avg_pct_R = mean(pct_R)
+    avg_pct_D = sum(pct_D * weight) / sum(weight),
+    avg_pct_R = sum(pct_R * weight) / sum(weight)
   ) %>%
   mutate(
-    avg_party_lean = ifelse(avg_pct_D > avg_pct_R, 'D','R'),
-    avg_party_lean_points_abs = round(abs(avg_pct_R-avg_pct_D)*100,0),
-    avg_party_lean_points_R = round((avg_pct_R-avg_pct_D)*100,0)
+    avg_party_lean = ifelse(avg_pct_D > avg_pct_R, 'D', 'R'),
+    avg_party_lean_points_abs = round(abs(avg_pct_R - avg_pct_D) * 100, 0),
+    avg_party_lean_points_R = round((avg_pct_R - avg_pct_D) * 100, 0)
   )
 
 

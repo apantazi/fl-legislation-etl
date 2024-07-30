@@ -69,6 +69,7 @@ list_export_df <- list(
   app02_leg_activity = app02_leg_activity,
   app03_district_context = app03_district_context,
   app03_district_context_state = app03_district_context_state,
+  calc_elections_weighted = calc_elections_weighted,
   qry_bills = qry_bills,
   qry_leg_votes = qry_leg_votes,
   qry_legislators_incumbent = qry_legislators_incumbent,

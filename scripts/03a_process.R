@@ -156,12 +156,13 @@ get_election_results <- function(prefix, source_label, is_include) {
     select(chamber,district_number,n_Dem, n_Rep, n_Total_Elec,pct_D,pct_R,source_elec)
 }
 
-# get election results, then bind into one table if necessary
-hist_district_elections_16_20_COMP <- get_election_results("E_16_20_COMP_", "16_20_COMP")
-hist_district_elections_20_PRES <- get_election_results("E_20_PRES_", "20_PRES")
-hist_district_elections_22_GOV <- get_election_results("E_22_GOV_", "22_GOV")
-hist_district_elections <- rbind(hist_district_elections_16_20_COMP, hist_district_elections_20_PRES, hist_district_elections_22_GOV)
-
+# get election results, then bind into one table
+list_str_elections <- c("16_PRES", "18_GOV", "20_PRES", "22_GOV")
+list_df_elections <- lapply(list_str_elections, function(type_year) {
+  prefix <- paste0("E_", type_year, "_")
+  get_election_results(prefix, type_year)
+})
+hist_district_elections <- do.call(rbind, list_df_elections)
 
 #######################################
 #                                     #  
