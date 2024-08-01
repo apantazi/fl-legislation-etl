@@ -39,7 +39,7 @@ library(googlesheets4) # for reading a publicly shared Google sheet
 setwd(script_dir <- dirname(rstudioapi::getActiveDocumentContext()$path))
 
 source("functions_database.R") # functions to write to Postgres database
-#source("01_request_api_legiscan.R") #request LegiScan data from API 
+source("01_request_api_legiscan.R") #request LegiScan data from API 
 
 #ETL for raw layer
 source("02a_raw_parse_legiscan.R")

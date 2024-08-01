@@ -122,22 +122,38 @@ app03_district_context_state <- qry_state_summary
 # recreating Yuriko Schumacher's partisanship visual from https://www.texastribune.org/2023/12/18/mark-jones-texas-senate-special-2023-liberal-conservative-scores/
 # first iteration: intent is to emulate the visual, though "partisanship" metric isn't identical
 
-# viz_partisanship <- qry_legislators_incumbent %>%
-#       select(legislator_name, party, chamber, district_number, leg_n_votes_denominator, leg_party_loyalty) %>%
-#   mutate(
-#     sd_partisan_vote = qry_leg_votes %>%
-#       filter(!is.na(partisan_vote_type), is.na(termination_date), partisan_vote_type != "Against Both Parties, roll_call_date >= as.Date("2012-11-10")) %>%  # Combined filters
-#       group_by(legislator_name) %>%
-#       summarize(sd_partisan_vote = sd(partisan_vote_type, na.rm = TRUE)) %>%
-#       pull(sd_partisan_vote),
-#     se_partisan_vote = sd_partisan_vote / sqrt(leg_n_votes_denominator),
-#     lower_bound = leg_party_loyalty - se_partisan_vote,
-#     upper_bound = leg_party_loyalty + se_partisan_vote,
-#     leg_label = paste0(legislator_name, " (", substr(party,1,1), "-", district_number,")")
-#   )
-# 
-# viz_partisan_senate_d <- viz_partisanship %>%
-#   filter(party == 'D', chamber == 'Senate')
-# 
-# viz_partisan_senate_r <- viz_partisanship %>%
-#   filter(party == 'R', chamber == 'Senate')
+viz_partisanship <- qry_legislators_incumbent %>%
+      select(legislator_name, party, chamber, district_number, leg_n_votes_denom_loyalty, leg_party_loyalty) %>%
+  mutate(
+    sd_partisan_vote = qry_leg_votes %>%
+      filter(!is.na(partisan_vote_type), is.na(termination_date), partisan_vote_type != "Against Both Parties",
+      roll_call_date >= as.Date("2012-11-10")) %>%  # Combined filters
+      group_by(legislator_name) %>%
+      summarize(sd_partisan_vote = sd(leg_party_loyalty , na.rm = TRUE)) %>%
+      pull(sd_partisan_vote),
+    se_partisan_vote = sd_partisan_vote / sqrt(leg_n_votes_denom_loyalty),
+    lower_bound = leg_party_loyalty - se_partisan_vote,
+    upper_bound = leg_party_loyalty + se_partisan_vote,
+    leg_label = paste0(legislator_name, " (", substr(party,1,1), "-", district_number,")")
+  )
+
+viz_partisan_senate_d <- viz_partisanship %>%
+  filter(party == 'D', chamber == 'Senate')
+
+viz_partisan_senate_r <- viz_partisanship %>%
+  filter(party == 'R', chamber == 'Senate')
+
+
+## the below plot works. it shows loyalty of a given chamber/party with error bars ##
+# loyalty_plot <- ggplot(viz_partisan_senate_d, aes(x = leg_party_loyalty, y = reorder(leg_label, leg_party_loyalty))) +
+#   geom_point(color = "red", size = 3) +
+#   geom_errorbarh(aes(xmin = lower_bound, xmax = upper_bound), height = 0.2, color = "gray") +
+#   geom_vline(xintercept = 0.5, linetype = "solid") +
+#   theme_minimal() +
+#   labs(x = "Party Loyalty", y = "", title = "Legislator Party Loyalty") +
+#   theme(
+#     panel.grid.major.y = element_blank(),
+#     panel.grid.minor.y = element_blank()
+#   )+
+#   annotate("text", x = min(viz_partisan_senate_d$leg_party_loyalty)*.8, y = 1, label = "<--- Less Loyal", hjust = 0) +
+#   annotate("text", x = 0.9, y = 1, label = "More Loyal --->", hjust = 1)

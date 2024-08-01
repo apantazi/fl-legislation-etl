@@ -88,7 +88,7 @@ print(paste0(n_leg_votes_other, " were categorized as 'Other.' Of these:"))
 print(paste0(n_other_absent, " absent"))
 print(paste0(n_other_no_vote, " no vote"))
 print(paste0(n_other_same_split, " undefined because legislator's own party split their vote equally"))
-print(paste0(n_other_same_split, " undefined because opposition party split their vote equally"))
+print(paste0(n_other_oppo_split, " undefined because opposition party split their vote equally"))
 print(paste0(n_other_unexplained, " unexplained"))
 
 
@@ -133,7 +133,7 @@ qa_loyalty_ranks <- qry_legislators_incumbent %>%
   select(chamber, party, rank_partisan_leg_D, rank_partisan_leg_R, legislator_name, district_number, leg_party_loyalty, leg_n_votes_denom_loyalty)
 cat('To review all loyalty ranks, see qa_loyalty_ranks.csv. Here are the first five:')
 cat ("\n")
-print(head(qa_loyalty_ranks))
+print.data.frame(head(qa_loyalty_ranks))
 
 
 

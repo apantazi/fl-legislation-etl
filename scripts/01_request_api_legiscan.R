@@ -9,7 +9,7 @@
 library(legiscanrr) # Interface with the LegiScan API for accessing legislative data / devtools::install_github("fanghuiz/legiscanrr")
 
 #requires user to enter their api key
-legiscan_api_key(set_new=TRUE)
+#legiscan_api_key(set_new=TRUE)
 
 # Define the data directory path
 dir_path <- "../data-raw/"
