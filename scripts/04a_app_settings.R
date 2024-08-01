@@ -137,8 +137,8 @@ calc_elections_avg <- calc_elections_weighted %>%
   ) %>%
   mutate(
     avg_party_lean = ifelse(avg_pct_D > avg_pct_R, 'D', 'R'),
-    avg_party_lean_points_abs = round(abs(avg_pct_R - avg_pct_D) * 100, 0),
-    avg_party_lean_points_R = round((avg_pct_R - avg_pct_D) * 100, 0)
+    avg_party_lean_points_abs = round(abs(avg_pct_R - avg_pct_D) * 100, 1),
+    avg_party_lean_points_R = round((avg_pct_R - avg_pct_D) * 100, 1)
   )
 
 
