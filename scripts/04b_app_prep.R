@@ -71,7 +71,7 @@ app01_vote_patterns$partisan_vote_plot <- case_when(
 #################################
 # filter this to just include incumbent legislators
 # to confirm whether this should be identical with first section of app 1  
-app02_leg_activity <- qry_leg_votes %>%
+app02_leg_activity <- calc_votes03_categorized %>%
   filter(
     !is.na(party) & party != "" & 
       !grepl("2010", session, ignore.case = TRUE) & 
@@ -79,24 +79,35 @@ app02_leg_activity <- qry_leg_votes %>%
       (vote_text == "Yea" | vote_text == "Nay") &
       !is.na(partisan_vote_type)
   ) %>%
+  left_join(qry_leg_votes %>%   filter(
+    !is.na(party) & party != "" & 
+      !grepl("2010", session, ignore.case = TRUE) & 
+      !is.na(session) & 
+      (vote_text == "Yea" | vote_text == "Nay") &
+      !is.na(partisan_vote_type)
+  )) %>% 
   left_join(
     qry_bills %>%
-      select(bill_id, bill_desc), by = 'bill_id'
+      select(bill_id, bill_desc, state_link), 
+    by = 'bill_id'
   ) %>%
   left_join(
     qry_legislators_incumbent %>%
       select(people_id, district_number, chamber, last_name, ballotpedia), 
     by = 'people_id'
   ) %>%
-  left_join(
-    qry_roll_calls %>%
-      select(roll_call_id, D_pct_of_present, R_pct_of_present),
-    by = 'roll_call_id'
-  )
-
-
-
-
+  left_join(qry_roll_calls %>% select(roll_call_id, D_pct_of_present, R_pct_of_present), by = 'roll_call_id') %>% 
+  select(
+    people_id, vote_id, vote_text, roll_call_id, session, party, legislator_name,
+    bill_id, roll_call_date, roll_call_desc, yea, nay, nv, absent, n_total,
+    passed, roll_call_chamber, bill_title, bill_number, session_year, bill_url,
+    pct_of_total, n_present, pct_of_present, final_vote, termination_date,
+    partisan_vote_type, R, D, bill_desc, district_number,
+    chamber, last_name, ballotpedia, 
+    vote_with_dem_majority, vote_with_gop_majority, vote_with_neither,
+    voted_at_all, maverick_votes, vote_with_same, state_link,D_pct_of_present,R_pct_of_present,party_loyalty_weight
+  ) %>% 
+  mutate(roll_call_date = lubridate::ymd(roll_call_date))
 
 #################################
 #                               #  

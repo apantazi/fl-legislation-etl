@@ -3,7 +3,14 @@
 # only need to run this once for initial R setup on my local computer
 # may need to recreate as a requirements file once pushing this database onto Azure
 
-install.packages(c(
+# Function to check if packages are installed and install them if not
+install_if_needed <- function(packages) {
+  new_packages <- packages[!(packages %in% installed.packages()[,"Package"])]
+  if(length(new_packages)) install.packages(new_packages)
+}
+
+# List of CRAN packages to install
+cran_packages <- c(
   "tidyverse",
   "tidytext",
   "pscl",
@@ -14,17 +21,27 @@ install.packages(c(
   "future.apply",
   "RPostgres",
   "progress",
-  "dplyr"
-))
+  "dplyr",
+  "lubridate",
+  "conflicted"
+)
+
+# Install CRAN packages if needed
+install_if_needed(cran_packages)
+
 # Install legiscanrr, which needs devtools
 if (!requireNamespace("devtools", quietly = TRUE)) install.packages("devtools")
-devtools::install_github("fanghuiz/legiscanrr")
+if (!requireNamespace("legiscanrr", quietly = TRUE)) devtools::install_github("fanghuiz/legiscanrr")
 
 # Install dwnominate, which needs remotes
-#basicspace is a dependency for dwnominate, but it's no longer in CRAN. found an archived version
 if (!requireNamespace("remotes", quietly = TRUE)) install.packages("remotes")
-install.packages("https://cran.r-project.org/src/contrib/Archive/basicspace/basicspace_0.24.tar.gz", repos = NULL, type = "source")
-remotes::install_github('wmay/dwnominate')
+if (!requireNamespace("basicspace", quietly = TRUE)) {
+  install.packages("https://cran.r-project.org/src/contrib/Archive/basicspace/basicspace_0.24.tar.gz", repos = NULL, type = "source")
+}
+if (!requireNamespace("dwnominate", quietly = TRUE)) remotes::install_github('wmay/dwnominate')
+
+# Set conflicts preference to prioritize all dplyr functions
+conflicted::conflict_prefer_all("dplyr", quiet=TRUE)
 
 # to install an individual package:
 # install.packages("dplyr")
