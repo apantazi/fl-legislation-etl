@@ -71,21 +71,14 @@ app01_vote_patterns$partisan_vote_plot <- case_when(
 #################################
 # filter this to just include incumbent legislators
 # to confirm whether this should be identical with first section of app 1  
-app02_leg_activity <- calc_votes03_categorized %>%
+app02_leg_activity <- qry_leg_votes %>%
   filter(
     !is.na(party) & party != "" & 
       !grepl("2010", session, ignore.case = TRUE) & 
       !is.na(session) & 
       (vote_text == "Yea" | vote_text == "Nay") &
       !is.na(partisan_vote_type)
-  ) %>%
-  left_join(qry_leg_votes %>%   filter(
-    !is.na(party) & party != "" & 
-      !grepl("2010", session, ignore.case = TRUE) & 
-      !is.na(session) & 
-      (vote_text == "Yea" | vote_text == "Nay") &
-      !is.na(partisan_vote_type)
-  )) %>% 
+  ) %>% 
   left_join(
     qry_bills %>%
       select(bill_id, bill_desc, state_link), 
@@ -97,6 +90,13 @@ app02_leg_activity <- calc_votes03_categorized %>%
     by = 'people_id'
   ) %>%
   left_join(qry_roll_calls %>% select(roll_call_id, D_pct_of_present, R_pct_of_present), by = 'roll_call_id') %>% 
+  mutate( # renames field names used in app02 as of 8/7/24 while retaining original fields
+    D = D_pct_of_present,
+    R = R_pct_of_present,
+    maverick_votes = vote_cross_party,
+    vote_with_same = vote_party_line,
+    vote_with_neither = vote_against_both
+  ) %>%
   select(
     people_id, vote_id, vote_text, roll_call_id, session, party, legislator_name,
     bill_id, roll_call_date, roll_call_desc, yea, nay, nv, absent, n_total,

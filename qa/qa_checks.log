@@ -1,4 +1,6 @@
 
+> source("qa_checks.R")
+
 ############################################
 #
 # Quality Assurance Check
@@ -51,20 +53,13 @@
 
 For party loyalty tiebreakers, legislators are ranked based on number of votes counted in party loyalty metric.
 To review all loyalty ranks, see qa_loyalty_ranks.csv. Here are the first five:
-  chamber party rank_partisan_leg_D rank_partisan_leg_R        legislator_name district_number leg_party_loyalty
-1   House     D                   1                  NA      LaVon Bracy Davis              40         0.9917695
-2   House     D                   2                  NA           Angela Nixon              13         0.9895288
-3   House     D                   3                  NA           Dotie Joseph             108         0.9878788
-4   House     D                   4                  NA            Dianne Hart              63         0.9854369
-5   House     D                   5                  NA Michele Rayner-Goolsby              62         0.9773756
-6   House     D                   6                  NA        Jennifer Harris              44         0.9746193
-  leg_n_votes_denom_loyalty
-1                       243
-2                       191
-3                       165
-4                       206
-5                       221
-6                       197
+  chamber party rank_partisan_leg_D rank_partisan_leg_R        legislator_name district_number leg_party_loyalty leg_n_votes_denom_loyalty
+1   House     D                   1                  NA      LaVon Bracy Davis              40         0.9917695                       243
+2   House     D                   2                  NA           Angela Nixon              13         0.9895288                       191
+3   House     D                   3                  NA           Dotie Joseph             108         0.9878788                       165
+4   House     D                   4                  NA            Dianne Hart              63         0.9854369                       206
+5   House     D                   5                  NA Michele Rayner-Goolsby              62         0.9773756                       221
+6   House     D                   6                  NA        Jennifer Harris              44         0.9746193                       197
 
 ############################################
 #
@@ -93,3 +88,5 @@ To review all loyalty ranks, see qa_loyalty_ranks.csv. Here are the first five:
 [1] "See qa_rc_party_none_present.csv to review those records."
 
 [1] "6330 roll calls in calc_rc02_partisanship"
+
+> sink()

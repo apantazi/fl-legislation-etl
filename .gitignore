@@ -1,4 +1,5 @@
 # remove R project files and archives
+archive/
 data-app/archive
 docs/archive/
 scripts/archive/

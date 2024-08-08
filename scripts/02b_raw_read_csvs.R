@@ -2,6 +2,9 @@
 # 7/6/24 RR
 # this script retrieves user-entered data and reads downloaded csvs
 
+#reset working directory in case this script is run independently from etl main
+setwd(script_dir <- dirname(rstudioapi::getActiveDocumentContext()$path))
+
 ########################################
 #                                      #  
 # 1) read Google Sheets user-entered   #

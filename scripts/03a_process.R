@@ -226,17 +226,17 @@ calc_votes02_w_partisan_stats <- calc_votes01_both_parties_present %>%
   mutate(
     vote_with_dem_majority = ifelse((dem_majority == "Y" & vote_text == "Yea")|dem_majority=="N" & vote_text=="Nay", 1, 0),
     vote_with_gop_majority = ifelse((gop_majority == "Y" & vote_text == "Yea")|gop_majority=="N" & vote_text=="Nay", 1, 0),
-    vote_with_neither = ifelse(
+    vote_against_both = ifelse(
       (dem_majority == "Y" & gop_majority == "Y" & vote_text == "Nay") | (dem_majority == "N" & gop_majority == "N" & vote_text == "Yea"), 1, 0),
-    voted_at_all = (vote_with_dem_majority+vote_with_gop_majority+vote_with_neither)>=1,
-    maverick_votes=ifelse(
+    voted_at_all = (vote_with_dem_majority+vote_with_gop_majority+vote_against_both)>=1,
+    vote_cross_party=ifelse(
       (party=="D" & vote_text=="Yea" & dem_majority=="N" & gop_majority=="Y") |
         (party=="D" & vote_text=="Nay" & dem_majority=="Y" & gop_majority=="N") |
         (party=="R" & vote_text=="Yea" & gop_majority=="N" & dem_majority=="Y") |
         (party=="R" & vote_text=="Nay" & gop_majority=="Y" & dem_majority=="N"),
       1,0 ),
     ## RR added 7/16/24, vote with same party's majority regardless of oppo party majority 
-    vote_with_same = ifelse(
+    vote_party_line = ifelse(
       (vote_with_dem_majority & party == "D")|
         (vote_with_gop_majority & party == "R")
       , 1, 0)
@@ -260,11 +260,11 @@ calc_votes02_w_partisan_stats <- calc_votes01_both_parties_present %>%
 calc_votes03_categorized <- calc_votes02_w_partisan_stats %>%
   mutate(
     partisan_vote_type = case_when(
-      vote_with_neither == 1 ~ "Against Both Parties",
-      maverick_votes == 1 ~ "Cross Party",
+      vote_against_both == 1 ~ "Against Both Parties",
+      vote_cross_party == 1 ~ "Cross Party",
       party=="D" & vote_with_dem_majority == 1 & vote_with_gop_majority == 0 ~ "Party Line Partisan",
       party=="R" & vote_with_dem_majority == 0 & vote_with_gop_majority == 1 ~ "Party Line Partisan",
-      vote_with_same == 1 ~ "Party Line Bipartisan",
+      vote_party_line == 1 ~ "Party Line Bipartisan",
       vote_text == "NV" ~ "Absent/NV",
       vote_text == "Absent" ~ "Absent/NV",
       TRUE ~ "Other"
@@ -273,23 +273,21 @@ calc_votes03_categorized <- calc_votes02_w_partisan_stats %>%
   )
 
 #7/26/24 RR can get rid of this section when we confirm the new partisan_vote_type calculation is good
-calc_votes03_categorized <- calc_votes03_categorized %>%
-  mutate(
-    partisan_vote_type_OLD = case_when(
-      vote_with_neither == 1 ~ "Against Both Parties",
-      maverick_votes == 1 ~ "Cross Party",
-      vote_with_same == 1 ~ "Party Line",
-      TRUE ~ "Other"
-    ) %>%
-      factor(levels = c("Against Both Parties", "Cross Party", "Party Line", "Other"))
-  )
-
-table(calc_votes03_categorized$partisan_vote_type_OLD,calc_votes03_categorized$partisan_vote_type)
+# calc_votes03_categorized <- calc_votes03_categorized %>%
+#   mutate(
+#     partisan_vote_type_OLD = case_when(
+#       vote_with_neither == 1 ~ "Against Both Parties",
+#       maverick_votes == 1 ~ "Cross Party",
+#       vote_with_same == 1 ~ "Party Line",
+#       TRUE ~ "Other"
+#     ) %>%
+#       factor(levels = c("Against Both Parties", "Cross Party", "Party Line", "Other"))
+#   )
 
 # fold calculated partisan_vote_type into p_legislator_votes data frame
 p_legislator_votes <- p_legislator_votes %>%
   left_join(calc_votes03_categorized %>%
-              select(people_id,roll_call_id,partisan_vote_type),
+              select(people_id,roll_call_id,partisan_vote_type, vote_against_both, vote_with_dem_majority, vote_with_gop_majority, vote_cross_party, vote_party_line, voted_at_all),
             by = c('people_id','roll_call_id')
   )
 

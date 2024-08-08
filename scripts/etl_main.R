@@ -3,17 +3,15 @@
 # ETL_MAIN.R                    #
 #                               #
 #################################
-# JUNE and JULY 2024
 # This script transforms data that's already been requested or downloaded from LegiScan
-# and stored in the folder fl-regular-json (eventually will be in Postgres db)
-# remove comment on source("01_request_api_legiscan.R") below to renew API requests, but be wary of API limits
+# and stored in the folder fl-regular-json
 
 #################################
 #                               #  
 # load libraries & functions    #
 #                               #
 #################################
-# these libraries need to be installed prior to loading (see install-packages.R)
+source("00_install_packages.R") #only install packages not already installed 
 
 library(tidyr) #for replace_na function used maybe once in 03_transform 
 library(tidyverse)  # A collection of R packages for data science
@@ -39,7 +37,6 @@ library(googlesheets4) # for reading a publicly shared Google sheet
 setwd(script_dir <- dirname(rstudioapi::getActiveDocumentContext()$path))
 
 source("functions_database.R") # functions to write to Postgres database
-source("00_install_packages.R") #only install packages not already installed 
 source("01_request_api_legiscan.R") #request LegiScan data from API 
 
 #ETL for raw layer

@@ -3,6 +3,9 @@
 # This script takes data that's already been extracted and transformed from LegiScan and other sources
 # and writes it into the Postgres database fl_leg_votes
 
+#reset working directory in case this script is run independently from etl main
+#setwd(script_dir <- dirname(rstudioapi::getActiveDocumentContext()$path))
+
 ########################################
 #                                      #  
 # 1) connect to Postgres server        #

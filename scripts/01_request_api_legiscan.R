@@ -1,18 +1,16 @@
 # REQUEST-API-LEGISCAN.R
-#
-# 6/11/24
-# This module requests *all* Florida datasets from LegiScan via API
-# I last ran this on 6/17/24
-#note that list_datesets_fl appears to be a single record, but in fact is a nested list
-# ...and purrr:walk retrieves data going back to 2010 (first, regular, organization)
+# This module requests any Florida datasets accessible from LegiScan via API that haven't already been retrieved
 
 library(legiscanrr) # Interface with the LegiScan API for accessing legislative data / devtools::install_github("fanghuiz/legiscanrr")
 
 #requires user to enter their api key
 #legiscan_api_key(set_new=TRUE)
 
+#reset working directory in case this script is run independently from etl main
+setwd(script_dir <- dirname(rstudioapi::getActiveDocumentContext()$path))
+
 # Define the data directory path
-dir_path <- "/data-raw/"
+dir_path <- normalizePath(file.path(getwd(), "../data-raw"), winslash = "/")
 
 # Check if the directory exists
 if (!dir.exists(dir_path)) {
@@ -21,7 +19,7 @@ if (!dir.exists(dir_path)) {
 }
 
 # File to store the list of existing datasets
-existing_datasets_file <- "data-raw/existing_datasets.rds"
+existing_datasets_file <- file.path(dir_path, "existing_datasets.rds")
 
 if (file.exists(existing_datasets_file)) {
   existing_datasets <- readRDS(existing_datasets_file)
