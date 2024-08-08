@@ -11,6 +11,10 @@
 # load libraries & functions    #
 #                               #
 #################################
+#set working directory to the location of current script
+script_dir <- dirname(rstudioapi::getActiveDocumentContext()$path)
+setwd(script_dir)
+
 source("00_install_packages.R") #only install packages not already installed 
 
 library(tidyr) #for replace_na function used maybe once in 03_transform 
@@ -32,9 +36,6 @@ library(progress) # to show progress bar during database write operations
 library(dplyr) # allows excluding specific columns by name from sql commands (e.g. to debug heatmap_data)
 
 library(googlesheets4) # for reading a publicly shared Google sheet
-
-#set working directory to the location of current script
-setwd(script_dir <- dirname(rstudioapi::getActiveDocumentContext()$path))
 
 source("functions_database.R") # functions to write to Postgres database
 source("01_request_api_legiscan.R") #request LegiScan data from API 

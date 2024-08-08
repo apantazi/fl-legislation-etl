@@ -4,22 +4,19 @@
 
 ########################################
 #                                      #  
-# debug notes                          #
-#                                      #
-########################################
-# progress bar doesn't render for first table in list
-
-########################################
-#                                      #  
 # define database write functions      #
 #                                      #
 ########################################
 
+# Extract the db password from local config
+config <- config::get()
+password_db <- config::get("postgres_pwd")
+
 attempt_connection <- function() {
   # Prompt for password
-  password_db <- readline(
-    prompt="Make sure ye've fired up the Postgres server and hooked up to the database.
-    Now, what be the secret code to yer treasure chest o' data?: ")
+  # password_db <- readline(
+  #   prompt="Make sure ye've fired up the Postgres server and hooked up to the database.
+  #   Now, what be the secret code to yer treasure chest o' data?: ")
   
   con <- tryCatch(
     dbConnect(RPostgres::Postgres(),
@@ -29,7 +26,7 @@ attempt_connection <- function() {
               user = "postgres",
               password = password_db),
     error = function(e) {
-      message("Connection failed: ", e$message)
+      message("Connection failed: ", e$message, " Make sure ye've fired up the Postgres server and hooked up to the database.")
       return(NULL)
     }
   )

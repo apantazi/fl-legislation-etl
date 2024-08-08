@@ -1,0 +1,4 @@
+default:
+  api_key_legiscan: <your api key here>
+
+  postgres_pwd: <your postgres pwd here>

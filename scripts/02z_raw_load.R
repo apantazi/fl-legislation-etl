@@ -3,16 +3,13 @@
 # This script takes data that's already been extracted from LegiScan and other sources
 # and writes it into the Postgres database VIEW layer (prior to transform)
 
-# Loop until successful connection
-repeat {
-  con <- attempt_connection()
-  
-  if (!is.null(con) && dbIsValid(con)) {
-    print("Successfully connected to the database!")
-    break
-  } else {
-    message("Failed to connect to the database. Please try again.")
-  }
+# connect to Postgres database
+con <- attempt_connection()
+
+if (!is.null(con) && dbIsValid(con)) {
+  print("Successfully connected to the database!")
+} else {
+  message("Failed to connect to the database. Please try again.")
 }
 
 #####################

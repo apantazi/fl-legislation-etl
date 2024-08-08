@@ -1,17 +1,23 @@
-# remove R project files and archives
+# remove secure passwords
+config.yml
+
+# remove archives
 archive/
+config.yml
 data-app/archive
 docs/archive/
 scripts/archive/
+
+# remove R project files
+fl-leg-etl.Rproj
 .data.RData
 .RData
 .RDataTmp
 .Rhistory
 .Rproj.user/
-fl-leg-etl.Rproj
 
 # remove files over 100 MB
 # data-app/p_legislator_votes.csv
 data-app/app02_leg_activity.csv
 data-app/qry_leg_votes.csv
-data-raw/
+data-raw/legiscan/

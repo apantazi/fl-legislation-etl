@@ -16,8 +16,9 @@
 setting_parse_start_year <- 2023
 setting_parse_end_year <- 2024
 
-#reset working directory in case this script is run independently from etl main
-setwd(script_dir <- dirname(rstudioapi::getActiveDocumentContext()$path))
+#set working directory to the location of current script, in case this is run independently
+script_dir <- dirname(rstudioapi::getActiveDocumentContext()$path)
+setwd(script_dir)
 
 ################################
 #                              #  

@@ -3,11 +3,14 @@
 
 library(legiscanrr) # Interface with the LegiScan API for accessing legislative data / devtools::install_github("fanghuiz/legiscanrr")
 
-#requires user to enter their api key
-#legiscan_api_key(set_new=TRUE)
+# Extract the API key
+config <- config::get()
+LEGISCAN_API_KEY <- config::get("api_key_legiscan")
+Sys.setenv(LEGISCAN_API_KEY = LEGISCAN_API_KEY)
 
-#reset working directory in case this script is run independently from etl main
-setwd(script_dir <- dirname(rstudioapi::getActiveDocumentContext()$path))
+#set working directory to the location of current script, in case this is run independently
+script_dir <- dirname(rstudioapi::getActiveDocumentContext()$path)
+setwd(script_dir)
 
 # Define the data directory path
 dir_path <- normalizePath(file.path(getwd(), "../data-raw"), winslash = "/")

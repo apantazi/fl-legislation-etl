@@ -25,13 +25,12 @@ setting_demo_year <- 2022
 # d) partisan_cross: 0 party line partisan, 1 cross party. excludes party line bipartisan
 setting_party_loyalty <- "partisan_cross"
 
-# Setting 3: Select election result for calculating district partisan lean. Should be a list of two or more elections, chosen from:
+# Setting 3: Select election result for calculating district partisan lean. Should be a dataframe with elections and weights, chosen from:
 # 16_PRES
 # 18_GOV
 # 20_PRES
 # 22_GOV
 # see 03a_process.R to make more election results available
-#setting_district_lean <- c("20_PRES","22_GOV") #2016-2020 composite results of governor and presidential election results
 setting_district_lean <- data.frame(
   source = c("16_PRES", "18_GOV", "20_PRES", "22_GOV"),
   weight = c(0.10,0.10,0.5,0.3),
