@@ -1,6 +1,13 @@
-# 6/23/24 RR created this code to document and understand heatmap_data
+#################################
+#                               #  
+# documentation-utilities.R     #
+#                               #
+#################################
 
-# Function to get column information from a data frame
+# 6/23/24 RR utility functions to help document and tidy data
+
+
+# get column metadata from a data frame
 getColumnInfo <- function(df) {
   # Initialize empty vectors to store information
   field_names <- character(length = ncol(df))
@@ -26,10 +33,27 @@ getColumnInfo <- function(df) {
   return(column_info)
 }
 
-# Example usage:
-# Assuming 'df' is your data frame
-df <- data.frame(
-  field1 = c(1, 2, 3),
-  field2 = c("A", "B", "C"),
-  field3 = c(TRUE, FALSE, TRUE)
-)
+
+
+find_session_fields <- function() {
+  df_list_w_session <- Filter(is.data.frame, mget(ls(envir = .GlobalEnv), envir = .GlobalEnv))
+  
+  # Initialize an empty list to store results
+  result_list <- list()
+  
+  for (df_name in names(df_list_w_session)) {
+    #print(df_name)
+    session_fields <- names(df_list_w_session[[df_name]])[grepl("session", names(df_list[[df_name]]), ignore.case = TRUE)]
+    #print(session_fields)
+    if (length(session_fields) > 0) {
+      #print("adding one")
+      result <- setNames(rep("yes", length(session_fields)), session_fields)
+      result_list[[df_name]] <- as.data.frame(as.list(result))
+    }
+  }
+  
+  # Combine all results into a single dataframe
+  result_df <- bind_rows(result_list, .id = "Dataframe")
+  result_df[is.na(result_df)] <- ""
+  return(result_df)
+}

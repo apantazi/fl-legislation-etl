@@ -12,14 +12,8 @@ setwd(script_dir <- dirname(rstudioapi::getActiveDocumentContext()$path))
 ########################################
 gs4_deauth() # de-authorize to connect to publicly shared sheets
 
-user_incumbents_challenged <- read_sheet("https://docs.google.com/spreadsheets/d/1woSZBU5bOfTGFKtuaYg2xT8jCo314RVlSpMrSARWl1c/edit?usp=drive_link")
+user_legislator_events <- read_sheet("https://docs.google.com/spreadsheets/d/1woSZBU5bOfTGFKtuaYg2xT8jCo314RVlSpMrSARWl1c/edit?usp=drive_link")
 user_bill_categories <- read_sheet("https://docs.google.com/spreadsheets/d/1ivNJS9F6TyBjTr_D3OmUKxN0YCEM9ugLbJRteID6Q24/edit?usp=drive_link")
-
-#back-up connection method in case I need it
-#user_incumbents_challenged <- read.csv("../data-raw/user-entry/user_incumbents_challenged.csv")
-#user_bill_categories <- read.csv("../data-raw/user-entry/user_bill_categories.csv")
-
-
 
 ########################################
 #                                      #  

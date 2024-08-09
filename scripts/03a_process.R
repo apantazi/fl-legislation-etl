@@ -20,15 +20,15 @@ p_bills <- t_bills %>%
   )
 
 p_sessions <- p_bills %>%
-  select(session_id,session_name,session_string) %>%
+  select(session_id,session_name,session, two_year_period) %>%
   distinct() %>%
   mutate(
     session_year = as.numeric(substr(session_name,1,4)),
-    session_biennium = paste(
-      if_else(session_year %% 2 == 0, session_year - 1, session_year),
-      if_else(session_year %% 2 == 0, session_year, session_year + 1),
-      sep = "-"
-    )
+    # session_biennium = paste(
+    #   if_else(session_year %% 2 == 0, session_year - 1, session_year),
+    #   if_else(session_year %% 2 == 0, session_year, session_year + 1),
+    #   sep = "-"
+    # )
   )
 
 # roll_call_id should remain as an integer- see ls_bill_vote at https://api.legiscan.com/dl/Database_ERD.png
@@ -66,17 +66,32 @@ hist_leg_sessions <- t_legislator_sessions %>%
 # manually terminated two legislators
 # Hawkings (House 35) who resigned on 6/30/23, people_id = 21981
 # Fernandez-Barquin (House 118) who resigned on 6/16/23, people_id = 20023
-temp_legislators_terminated <- data.frame(
-  people_id = c(21981, 20023),
-  termination_date = as.Date(c("2023-06-30", "2023-06-16"))
-)
+
+# temp_legislators_terminated <- data.frame(
+#   people_id = c(21981, 20023),
+#   termination_date = as.Date(c("2023-06-30", "2023-06-16"))
+# )
+
+# for user-entered info on legislator termination, see https://docs.google.com/spreadsheets/d/1woSZBU5bOfTGFKtuaYg2xT8jCo314RVlSpMrSARWl1c/edit?gid=0#gid=0
+calc_leg_terminated <- 
+  user_legislator_events %>% 
+    filter (event =="terminated") %>%
+    left_join(hist_leg_sessions,by = c('chamber','district_number','last_name')) %>%
+    mutate (termination_date = date, temp_name = last_name) %>%
+    select (people_id, termination_date, temp_name) %>%
+    group_by(people_id) %>%
+    summarize(
+      termination_date = max(termination_date, na.rm = TRUE),  # or min(termination_date) depending on your need
+      temp_name = first(temp_name)  # or any other method to select a name
+    ) %>%
+    ungroup()
 
 p_legislators <- hist_leg_sessions %>%
   group_by(legislator_name) %>%
   slice(1) %>%
   ungroup() %>%
-  left_join(temp_legislators_terminated, by="people_id") %>%
-  select(-role,-role_id,-party_id,-district, -committee_id, -committee_sponsor, -state_federal, -session)
+  left_join(calc_leg_terminated, by="people_id") %>%
+  select(-role,-role_id,-party_id,-district, -committee_id, -committee_sponsor, -state_federal, -session, -temp_name)
 
 p_legislator_votes <- t_legislator_votes %>%
   inner_join(hist_leg_sessions %>%
@@ -88,9 +103,6 @@ p_legislator_votes <- t_legislator_votes %>%
 jct_bill_categories <- user_bill_categories %>%
   inner_join(p_sessions %>% select(session_year,session_id), by = 'session_year') %>%
   inner_join(p_bills %>% select(bill_number,session_id,bill_id), by=c('bill_number','session_id'))
-
-# user_incumbents_challenged <- user_incumbents_challenged %>%
-#   mutate(is_incumbent_primaried = TRUE)
 
 ##########################################
 #                                        #  

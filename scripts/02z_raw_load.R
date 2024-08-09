@@ -39,7 +39,7 @@ schema_name <- "raw_user_entry"
 dbExecute(con, paste0("CREATE SCHEMA IF NOT EXISTS ", schema_name))
 
 list_tables <- c(
-  "user_incumbents_challenged",
+  "user_legislator_events",
   "user_bill_categories"
 )
 

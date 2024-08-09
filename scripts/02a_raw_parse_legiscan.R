@@ -65,7 +65,8 @@ extract_bill <- function(input_bill_path, pb) {
     number = safe_get(bill$bill_number),
     bill_id = safe_get(bill$bill_id),
     session_id = safe_get(bill$session_id),
-    session_string = session_info,
+    session = session_info,
+    #session_string = session_info,
     session_name = safe_get(bill$session$session_name),
     url = safe_get(bill$url),
     state_link = safe_get(bill$state_link), #RR added b/c it's not tracked in votes JSON
