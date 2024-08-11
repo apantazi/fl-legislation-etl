@@ -5,6 +5,7 @@
 * remove all password and key prompts. API key and postgres password stored in secure local config.yml file
 * facilitate running scripts independently by setting working directory  
 * normalize line endings for compatibility across OS development platforms
+* scrape legislator member ids from myfloridahouse.gov, to add to raw data
 
 ### 02 Parse
 * add settings to configure parse date range (setting_parse_start_year, setting_parse_end_year)
