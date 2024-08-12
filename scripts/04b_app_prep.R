@@ -119,7 +119,8 @@ app03_district_context <- qry_legislators_incumbent %>%
   select (
     people_id,party,legislator_name,last_name,ballotpedia,district_number,chamber,termination_date, setting_party_loyalty,leg_party_loyalty,leg_n_votes_denom_loyalty,
     leg_n_votes_party_line_partisan,leg_n_votes_party_line_bipartisan,leg_n_votes_cross_party,leg_n_votes_absent_nv,leg_n_votes_independent, leg_n_votes_other,
-    rank_partisan_leg_R, rank_partisan_leg_D
+    rank_partisan_leg_R, rank_partisan_leg_D,
+    mfh_member_id
     ) %>%
   left_join(qry_districts)
 

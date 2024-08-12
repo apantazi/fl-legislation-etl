@@ -1,27 +1,27 @@
 # Database Architecture
-7/15/24
+8/12/24
 
 <img src="../docs/etl-schematic.png" width=100%>
 
-The Legislator Database is organized into three layers: a **raw layer** for initial data storage, processed layer for organized and aligned data, and an app layer prearing data for web apps and visualizations.
+The Legislator Database is organized into three layers: a **raw layer** for initial data storage,**processed layer** for organized and aligned data, and an **app layer** prearing data for web apps and visualizations.
 
-|Layer|Purpose|
-|---|---|
-|**Raw**|Raw data retrieved as JSON via API, then parsed into tables with data elements retained unmodified. This layer also includes some limited user-entered data.|
-|**Processed**|Cleaned and organized data including calculated fields. My intent is to also to align and integrate data between similar formats (e.g. LegiScan and LegiStar).|
-|**Application**|Data prepared for specific applications such as the legislator dashboard. As a rule, this layer should only access data from the processed layer.|
+|Layer|Purpose|Data Sources|
+|---|---|---|
+|**Raw**|Raw data parsed into tables with data elements retained as close as possible to original source format.|API providers such as LegiScan, user-entered data in Google Sheets, data downloads, and data scraped from websites.|
+|**Processed**|Cleaned and organized data including calculated fields. My intent is to also to align and integrate data between similar formats (e.g. LegiScan and LegiStar).|Data from **raw layer** (**t_*** and **user_*** data frames).|
+|**Application**|Data prepared for specific applications such as the legislator dashboard. As a rule, this layer should only access data from the processed layer.|Data from **processed layer** (**p_*** and **hist_*** data frames).
 
 ETL in the context of this legislative dashboard database means:
-* **Extract** data via API from Legiscan, then parse it into tables in the raw layer.
-* **Transform** data by cleaning, organizing, calculating, and aligning data so it's more useful and easier to understand
-* **Load** the transformed data into the Postgres database
+* **Extract** data, then parse it into tables in the **raw layer**.
+* **Transform** data from the **raw layer** into the **processed layer** by cleaning, organizing, calculating, and aligning data so it's more useful and easier to understand.
+* **Load** the transformed data into a Postgres database.
 
 <br>
 
 ### Naming Conventions
 Clear and consistent naming conventions are essential to code maintainability. Following are naming conventions used within R data frames and Postgres database tables.
 
-|Schema|Prefix|Purpose|
+|Layer|Prefix|Purpose|
 |---|---|---|
 |raw|t_|**T**ables of raw data kept intact in their original source format.|
 |raw|user_|**User**-entered data, e.g. on bill categorization or contested districts.|
@@ -31,12 +31,17 @@ Clear and consistent naming conventions are essential to code maintainability. F
 |proc,<br>app|calc_|Data frames including intermediate **calc**ulations (e.g., partisanship metrics), which are not stored in Postgres.|
 |app|qry_|**Query**, i.e. a foundational view of data supporting all apps. For example, qry_legislators_incumbents filters p_legislators for only active legislators.|
 |app|qa_|**Q**uality **A**ssurance queries to facilitate further review of calculations.|
-|app|app_|**App**lication data, which has been filtered and organized from processed data. It's intended to support specific web applications but could also support data visualizations.|
+|app|app_|**App**lication data, which has been filtered and organized from processed data and intended to support specific web applications.|
+|app|viz_|**Viz**ualization data, which is prepared for independent data visualizations.|
 
 <br>
 
 ## Raw Layer
-### raw-legiscan schema ###
+The Raw Layer consists of two different schema:
+* raw_legiscan
+* raw_misc_csvs
+
+### raw_legiscan schema ###
 * [Data Dictionary for raw_legiscan](../docs/data_dictionaries/data-dictionary-raw-legiscan.xlsx)
 
 This database acquires only a portion of LegiScan data (see LegiScan's [entity relationship diagram](https://api.legiscan.com/dl/Database_ERD.png) and [API user manual](https://legiscan.com/misc/LegiScan_API_User_Manual.pdf) for info on all available data). LegiScan's data is provided as three folders of JSON files- votes (which are really roll calls, with individual votes nested within), people (i.e. legislators), and bills (with lots of related info nested within).
@@ -50,20 +55,14 @@ The raw data layer stores data parsed from the original JSON files but otherwise
 |t_roll_calls|roll_call_id|One record per roll call. Includes summary data on roll calls (e.g. how many voted yea vs. nay, etc.)|
 |t_legislator_votes|person_id,<br>roll_call_id|One record per legislator per roll call vote. Including data on how the legislator voted (yea, nay, absent, no vote).|
 
-### raw-daves schema ###
-State Congressional district data downloaded from [Dave's Redistricting](https://davesredistricting.org/). This includes American Community Survey (2020), Citizen Voting Age Population (2022), and metrics of partisan preference based on state governor and Presidential election results from 2016 to 2020.
-|Table|Primary Key|Description and Notes|
-|---|---|---|
-|t_dave_districts_house|district_id|One record per house district based on 2022 district map.|
-|t_dave_districts_senate|district_id|One record per senate district based on 2022 district map.|
-
-
-### raw-user-entry schema ###
-This schema includes a limited amount of user-entered data as a prototype. This data generation should be automated whenever that's more efficient (e.g. by bill committee assignments/ AI text search, election race data).
-|Table|Primary Key|Description and Notes|
-|---|---|---|
-|[user_bill_categories](https://docs.google.com/spreadsheets/d/1ivNJS9F6TyBjTr_D3OmUKxN0YCEM9ugLbJRteID6Q24/edit?usp=drive_link)|bill_number,<br>session_biennium,<br>bill_category|User assignment of bills to categories, as a prototype for category filtering. Intent is to expand and automate this.|
-|[user_incumbents_challenged](https://docs.google.com/spreadsheets/d/1woSZBU5bOfTGFKtuaYg2xT8jCo314RVlSpMrSARWl1c/edit?usp=drive_link)|party,<br>role,<br>district_number,<br>year|Tracks electoral districts where incumbents have primary challengers based on [Ballotpedia info](https://ballotpedia.org/Florida_House_of_Representatives_elections,_2024).|
+### raw_misc_csvs schema ###
+This schema includes a mix of [Dave's Redistricting](https://davesredistricting.org/), prototypes for user-entered data, and legislator ID numbers scraped from myfloridahouse.gov.
+|Table|Type|Primary Key|Description and Notes|
+|---|---|---|---|
+|t_dave_districts_house|download|district_id|Demographics and election data from [Dave's Redistricting](https://davesredistricting.org/) based on 2022 district map.|
+|t_dave_districts_senate|download|district_id|Demographics and election data from [Dave's Redistricting](https://davesredistricting.org/) based on 2022 district map.|
+|[user_bill_categories](https://docs.google.com/spreadsheets/d/1ivNJS9F6TyBjTr_D3OmUKxN0YCEM9ugLbJRteID6Q24/edit?usp=drive_link)|user-entered|bill_number,<br>session_year,<br>bill_category|User assignment of bills to categories, as a prototype for category filtering. Intent is to expand and automate this.|
+|[user_legislator_events](https://docs.google.com/spreadsheets/d/1woSZBU5bOfTGFKtuaYg2xT8jCo314RVlSpMrSARWl1c/edit?usp=drive_link)|user-entered|date, chamber,<br>district_number, last_name|Tracks events such as primary challengers and term resignations based on [Ballotpedia info](https://ballotpedia.org/Florida_House_of_Representatives_elections,_2024).|
 
 <br>
 

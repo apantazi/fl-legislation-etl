@@ -23,3 +23,11 @@ user_bill_categories <- read_sheet("https://docs.google.com/spreadsheets/d/1ivNJ
 
 t_daves_districts_house <- read.csv("../data-raw/daves/t_daves_districts_house.csv")
 t_daves_districts_senate <- read.csv("../data-raw/daves/t_daves_districts_senate.csv")
+
+########################################
+#                                      #  
+# 3) read scraped_data                 #
+#                                      #
+########################################
+
+t_myfloridahouse <- read.csv("../data-raw/myfloridahouse/t_myfloridahouse.csv")

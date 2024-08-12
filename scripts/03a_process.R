@@ -63,15 +63,6 @@ hist_leg_sessions <- t_legislator_sessions %>%
       TRUE ~ role
     ))
 
-# manually terminated two legislators
-# Hawkings (House 35) who resigned on 6/30/23, people_id = 21981
-# Fernandez-Barquin (House 118) who resigned on 6/16/23, people_id = 20023
-
-# temp_legislators_terminated <- data.frame(
-#   people_id = c(21981, 20023),
-#   termination_date = as.Date(c("2023-06-30", "2023-06-16"))
-# )
-
 # for user-entered info on legislator termination, see https://docs.google.com/spreadsheets/d/1woSZBU5bOfTGFKtuaYg2xT8jCo314RVlSpMrSARWl1c/edit?gid=0#gid=0
 calc_leg_terminated <- 
   user_legislator_events %>% 
@@ -91,7 +82,10 @@ p_legislators <- hist_leg_sessions %>%
   slice(1) %>%
   ungroup() %>%
   left_join(calc_leg_terminated, by="people_id") %>%
-  select(-role,-role_id,-party_id,-district, -committee_id, -committee_sponsor, -state_federal, -session, -temp_name)
+  select(-role,-role_id,-party_id,-district, -committee_id, -committee_sponsor, -state_federal, -session, -temp_name) %>%
+  left_join(t_myfloridahouse %>% select(district_number, last_name, mfh_member_id), 
+            by = c("district_number", "last_name")) %>%
+  mutate(mfh_member_id = ifelse(chamber == 'House', mfh_member_id, NA))
 
 p_legislator_votes <- t_legislator_votes %>%
   inner_join(hist_leg_sessions %>%

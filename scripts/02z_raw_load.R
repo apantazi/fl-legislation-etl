@@ -29,39 +29,24 @@ list_tables <- c(
 )
 write_tables_in_list(con, schema_name, list_tables)
 
-#####################
-#                   #  
-# save user-entered #
-#                   #
-#####################
+###############################
+#                             #  
+# save Misc CSVs              #
+#                             #
+###############################
 
-schema_name <- "raw_user_entry"
+schema_name <- "raw_misc_csvs"
 dbExecute(con, paste0("CREATE SCHEMA IF NOT EXISTS ", schema_name))
 
 list_tables <- c(
+  "t_daves_districts_house",
+  "t_daves_districts_senate",
+  "t_myfloridahouse",
   "user_legislator_events",
   "user_bill_categories"
 )
 
 write_tables_in_list(con, schema_name, list_tables)
-
-###############################
-#                             #  
-# save Daves District Data    #
-#                             #
-###############################
-
-schema_name <- "raw_daves"
-dbExecute(con, paste0("CREATE SCHEMA IF NOT EXISTS ", schema_name))
-
-list_tables <- c(
-  "t_daves_districts_house",
-  "t_daves_districts_senate"
-)
-
-write_tables_in_list(con, schema_name, list_tables)
-
-
 
 # Close the connection
 dbDisconnect(con)
