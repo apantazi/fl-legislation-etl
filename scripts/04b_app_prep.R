@@ -45,7 +45,7 @@ app01_vote_patterns <- app01_vote_patterns %>%
   left_join(qry_legislators_incumbent %>%
               select(legislator_name, leg_party_loyalty), by = "legislator_name") %>%
   left_join(qry_roll_calls %>%
-              select(roll_call_id, rc_mean_partisanship), by = "roll_call_id") %>%
+              select(roll_call_id, rc_mean_partisanship, rc_unity_R, rc_unity_D), by = "roll_call_id") %>%
   mutate(
     is_include_d = roll_call_id %in% calc_d_partisan_rc$roll_call_id,
     is_include_r = roll_call_id %in% calc_r_partisan_rc$roll_call_id

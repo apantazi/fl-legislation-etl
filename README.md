@@ -39,7 +39,7 @@ This project is a work in progress, with the following work underway in August 2
 Following are definitions of key terminology used throughout this project:
 * **Party loyalty** is a legislator’s tendency to vote with or against their party. 1 = most loyal, 0 = least loyal. 
 * **Partisan lean** is a legislative electorate’s partisanship as measured by percentage point difference between voting for Democrats vs. Republicans.
-* **Party unity** is a roll-call-level measure of how unified roll calls are *within* parties
+* **Party unity** is a roll-call-level measure, by party, of how unified roll calls are *within* parties
 
 ```
     (# votes aligned with legislator's own party)

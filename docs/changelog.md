@@ -23,3 +23,4 @@
 ### 04 App Prep
 * adapt app02_leg_activity to updated ETL while retaining existing field names
 * app03_district_context now includes mfh_member_id for linking to resources from myfloridahouse.gov
+* rc_mean_partisanship disaggregated by party: rc_unity_R, rc_unity_D
