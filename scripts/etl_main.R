@@ -8,6 +8,17 @@
 
 #################################
 #                               #  
+# starting up the database(s)   #
+#                               #
+#################################
+# These scripts write data to either the staging or production database in Postgres.
+# Prior to running these scripts, make sure you've started up the staging and production databases
+# and selected the appropriate source in the command line.
+# For detailed steps, see the PROCEDURES document
+# https://docs.google.com/document/d/1MyGv2wjyfbNeb2WDrN0YXwZ2sJWINx0Oii3WKnUMDkA/edit#bookmark=id.5j94239a3ie
+
+#################################
+#                               #  
 # load libraries & functions    #
 #                               #
 #################################

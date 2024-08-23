@@ -1,5 +1,5 @@
 # Web App and Data Visualization Guide
-8/12/24
+8/23/24
 
 *The last section of this doc needs updating to reflect shift to "party loyalty" metric (vs. ambiguous "partisanship" metric), and to provide clear guidance for app developers. The Partisanship Data Analysis also needs to be re-created.*
 
@@ -16,6 +16,7 @@ ETL pipeline settings determine which data is used, and how partisanship and dem
 
 |Setting|Field Name |Defined in Script|Description|
 |---|---|---|---|
+|Toggle for staging/ production|setting_env|[functions_database.R](../scripts/functions_database.R)|Toggle switch determining whether ETL pipeline saves to the staging database or the prodution database.|
 |Earliest legislative session|setting_parse_start_year|[02a_raw_parse_legiscan.R](../scripts/04_prep_app.R)|Earliest year for which LegiScan data should be parsed and stored in the pipeline.|
 |Latest legislative session|setting_parse_end_year|[02a_raw_parse_legiscan.R](../scripts/04_prep_app.R)|Latest year for which LegiScan data should be parsed and stored in the pipeline.|
 |Demographic data source|setting_demo_src|[04a_app_settings.R](../scripts/04a_app_settings.R)|Which data source is used for determining race/ethnic makeup of districts.|

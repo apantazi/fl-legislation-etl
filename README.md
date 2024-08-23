@@ -1,5 +1,5 @@
 # Florida Legislative Voting Database
-8/12/24
+8/23/24
 
 ## Documentation Table of Contents
 Detailed documentation is provided in the following sections:
@@ -17,22 +17,21 @@ Detailed documentation is provided in the following sections:
 <br><br>
 
 ## Project Overview
-The Jacksonville Tributary is developing a **[legislative voting dashboard](https://data.jaxtrib.org/dev/legislative-compass)** to analyze roll call voting patterns of Florida state legislators, including legislators' **party loyalty** and congressional district electorates' **partisan lean** and demographics. This dashboard is intended to support development of a voter guide, reporting on party polarization, and disparities between legislators and the districts they represent.
+The Jacksonville Tributary's **[Legislative Compass](https://data.jaxtrib.org/dev/legislative-compass)** analyzes and visualizes roll call voting patterns of Florida state legislators. Key metrics include legislators' **party loyalty** and congressional district electorates' **partisan lean** and demographics. This dashboard is intended to support development of a voter guide, reporting on party polarization, and disparities between legislators and the districts they represent.
 
-This repo contains the data pipeline which:
+This repo contains a data pipeline which:
 * extracts [legislative voting data from LegiScan](https://legiscan.com/FL/datasets), and census and demographics data from [Daves Redistricting Maps](https://davesredistricting.org/maps#state::FL).
 * transforms data by organizing and integrating data sources
 * [reviews data quality](qa/qa_checks.log) to identify and explain anomalies
 * loads data into a Postgres database while exporting key tables as [.csv files](data-app/)
-* prepares data for use by the legislator dashboard web app:
+* prepares data for use by the legislator dashboard web app (see [web app repo](https://github.com/reliablerascal/fl-legislation-app-postgres)):
     * [production web app](https://data.jaxtrib.org/dev/legislative-compass)
-    * [staging web app](https://mockingbird.shinyapps.io/fl-leg-staging/)- currently on Rob's shinyapps, but may need a new home
-    * [repo for web app](https://github.com/reliablerascal/fl-legislation-app-postgres)
+    * [staging web app](https://mockingbird.shinyapps.io/fl-leg-staging/)- currently hosted on Rob's ShinyApps.io account, but may need a new home
 
 ### Project Status
-This project is a work in progress, with the following work underway in August 2024:
+This project is a work in progress, with the following work underway as of August 2024:
 * superuser journalists at partner outlets review and beta test
-* publish the web app for public use (in advance of August 20 Florida primaries)
+* publish the web app for public use
 * document data definitions for web app data sources
 
 ### Key Terminology
