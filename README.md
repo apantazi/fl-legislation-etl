@@ -34,6 +34,8 @@ This project is a work in progress, with the following work underway as of Augus
 * publish the web app for public use
 * document data definitions for web app data sources
 
+See [changelog.md](docs/changelog.md) for info on most recent updates.
+
 ### Key Terminology
 Following are definitions of key terminology used throughout this project:
 * **Party loyalty** is a legislator’s tendency to vote with or against their party. 1 = most loyal, 0 = least loyal. 

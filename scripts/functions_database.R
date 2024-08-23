@@ -8,7 +8,7 @@
 #                            #
 ##############################
 # Define the environment: "staging" or "production"
-setting_env <- "staging"
+setting_env <- "production"
 
 print(paste("ETL pipeline is switched to the", setting_env, "environment."))
 
@@ -59,14 +59,6 @@ print(paste("Connected to the", db_name, "database on port", db_port))
 #   system("docker stop jaxtrib_production")
 # }
 
-
-# remove if not used
-# env_db_name <- Sys.getenv("DB_NAME")
-# env_db_port <- Sys.getenv("DB_PORT")
-# env_name <- Sys.getenv("ENVIRONMENT")
-# 
-# print(paste("ETL pipeline is switched to the ", env_name, " environment."))
-# print(paste("Connecting to ", env_db_name, " on port ", env_db_port))
 
 ########################################
 #                                      #  
