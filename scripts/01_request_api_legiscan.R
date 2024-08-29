@@ -1,4 +1,4 @@
-# REQUEST-API-LEGISCAN.R
+# 01_REQUEST-API-LEGISCAN.R
 #
 # 6/11/24
 # This module requests *all* Florida datasets from LegiScan via API
@@ -12,7 +12,15 @@ library(legiscanrr) # Interface with the LegiScan API for accessing legislative 
 #legiscan_api_key(set_new=TRUE)
 
 # Define the data directory path
-dir_path <- "/data-raw/"
+if (basename(getwd()) == "scripts") {
+  project_root <- normalizePath(file.path(getwd(), ".."))
+} else {
+  project_root <- getwd()
+}
+
+dir_path <- file.path(project_root, "data-raw")
+#dir_path <- normalizePath(file.path(getwd(), "../data-raw"), winslash = "/")
+existing_datasets_file <- file.path(dir_path, "existing_datasets.rds")
 
 # Check if the directory exists
 if (!dir.exists(dir_path)) {
@@ -20,8 +28,6 @@ if (!dir.exists(dir_path)) {
   dir.create(dir_path, recursive = TRUE)
 }
 
-# File to store the list of existing datasets
-existing_datasets_file <- "data-raw/existing_datasets.rds"
 
 if (file.exists(existing_datasets_file)) {
   existing_datasets <- readRDS(existing_datasets_file)
