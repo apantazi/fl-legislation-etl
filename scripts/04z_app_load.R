@@ -91,6 +91,20 @@ for (name in names(list_export_df)) {
 
 ##########################################
 #                                        #  
+# export to RDS                          #
+#                                        #
+##########################################
+
+for (name in names(list_export_df)) {
+  file_path <- paste0("../data-app/", name, ".RDS")
+  saveRDS(list_export_df[[name]], file_path)
+}
+
+saveRDS(list_export_df, "../data-app/all_data.RDS")
+
+
+##########################################
+#                                        #  
 # export QA results to csv               #
 #                                        #
 ##########################################

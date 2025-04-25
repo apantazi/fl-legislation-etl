@@ -24,12 +24,9 @@ app01_vote_patterns <- qry_leg_votes %>%
   left_join(qry_bills %>% select('bill_id','bill_desc'), by='bill_id') %>%
   left_join(qry_legislators_incumbent %>% select('people_id','district_number','chamber', 'last_name', 'ballotpedia', 'rank_partisan_leg_D', 'rank_partisan_leg_R')) %>%
   left_join(qry_roll_calls %>% select('roll_call_id','D_pct_of_present','R_pct_of_present')) %>%
-  select(roll_call_id, legislator_name, last_name, chamber, partisan_vote_type, session_year, final_vote, party, bill_number, roll_call_desc, bill_title, roll_call_date, bill_desc, bill_url, pct_of_total, pct_of_present, vote_text, legislator_name, bill_id, district_number, D_pct_of_present,R_pct_of_present, ballotpedia, 'rank_partisan_leg_D', 'rank_partisan_leg_R')
-
-#filter out votes from unanimous roll calls
-app01_vote_patterns <- app01_vote_patterns %>%
+  select(roll_call_id, legislator_name, last_name, chamber, partisan_vote_type, session_year, final_vote, party, bill_number, roll_call_desc, bill_title, roll_call_date, bill_desc, bill_url, pct_of_total, pct_of_present, vote_text, legislator_name, bill_id, district_number, D_pct_of_present,R_pct_of_present, ballotpedia, 'rank_partisan_leg_D', 'rank_partisan_leg_R') %>%
   filter(pct_of_present != 0 & pct_of_present != 1)
-  
+
 #determine which roll calls had dissension within Republicans or Democrats. These will be displayed on the heatmap.
 calc_d_partisan_rc <- qry_leg_votes %>%
   filter(party == "D") %>%  # Filter for Democratic votes and non-NA partisan_vote_type
@@ -121,7 +118,7 @@ app03_district_context <- qry_legislators_incumbent %>%
     leg_n_votes_party_line_partisan,leg_n_votes_party_line_bipartisan,leg_n_votes_cross_party,leg_n_votes_absent_nv,leg_n_votes_independent, leg_n_votes_other,
     rank_partisan_leg_R, rank_partisan_leg_D,
     mfh_member_id
-    ) %>%
+  ) %>%
   left_join(qry_districts)
 
 app03_district_context_state <- qry_state_summary
@@ -133,21 +130,68 @@ app03_district_context_state <- qry_state_summary
 #################################
 # recreating Yuriko Schumacher's partisanship visual from https://www.texastribune.org/2023/12/18/mark-jones-texas-senate-special-2023-liberal-conservative-scores/
 # first iteration: intent is to emulate the visual, though "partisanship" metric isn't identical
+qry_leg_colnames <- colnames(qry_legislators_incumbent)
 
-viz_partisanship <- qry_legislators_incumbent %>%
-      select(legislator_name, party, chamber, district_number, leg_n_votes_denom_loyalty, leg_party_loyalty) %>%
-  mutate(
-    sd_partisan_vote = qry_leg_votes %>%
-      filter(!is.na(partisan_vote_type), is.na(termination_date), partisan_vote_type != "Against Both Parties",
-      roll_call_date >= as.Date("2012-11-10")) %>%  # Combined filters
-      group_by(legislator_name) %>%
-      summarize(sd_partisan_vote = sd(leg_party_loyalty , na.rm = TRUE)) %>%
-      pull(sd_partisan_vote),
-    se_partisan_vote = sd_partisan_vote / sqrt(leg_n_votes_denom_loyalty),
-    lower_bound = leg_party_loyalty - se_partisan_vote,
-    upper_bound = leg_party_loyalty + se_partisan_vote,
-    leg_label = paste0(legislator_name, " (", substr(party,1,1), "-", district_number,")")
+qry_leg_votes_for_partisanship <- left_join(qry_legislators_incumbent,qry_leg_votes,by='legislator_name')%>%
+  select(-ends_with(".y")) %>%
+  rename_with(~ sub("\\.x$", "", .), ends_with(".x")) %>% 
+  select(qry_leg_colnames)
+
+# 1. Calculate SD per legislator FIRST
+#    Filters data and calculates standard deviation only for legislators with > 1 qualifying vote.
+#    *** Replace 'party_loyalty_weight' below if that's not the correct column from qry_leg_votes ***
+sd_per_legislator <- qry_leg_votes %>%
+  filter(
+    !is.na(partisan_vote_type),
+    # **CRITICAL**: Review 'is.na(termination_date)' filter logic
+    is.na(termination_date),
+    partisan_vote_type != "Against Both Parties",
+    # Ensure roll_call_date is Date type
+    as.Date(roll_call_date) >= as.Date("2012-11-10")
+  ) %>%
+  group_by(legislator_name) %>%
+  # Only calculate sd if there are multiple relevant votes
+  filter(n() > 1) %>%
+  summarize(
+    # *** Use the CORRECT column name for sd() from qry_leg_votes! ***
+    # Calculate SD based on individual votes
+    sd_partisan_vote = sd(party_loyalty_weight, na.rm = TRUE),
+    .groups = 'drop'
   )
+# NOTE: sd_per_legislator now only contains legislator_name and sd_partisan_vote
+
+# 2. LEFT JOIN the calculated SDs onto the existing qry_legislators_incumbent
+viz_partisanship <- qry_legislators_incumbent %>%
+  # Select only necessary columns from incumbents BEFORE the join
+  # Includes the loyalty/vote counts already joined from calc_mean_partisan_leg
+  select(
+    legislator_name, party, chamber, district_number,
+    leg_n_votes_denom_loyalty, # Already present
+    leg_party_loyalty          # Already present
+  ) %>%
+  # Use left_join to merge ONLY sd_partisan_vote. No .x/.y issues.
+  left_join(sd_per_legislator, by = "legislator_name") %>%
+  # 3. MUTATE safely using existing and joined columns
+  mutate(
+    # Calculate Standard Error using existing leg_n_votes_denom_loyalty
+    # and newly joined sd_partisan_vote
+    se_partisan_vote = ifelse(
+      is.na(sd_partisan_vote) | leg_n_votes_denom_loyalty <= 1,
+      NA_real_,
+      sd_partisan_vote / sqrt(leg_n_votes_denom_loyalty)
+    ),
+    # Calculate bounds using existing leg_party_loyalty and new se_partisan_vote
+    lower_bound = ifelse(is.na(se_partisan_vote), NA_real_, leg_party_loyalty - se_partisan_vote),
+    upper_bound = ifelse(is.na(se_partisan_vote), NA_real_, leg_party_loyalty + se_partisan_vote),
+    # Label calculation
+    leg_label = paste0(legislator_name, " (", substr(party, 1, 1), "-", district_number, ")")
+  ) %>%
+  # Optional: Final column selection
+  select(
+    legislator_name, party, chamber, district_number, leg_party_loyalty,
+    sd_partisan_vote, se_partisan_vote, lower_bound, upper_bound, leg_label
+  )
+# --- End revised logic ---
 
 viz_partisan_senate_d <- viz_partisanship %>%
   filter(party == 'D', chamber == 'Senate')
@@ -156,8 +200,8 @@ viz_partisan_senate_r <- viz_partisanship %>%
   filter(party == 'R', chamber == 'Senate')
 
 
-## the below plot works. it shows loyalty of a given chamber/party with error bars ##
-# loyalty_plot <- ggplot(viz_partisan_senate_d, aes(x = leg_party_loyalty, y = reorder(leg_label, leg_party_loyalty))) +
+## the below plot works. it shows loyalty of a given chamber/party with error bars. not currently using it in the app, but helpful for analysis sake ##
+# loyalty_plot <- ggplot(viz_partisan_senate_r, aes(x = leg_party_loyalty, y = reorder(leg_label, leg_party_loyalty))) +
 #   geom_point(color = "red", size = 3) +
 #   geom_errorbarh(aes(xmin = lower_bound, xmax = upper_bound), height = 0.2, color = "gray") +
 #   geom_vline(xintercept = 0.5, linetype = "solid") +

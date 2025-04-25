@@ -153,6 +153,7 @@ qry_legislators_incumbent <- p_legislators %>%
     is.na(termination_date)
   )
 
+
 # create qry_districts based on setting_demo_src, setting_demo_year, setting_district_lean
 # and incorporating partisanship metrics
 calc_elections_weighted <- hist_district_elections %>%
@@ -170,7 +171,33 @@ calc_elections_avg <- calc_elections_weighted %>%
     avg_party_lean_points_R = round((avg_pct_R - avg_pct_D) * 100, 1)
   )
 
+duplicates_in_incumbents <- qry_legislators_incumbent %>%
+  dplyr::group_by(chamber, district_number) %>%
+  dplyr::filter(n() > 1) %>%
+  dplyr::ungroup()
 
+if (nrow(duplicates_in_incumbents) > 0) {
+  print("Found duplicate districts in qry_legislators_incumbent:")
+  print(duplicates_in_incumbents)
+  # stop("Duplicate districts found in qry_legislators_incumbent.")
+}
+
+if (nrow(duplicates_in_incumbents) > 0) {
+  print("Found duplicate districts in qry_legislators_incumbent. Deduplicating by taking first match per district...")
+  # Optional: print the duplicates found before removing them
+  # print(duplicates_in_incumbents) 
+  
+  # Deduplicate: Keep only the first incumbent found per district
+  # You might want to add an arrange() before slice() if you need specific criteria 
+  # for which incumbent to keep (e.g., based on people_id or another field).
+  # Default slice(1) takes the first row based on current data order.
+  qry_legislators_incumbent <- qry_legislators_incumbent %>%
+    dplyr::group_by(chamber, district_number) %>%
+    dplyr::slice(1) %>%
+    dplyr::ungroup()
+  
+  cat("Row count after deduplicating qry_legislators_incumbent:", nrow(qry_legislators_incumbent), "\n")
+}
 
 qry_districts <- hist_district_demo %>%
   filter(source_demo==setting_demo_src,year_demo==setting_demo_year) %>%
@@ -183,6 +210,17 @@ qry_districts <- hist_district_demo %>%
     by = c('chamber','district_number')
   ) %>%
   rename(incumb_people_id = people_id)
+
+duplicate_districts <- qry_districts %>%
+  dplyr::group_by(chamber, district_number,source_demo) %>%
+  dplyr::filter(n() > 1) %>%
+  dplyr::ungroup()
+
+if (nrow(duplicate_districts) > 0) {
+  print("Found duplicate districts in qry_districts:")
+  print(duplicate_districts)
+  # stop("Duplicate districts found in qry_districts")
+}
 
 #rank senate partisanship
 calc_dist_house_ranks <- qry_districts %>%

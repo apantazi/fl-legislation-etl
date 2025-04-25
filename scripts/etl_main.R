@@ -28,16 +28,16 @@ setwd(script_dir)
 
 source("00_install_packages.R") #only install packages not already installed 
 
-library(tidyr) #for replace_na function used maybe once in 03_transform 
+#library(tidyr) #for replace_na function used maybe once in 03_transform 
 library(tidyverse)  # A collection of R packages for data science
-library(tidytext)   # Text mining using tidy data principles
+#library(tidytext)   # Text mining using tidy data principles
 library(legiscanrr) # Interface with the LegiScan API for accessing legislative data / devtools::install_github("fanghuiz/legiscanrr")
-library(pscl)       # Political Science Computational Laboratory package for analyzing roll call data and IRT models
-library(wnominate)  # W-NOMINATE package for scaling roll call data and estimating ideal points
-library(oc)         # Optimal Classification package for scaling roll call data
-library(dwnominate) # Dynamic Weighted NOMINATE for analyzing changes in voting patterns over time / remotes::install_github('wmay/dwnominate')
+#library(pscl)       # Political Science Computational Laboratory package for analyzing roll call data and IRT models
+#library(wnominate)  # W-NOMINATE package for scaling roll call data and estimating ideal points
+#library(oc)         # Optimal Classification package for scaling roll call data
+#library(dwnominate) # Dynamic Weighted NOMINATE for analyzing changes in voting patterns over time / remotes::install_github('wmay/dwnominate')
 library(jsonlite)   # Tools for parsing, generating, and manipulating JSON data
-library(SnowballC)  # Snowball stemmers for text preprocessing and stemming in natural language processing
+#library(SnowballC)  # Snowball stemmers for text preprocessing and stemming in natural language processing
 library(future.apply)
 
 #additional libraries for database interaction

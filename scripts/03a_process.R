@@ -24,11 +24,11 @@ p_sessions <- p_bills %>%
   distinct() %>%
   mutate(
     session_year = as.numeric(substr(session_name,1,4)),
-    # session_biennium = paste(
-    #   if_else(session_year %% 2 == 0, session_year - 1, session_year),
-    #   if_else(session_year %% 2 == 0, session_year, session_year + 1),
-    #   sep = "-"
-    # )
+     session_biennium = paste(
+       if_else(session_year %% 2 == 0, session_year - 1, session_year),
+       if_else(session_year %% 2 == 0, session_year, session_year + 1),
+       sep = "-"
+     )
   )
 
 # roll_call_id should remain as an integer- see ls_bill_vote at https://api.legiscan.com/dl/Database_ERD.png
@@ -78,8 +78,10 @@ calc_leg_terminated <-
     ungroup()
 
 p_legislators <- hist_leg_sessions %>%
-  group_by(legislator_name) %>%
-  slice(1) %>%
+  left_join(p_sessions %>% select(session, session_id), by = "session") %>%  #so we can arrange by session
+  arrange(people_id, desc(session_id)) %>% 
+  group_by(people_id) %>%  # Group by the stable people_id
+  slice(1) %>%           # Take the first row for each person (now the latest session's record)
   ungroup() %>%
   left_join(calc_leg_terminated, by="people_id") %>%
   select(-role,-role_id,-party_id,-district, -committee_id, -committee_sponsor, -state_federal, -session, -temp_name) %>%
@@ -295,7 +297,7 @@ p_legislator_votes <- p_legislator_votes %>%
   left_join(calc_votes03_categorized %>%
               select(people_id,roll_call_id,partisan_vote_type, vote_against_both, vote_with_dem_majority, vote_with_gop_majority, vote_cross_party, vote_party_line, voted_at_all),
             by = c('people_id','roll_call_id')
-  )
+  ) %>% distinct()
 
 # roll call summaries, 6271
 p_roll_calls <- p_roll_calls %>%

@@ -13,12 +13,41 @@
 #                              #
 ################################
 
-setting_parse_start_year <- 2023
-setting_parse_end_year <- 2024
-
-#set working directory to the location of current script, in case this is run independently
 script_dir <- dirname(rstudioapi::getActiveDocumentContext()$path)
 setwd(script_dir)
+
+
+# Prompt the user for start year (default: 2023)
+
+setting_parse_start_year <- readline(prompt = paste("Enter the start year (default is 2023, range 2010 to 2025): "))
+
+if (setting_parse_start_year == "") {
+  setting_parse_start_year <- 2023
+} else {
+  setting_parse_start_year <- as.integer(setting_parse_start_year)
+}
+
+# Ensure the input is valid
+while (is.na(setting_parse_start_year) || setting_parse_start_year < 2010 || setting_parse_start_year > 2025) {
+  setting_parse_start_year <- as.integer(readline(prompt = paste("Invalid input. Enter a valid start year (2010 to 2025): ")))
+}
+
+# Prompt the user for end year (default: 2025)
+setting_parse_end_year <- readline(prompt = paste("Enter the end year (default is 2025, range", setting_parse_start_year, "to 2025): "))
+
+if (setting_parse_end_year == "") {
+  setting_parse_end_year <- 2025
+} else {
+  setting_parse_end_year <- as.integer(setting_parse_end_year)
+}
+
+
+# Ensure the input is valid
+while (is.na(setting_parse_end_year) || setting_parse_end_year < setting_parse_start_year || setting_parse_end_year > 2025) {
+  setting_parse_end_year <- as.integer(readline(prompt = paste("Invalid input. Enter a valid end year (", setting_parse_start_year, "to 2025): ")))
+}
+
+cat("Parse settings: Start Year =", setting_parse_start_year, "End Year =", setting_parse_end_year, "\n")
 
 ################################
 #                              #  
@@ -90,7 +119,7 @@ parse_legislator_sessions <- function (people_json_paths) {
   pb <- progress::progress_bar$new(
     format = "  parsing people jsons into legislator-sessions [:bar] :percent in :elapsed.",
     total = length(people_json_paths), clear = FALSE, width = 100
-    )
+  )
   pb$tick(0)
   
   # run extract_people_meta for each file, combine results into output_df, then return output_df
@@ -158,7 +187,7 @@ extract_roll_call <- function(input_vote_path, pb) {
   
   # Handle missing fields with NA using `ifelse` and `is.null`
   safe_get <- function(x, default = NA) ifelse(is.null(x), default, x)
-
+  
   roll_call_meta_df <- list(
     roll_call_id = safe_get(roll_call$roll_call_id),
     bill_id = safe_get(roll_call$bill_id),

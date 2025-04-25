@@ -1,9 +1,10 @@
-# LOAD_RAW.R
+# 02z_raw_load.R
 # June-July 2024 RR
 # This script takes data that's already been extracted from LegiScan and other sources
 # and writes it into the Postgres database VIEW layer (prior to transform)
 
 # connect to Postgres database
+
 con <- attempt_connection()
 
 if (!is.null(con) && dbIsValid(con)) {
