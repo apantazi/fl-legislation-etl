@@ -1,9 +1,9 @@
 #################################
 #                               #  
-# 04A_APP_QUERIES.R             #
+# 04A_APP_settings.R             #
 #                               #
 #################################
-# 7/11/24
+# 5/19/25
 # This script builds on processed data (p_* and hist_*,), responds to settings,
 # then prepares queries (qry_*) for web applications and visualizations
 
@@ -13,29 +13,90 @@
 #                            #
 ##############################
 #I may want to move this to a settings.yaml file, to separate settings from the script code
+available_demo_sources <- sort(unique(hist_district_demo$source_demo))
+available_demo_years   <- sort(unique(hist_district_demo$year_demo))
 
-# Setting 1: Select source of demographic data (choices include CVAP 2022 and ACS 2022)
-setting_demo_src <- "CVAP"
-setting_demo_year <- 2022
+cat("Available demographic sources:", paste(available_demo_sources, collapse = ", "), "\n")
+default_src <- if ("CVAP" %in% available_demo_sources) "CVAP" else tail(available_demo_sources, 1)
+src_prompt  <- paste0("Choose demographic source [", paste(available_demo_sources, collapse = "/"), "] (default: ", default_src, "): ")
 
-# Setting 2: Select party loyalty metric. Choices include:
-# a) for_against- weighs 0 with party, 1 against. excludes against both
-# b) for_against_indy. similar to for_against, but votes against both weighed as 0.5
-# c) nominate. to be added later? https://en.wikipedia.org/wiki/NOMINATE_(scaling_method)
-# d) partisan_cross: 0 party line partisan, 1 cross party. excludes party line bipartisan
-setting_party_loyalty <- "partisan_cross"
+user_src <- readline(src_prompt)
+if (!(user_src %in% available_demo_sources)) user_src <- default_src
+setting_demo_src <- user_src
 
-# Setting 3: Select election result for calculating district partisan lean. Should be a dataframe with elections and weights, chosen from:
-# 16_PRES
-# 18_GOV
-# 20_PRES
-# 22_GOV
-# see 03a_process.R to make more election results available
+cat("Available years for", setting_demo_src, ":", 
+    paste(sort(unique(hist_district_demo$year_demo[hist_district_demo$source_demo == setting_demo_src])), collapse = ", "), "\n")
+
+default_year <- if (2022 %in% available_demo_years) 2022 else max(available_demo_years)
+year_prompt  <- paste0("Choose year (default: ", default_year, "): ")
+user_year <- as.integer(readline(year_prompt))
+if (is.na(user_year) || !(user_year %in% available_demo_years)) user_year <- default_year
+setting_demo_year <- user_year
+
+cat("Selected demographic source:", setting_demo_src, "| year:", setting_demo_year, "\n")
+
+
+available_elections <- sort(unique(hist_district_elections$source_elec))
+default_elections <- c("20_PRES", "22_GOV", "24_PRES")
+default_elections <- default_elections[default_elections %in% available_elections]
+
+cat("Available elections for district lean:", paste(available_elections, collapse = ", "), "\n")
+cat("Default: ", paste(default_elections, collapse = ", "), "\n")
+
+election_prompt <- paste0("Enter election codes to use (comma-separated, default: ", paste(default_elections, collapse = ", "), "): ")
+user_elections_raw <- readline(election_prompt)
+user_elections <- trimws(strsplit(user_elections_raw, ",")[[1]])
+if (length(user_elections_raw) == 0 || all(!user_elections %in% available_elections)) user_elections <- default_elections
+
+cat("\nYou selected the following elections:\n")
+print(user_elections)
+weights <- numeric(length(user_elections))
+default_weights <- if (length(user_elections) == 3 && all(user_elections == c("20_PRES","22_GOV","24_PRES"))) {
+  c(0.25, 0.25, 0.5)
+} else {
+  rep(1/length(user_elections), length(user_elections))
+}
+
+for (i in seq_along(user_elections)) {
+  repeat {
+    prompt <- paste0("Enter weight for ", user_elections[i], " (default: ", default_weights[i], "): ")
+    user_weight <- readline(prompt)
+    if (user_weight == "") {
+      weight_val <- default_weights[i]
+      break
+    }
+    weight_val <- suppressWarnings(as.numeric(user_weight))
+    if (!is.na(weight_val) && weight_val >= 0) {
+      break
+    } else {
+      cat("  Please enter a valid non-negative number (or press Enter for default).\n")
+    }
+  }
+  weights[i] <- weight_val
+}
+
+# Normalize weights to sum to 1
+if (sum(weights) > 0) {
+  weights <- weights / sum(weights)
+}
+
 setting_district_lean <- data.frame(
-  source = c("16_PRES", "18_GOV", "20_PRES", "22_GOV"),
-  weight = c(0.10,0.10,0.5,0.3),
+  source = user_elections,
+  weight = weights,
   stringsAsFactors = FALSE
 )
+cat("\nSelected elections:", paste(setting_district_lean$source, collapse = ", "), "\n")
+cat("Weights (normalized to sum to 1):", paste(round(setting_district_lean$weight, 3), collapse = ", "), "\n")
+
+
+available_loyalty_metrics <- c("partisan_cross", "for_against", "for_against_indy")
+cat("Available party loyalty metrics:", paste(available_loyalty_metrics, collapse = ", "), "\n")
+loyalty_prompt <- paste0("Choose party loyalty metric (default: partisan_cross): ")
+user_loyalty <- readline(loyalty_prompt)
+if (!(user_loyalty %in% available_loyalty_metrics)) user_loyalty <- "partisan_cross"
+setting_party_loyalty <- user_loyalty
+cat("Selected party loyalty metric:", setting_party_loyalty, "\n")
+
 
 #####################################
 #                                   #  
@@ -75,6 +136,7 @@ calc_mean_partisan_leg <- qry_leg_votes %>%
   filter(roll_call_date >= as.Date("11/10/2012")) %>%
   summarize(
     leg_party_loyalty=mean(party_loyalty_weight, na.rm = TRUE),
+    leg_party_independence=mean(vote_against_both,na.rm=TRUE),
     leg_n_votes_denom_loyalty = sum(!is.na(party_loyalty_weight)),
     leg_n_votes_party_line_partisan = sum(partisan_vote_type == "Party Line Partisan", na.rm = TRUE),
     leg_n_votes_party_line_bipartisan = sum(partisan_vote_type == "Party Line Bipartisan", na.rm = TRUE),
@@ -147,15 +209,18 @@ qry_roll_calls <- p_roll_calls %>%
 #                         #
 ###########################
 
-# initial filtering for incumbent legislators
-qry_legislators_incumbent <- p_legislators %>%
-  filter(
-    is.na(termination_date)
-  )
-
 
 # create qry_districts based on setting_demo_src, setting_demo_year, setting_district_lean
 # and incorporating partisanship metrics
+elections_wide <- hist_district_elections %>%
+  filter(source_elec %in% setting_district_lean$source) %>%
+  select(chamber, district_number, source_elec, pct_D, pct_R) %>%
+  pivot_wider(
+    names_from = source_elec,
+    values_from = c(pct_D, pct_R),
+    names_sep = "_"
+  )
+
 calc_elections_weighted <- hist_district_elections %>%
   inner_join(setting_district_lean, by = c("source_elec" = "source"))
 
@@ -171,32 +236,40 @@ calc_elections_avg <- calc_elections_weighted %>%
     avg_party_lean_points_R = round((avg_pct_R - avg_pct_D) * 100, 1)
   )
 
+
+# initial filtering for incumbent legislators
+qry_legislators_incumbent <- p_legislators %>%
+  filter(is.na(termination_date)) %>%
+  arrange(people_id, desc(session_id)) %>%
+  distinct(people_id, chamber, session_id, .keep_all = TRUE)
+
 duplicates_in_incumbents <- qry_legislators_incumbent %>%
   dplyr::group_by(chamber, district_number) %>%
   dplyr::filter(n() > 1) %>%
   dplyr::ungroup()
 
-if (nrow(duplicates_in_incumbents) > 0) {
-  print("Found duplicate districts in qry_legislators_incumbent:")
-  print(duplicates_in_incumbents)
-  # stop("Duplicate districts found in qry_legislators_incumbent.")
-}
+senate_dupes <- qry_legislators_incumbent %>%
+  filter(chamber == "Senate") %>%
+  group_by(district_number) %>%
+  filter(n() > 1) %>%
+  ungroup()
 
-if (nrow(duplicates_in_incumbents) > 0) {
-  print("Found duplicate districts in qry_legislators_incumbent. Deduplicating by taking first match per district...")
-  # Optional: print the duplicates found before removing them
-  # print(duplicates_in_incumbents) 
-  
-  # Deduplicate: Keep only the first incumbent found per district
-  # You might want to add an arrange() before slice() if you need specific criteria 
-  # for which incumbent to keep (e.g., based on people_id or another field).
-  # Default slice(1) takes the first row based on current data order.
-  qry_legislators_incumbent <- qry_legislators_incumbent %>%
-    dplyr::group_by(chamber, district_number) %>%
-    dplyr::slice(1) %>%
-    dplyr::ungroup()
-  
-  cat("Row count after deduplicating qry_legislators_incumbent:", nrow(qry_legislators_incumbent), "\n")
+if (nrow(senate_dupes) > 0) {
+  cat("Deduplicating Senate districts (keeping only the latest by session)...\n")
+  # Keep only the most recent session_id for each senator
+  senate_clean <- qry_legislators_incumbent %>%
+    filter(chamber == "Senate") %>%
+    arrange(desc(session_id)) %>%
+    group_by(district_number) %>%
+    slice(1) %>%
+    ungroup()
+  # Keep all House members (no deduplication)
+  house_clean <- qry_legislators_incumbent %>%
+    filter(chamber == "House")
+  # Bind together
+  qry_legislators_incumbent <- bind_rows(senate_clean, house_clean)
+} else {
+  # No deduplication needed; keep as is
 }
 
 qry_districts <- hist_district_demo %>%
@@ -205,22 +278,23 @@ qry_districts <- hist_district_demo %>%
     calc_elections_avg,
     by=c('chamber','district_number')) %>%
   inner_join(
+    elections_wide,
+    by = c('chamber', 'district_number')
+  ) %>%
+  inner_join(
     qry_legislators_incumbent %>%
       select (people_id, chamber, district_number),
     by = c('chamber','district_number')
   ) %>%
-  rename(incumb_people_id = people_id)
+  rename(incumb_people_id = people_id) %>% 
+  distinct(district_number, chamber, .keep_all = TRUE)
+
 
 duplicate_districts <- qry_districts %>%
   dplyr::group_by(chamber, district_number,source_demo) %>%
   dplyr::filter(n() > 1) %>%
   dplyr::ungroup()
 
-if (nrow(duplicate_districts) > 0) {
-  print("Found duplicate districts in qry_districts:")
-  print(duplicate_districts)
-  # stop("Duplicate districts found in qry_districts")
-}
 
 #rank senate partisanship
 calc_dist_house_ranks <- qry_districts %>%
@@ -233,6 +307,7 @@ calc_dist_house_ranks <- qry_districts %>%
   mutate(rank_partisan_dist_D = row_number()) %>%
   select (district_number, chamber, rank_partisan_dist_R, rank_partisan_dist_D)
 
+
 #rank house partisanship
 calc_dist_senate_ranks <- qry_districts %>%
   filter(
@@ -242,7 +317,7 @@ calc_dist_senate_ranks <- qry_districts %>%
   mutate(rank_partisan_dist_R = row_number()) %>%
   arrange(avg_party_lean_points_R) %>%
   mutate(rank_partisan_dist_D = row_number()) %>%
-  select (district_number, chamber, rank_partisan_dist_R, rank_partisan_dist_D)  
+  select (district_number, chamber, rank_partisan_dist_R, rank_partisan_dist_D)
 
 calc_dist_ranks <- rbind(calc_dist_senate_ranks,calc_dist_house_ranks)
 
@@ -293,12 +368,42 @@ calculate_leg_ranks <- function(data, chamber, party, rank_column) {
     filter(chamber == !!chamber, party == !!party) %>%
     arrange(desc(leg_party_loyalty), desc(leg_n_votes_denom_loyalty)) %>%
     mutate(!!rank_column := row_number()) %>%
-    select(district_number, chamber, !!rank_column)
+    select(people_id, district_number, chamber, party, !!rank_column)
 }
+rank_independence <- function(data, chamber, party_filter = NULL,
+                              rank_col = "rank_independent_all") {
+  d <- data %>% filter(chamber == !!chamber)
+  if (!is.null(party_filter)) {d <- d %>% filter(party == !!party_filter)}
+  d %>%                                   # higher share ⇒ higher rank number (1 = most independent)
+    arrange(desc(leg_party_independence), desc(leg_n_votes_denom_loyalty)) %>% mutate(!!rank_col := row_number()) %>% select(people_id, !!rank_col)
+}
+
 calc_leg_house_R_ranks <- calculate_leg_ranks(qry_legislators_incumbent, "House", "R", "rank_partisan_leg_R")
 calc_leg_house_D_ranks <- calculate_leg_ranks(qry_legislators_incumbent, "House", "D", "rank_partisan_leg_D")
 calc_leg_senate_R_ranks <- calculate_leg_ranks(qry_legislators_incumbent, "Senate", "R", "rank_partisan_leg_R")
 calc_leg_senate_D_ranks <- calculate_leg_ranks(qry_legislators_incumbent, "Senate", "D", "rank_partisan_leg_D")
+
+ind_house_all  <- rank_independence(qry_legislators_incumbent, "House")
+ind_senate_all <- rank_independence(qry_legislators_incumbent, "Senate")
+ind_house_R <- rank_independence(qry_legislators_incumbent, "House", "R","rank_independent_R")
+ind_house_D <- rank_independence(qry_legislators_incumbent, "House", "D","rank_independent_D")
+ind_senate_R <- rank_independence(qry_legislators_incumbent, "Senate", "R","rank_independent_R")
+ind_senate_D <- rank_independence(qry_legislators_incumbent, "Senate", "D","rank_independent_D")
+calc_indep_ranks <- bind_rows(
+  ind_house_all,  ind_senate_all,
+  ind_house_R,    ind_house_D,
+  ind_senate_R,   ind_senate_D
+) %>%
+  group_by(people_id) %>%
+  summarise(
+    rank_independent_all = {v <- max(as.double(rank_independent_all), na.rm=TRUE); if(is.finite(v)) as.integer(v) else NA_integer_},
+    rank_independent_R   = {v <- max(as.double(rank_independent_R),   na.rm=TRUE); if(is.finite(v)) as.integer(v) else NA_integer_},
+    rank_independent_D   = {v <- max(as.double(rank_independent_D),   na.rm=TRUE); if(is.finite(v)) as.integer(v) else NA_integer_},
+    .groups = "drop"
+  )
+
+qry_legislators_incumbent <- qry_legislators_incumbent %>%
+  left_join(calc_indep_ranks, by = "people_id")
 
 # Bind the House and Senate R ranks together
 calc_leg_R_ranks <- bind_rows(calc_leg_house_R_ranks, calc_leg_senate_R_ranks)
@@ -306,7 +411,8 @@ calc_leg_D_ranks <- bind_rows(calc_leg_house_D_ranks, calc_leg_senate_D_ranks)
 calc_leg_ranks <- bind_rows(calc_leg_R_ranks, calc_leg_D_ranks)
 
 qry_legislators_incumbent <- qry_legislators_incumbent %>%
-  left_join(calc_leg_ranks, by = c('district_number','chamber')) 
+  left_join(calc_leg_ranks, by = c('people_id','district_number','chamber','party')) %>% 
+  distinct(people_id, session_id,chamber, .keep_all = TRUE)
 
 ###########################
 #                         #  

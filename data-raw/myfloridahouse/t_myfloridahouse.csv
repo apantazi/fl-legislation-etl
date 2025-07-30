@@ -1,125 +1,123 @@
-last_name,district_number,mfh_member_id
-Abbott,5,4864
-Altman,32,4329
-Alvarez,69,4889
-Amesty,45,4876
-Anderson,57,4885
-Andrade,2,4710
-Antone,41,4269
-Arrington,46,4774
-Baker,17,4866
-Bankson,39,4873
-Barnaby,29,4770
-Bartleman,103,4793
-Basabe,106,4900
-Bell,49,4753
-Beltran,70,4747
-Benjamin,107,4795
-Berfield,58,4210
-Black,15,4865
-Borrero,111,4794
-Botana,80,4782
-Brackett,34,4870
-Bracy Davis,40,4874
-Brannan III,10,4708
-Buchanan,74,4731
-Busatta Cabrera,114,4800
-Campbell,99,4843
-Canady,50,4879
-Caruso,87,4754
-Casello,90,4750
-Cassel,101,4895
-Chamberlin,24,4901
-Chambliss,117,4798
-Chaney,61,4778
-Clemons,22,4655
-Cross,60,4887
-Daley,96,4757
-Daniels,14,4652
-Driskell,67,4745
-Duggan,12,4712
-Dunkley,97,4893
-Edmonds,88,4842
-Eskamani,42,4746
-Esposito,77,4892
-Fabricio,110,4792
-Fine,33,4646
-Franklin II,8,4863
-Gantt,109,4897
-Garcia,115,4899
-Garrison,11,4767
-Giallombardo,79,4783
-Gonzalez Pittman,65,4888
-Gossett-Seidman,91,4891
-Gottlieb,102,4724
-Grant,75,4349
-Griffitts,6,4862
-Harris,44,4877
-Hart,63,4736
-Hinson,21,4768
-Holcomb,53,4890
-Hunschofsky,95,4799
-Jacques,59,4886
-Joseph,108,4716
-Keen,35,4903
-Killebrew,48,4644
-Koster,66,4779
-LaMarca,100,4722
-Leek,28,4662
-López,43,4875
-Lopez,113,4896
-Maggard,54,4758
-Maney,4,4764
-Massullo,23,4624
-McClain,27,4658
-McClure,68,4686
-McFarland,73,4780
-Melo,82,4784
-Michael,16,4869
-Mooney,120,4797
-Nixon,13,4766
-Overdorf,85,4728
-Payne,20,4653
-Pending,72,4904
-Perez,116,4690
-Persons-Mulicka,78,4785
-Plakon,36,4871
-Plasencia,37,4872
-Porras,119,4898
-Rayner,62,4781
-Redondo,118,4902
-Renner,19,4619
-Rizo,112,4796
-Roach,76,4729
-Robinson,104,4791
-Robinson ,71,4733
-Rommel,81,4634
-Roth,94,4648
-Rudman,3,4861
-Salzman,1,4763
-Shoaf,7,4756
-Silvers,89,4627
-Sirois,31,4748
-Skidmore,92,4786
-Smith,38,4718
-Snyder,86,4787
-Stark,47,4878
-Steele,55,4881
-Stevenson,18,4620
-Tant,9,4765
-Temple,52,4880
-Tomkow,51,4704
-Trabulsy,84,4788
-Tramont,30,4867
-Truenow,26,4772
-Tuck,83,4776
-Valdés,64,4752
-Waldron,93,4894
-Williams,98,4629
-Woodson,105,4789
-Yarkosky,25,4868
-Yeager,56,4882
-Fernandez-Barquin,118,4709
-Gregory,72,4732
-Harding,24,4769
-Hawkins,35,4773
+legislator_name,district_number,mfh_member_id
+"Abbott, Shane G.",5,4864
+"Albert, Jon",48,4917
+"Alvarez, Daniel Antonio ""Danny""",69,4889
+"Alvarez, Jose",46,4916
+"Anderson, Adam",57,4885
+"Andrade, Robert Alexander ""Alex""",2,4710
+"Antone, Bruce Hadley",41,4269
+"Aristide, Wallace",107,4928
+"Baker, Jessica",17,4866
+"Bankson, Douglas Michael ""Doug""",39,4873
+"Barnaby, Webster",29,4770
+"Bartleman, Robin",103,4793
+"Basabe, Fabián",106,4900
+"Benarroch, Yvette",81,4923
+"Berfield, Kimberly",58,4210
+"Black, Dean",15,4865
+"Blanco, Omar",115,4929
+"Booth, Erika",35,4914
+"Borrero, David",111,4794
+"Botana, Adam",80,4782
+"Boyles, Nathan",3,5063
+"Brackett, Robert A. ""Robbie""",34,4870
+"Bracy Davis, LaVon",40,4874
+"Brannan III, Robert Charles ""Chuck""",10,4708
+"Buchanan, James",74,4731
+"Busatta, Demi",114,4800
+"Campbell, Daryl",99,4843
+"Canady, Jennifer",50,4879
+"Caruso, Michael A. ""Mike""",87,4754
+"Casello, Joe",90,4750
+"Cassel, Hillary",101,4895
+"Chamberlin, Ryan",24,4901
+"Chambliss, Kevin D.",117,4798
+"Chaney, Linda",61,4778
+"Cobb, Nan",26,4910
+"Conerly, William ""Bill""",72,4920
+"Cross, Lindsay",60,4887
+"Daley, Dan",96,4757
+"Daniels, Kimberly",14,4652
+"Driskell, Fentrice",67,4745
+"Duggan, Wyman",12,4712
+"Dunkley, Lisa",97,4893
+"Edmonds, Jervonte ""Tae""",88,4842
+"Eskamani, Dr. Anna  V.",42,4746
+"Esposito, Tiffany",77,4892
+"Fabricio, Tom",110,4792
+"Franklin II, Gallop",8,4863
+"Gantt, Ashley Viola",109,4897
+"Garrison, Sam",11,4767
+"Gentry, Richard",27,4911
+"Gerwig, Anne",93,4925
+"Giallombardo, Mike",79,4783
+"Gonzalez Pittman, Karen",65,4888
+"Gossett-Seidman, Peggy",91,4891
+"Gottlieb, Michael ""Mike""",102,4724
+"Greco, Sam",19,4906
+"Griffitts, Jr., Philip Wayne ""Griff""",6,4862
+"Grow, J.J.",23,4909
+"Harris, Jennifer ""Rita""",44,4877
+"Hart, Dianne ""Ms Dee""",63,4736
+"Hinson, Yvonne Hayes",21,4768
+"Hodgers, Brian",32,5064
+"Holcomb, Jeff",53,4890
+"Hunschofsky, Christine",95,4799
+"Jacques, Berny",59,4886
+"Johnson, Chad",22,4908
+"Joseph, Dotie",108,4716
+"Kendall, Kim",18,4905
+"Kincart Jonsson, Jennifer",49,4918
+"Koster, Traci",66,4779
+"LaMarca, Chip",100,4722
+"López, Johanna",43,4875
+"Lopez, Vicki L.",113,4896
+"Maggard, Randall Scott ""Randy""",54,4758
+"Maney, Patt",4,4764
+"McClure, Lawrence",68,4686
+"McFarland, Fiona",73,4780
+"Melo, Lauren",82,4784
+"Michael, Kiyan",16,4869
+"Miller, Monique",33,4913
+"Mooney, Jr., James Vernon ""Jim""",120,4797
+"Nix , Jr., Danny",75,4921
+"Nixon, Angela ""Angie""",13,4766
+"Oliver, Vanessa",76,4922
+"Overdorf, Tobin Rogers ""Toby""",85,4728
+"Owen, Michael",70,4919
+"Partington, Bill",28,4912
+"Perez, Daniel",116,4690
+"Persons-Mulicka, Jenna",78,4785
+"Plakon, Rachel Saunders",36,4871
+"Plasencia, Susan",37,4872
+"Porras, Juan Carlos",119,4898
+"Rayner, Michele K.",62,4781
+"Redondo, Mike",118,4902
+"Rizo, Alex",112,4796
+"Robinson, Felicia Simone",104,4791
+"Robinson , Jr., William Cloud ""Will""",71,4733
+"Rosenwald, Mitch",98,4927
+"Salzman, Michelle",1,4763
+"Sapp, Judson",20,4907
+"Shoaf, Jason",7,4756
+"Sirois, Tyler I.",31,4748
+"Skidmore, Kelly",92,4786
+"Smith, David",38,4718
+"Snyder, John",86,4787
+"Spencer, Leonard",45,4915
+"Stark, Paula A.",47,4878
+"Steele, Kevin M.",55,4881
+"Tant, Allison",9,4765
+"Temple, John Paul",52,4880
+"Tendrich, Debra",89,4924
+"Tomkow, Josie",51,4704
+"Trabulsy, Dana",84,4788
+"Tramont, Chase",30,4867
+"Tuck, Kaylee",83,4776
+"Valdés, Susan L.",64,4752
+"Weinberger, Meg",94,4926
+"Woodson, Marie Paule",105,4789
+"Yarkosky, Taylor Michael",25,4868
+"Yeager, Bradford Troy ""Brad""",56,4882
+"Mayfield, Debbie",32,4456
+"Rudman, Dr. Joel",3,4861

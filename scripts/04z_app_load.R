@@ -1,4 +1,4 @@
-# WRITE-TO-POSTGRES.R
+# 04z_app_load.R
 # 6/11/24 RR
 # This script takes data that's already been extracted and transformed from LegiScan and other sources
 # and writes it into the Postgres database fl_leg_votes
@@ -31,6 +31,9 @@ if (!is.null(con) && dbIsValid(con)) {
 schema_name <- "app_shiny"
 dbExecute(con, paste0("CREATE SCHEMA IF NOT EXISTS ", schema_name))
 
+qry_districts <- qry_districts %>%
+  distinct(chamber, district_number, incumb_people_id, .keep_all = TRUE)
+
 list_tables <- c(
   "qry_bills",
   "qry_leg_votes",
@@ -41,7 +44,8 @@ list_tables <- c(
   "app01_vote_patterns",
   "app02_leg_activity",
   "app03_district_context",
-  "app03_district_context_state"
+  "app03_district_context_state"#,
+#  "app04_bill_lookup"
   # "viz_partisanship",
   # "viz_partisan_senate_d",
   # "viz_partisan_senate_r"
@@ -50,8 +54,8 @@ list_tables <- c(
 primary_keys <- list(
   qry_bills = 'bill_id',
   qry_leg_votes = c('people_id','roll_call_id'),
-  qry_legislators = c('chamber','district_number'),
-  qry_districts = c('chamber','district_number'),
+  qry_legislators = c('chamber','people_id'),
+  qry_districts = c('chamber','district_number','incumb_people_id'),
   qry_roll_calls = 'roll_call_id'
 )
 
@@ -71,6 +75,7 @@ list_export_df <- list(
   app02_leg_activity = app02_leg_activity,
   app03_district_context = app03_district_context,
   app03_district_context_state = app03_district_context_state,
+#  app04_bill_lookup = app04_bill_lookup,
   calc_elections_weighted = calc_elections_weighted,
   qry_bills = qry_bills,
   qry_leg_votes = qry_leg_votes,
@@ -91,17 +96,16 @@ for (name in names(list_export_df)) {
 
 ##########################################
 #                                        #  
-# export to RDS                          #
+# export to QS                          #
 #                                        #
 ##########################################
 
 for (name in names(list_export_df)) {
-  file_path <- paste0("../data-app/", name, ".RDS")
-  saveRDS(list_export_df[[name]], file_path)
+  file_path <- paste0("../data-app/", name, ".qs")
+  qs::qsave(list_export_df[[name]], file_path)
 }
 
-saveRDS(list_export_df, "../data-app/all_data.RDS")
-
+qs::qsave(list_export_df, "../data-app/all_data.qs")
 
 ##########################################
 #                                        #  

@@ -1,6 +1,6 @@
 #################################
 #                               #  
-# 03A_TRANSFORM.R               #
+# 03a_process.R               #
 #                               #
 #################################
 
@@ -23,12 +23,12 @@ p_sessions <- p_bills %>%
   select(session_id,session_name,session, two_year_period) %>%
   distinct() %>%
   mutate(
-    session_year = as.numeric(substr(session_name,1,4)),
-     session_biennium = paste(
-       if_else(session_year %% 2 == 0, session_year - 1, session_year),
-       if_else(session_year %% 2 == 0, session_year, session_year + 1),
-       sep = "-"
-     )
+    session_year = as.numeric(str_extract(session_name, "\\d{4}")),
+    session_biennium = paste(
+      if_else(session_year %% 2 == 0, session_year - 1, session_year),
+      if_else(session_year %% 2 == 0, session_year, session_year + 1),
+      sep = "-"
+    )
   )
 
 # roll_call_id should remain as an integer- see ls_bill_vote at https://api.legiscan.com/dl/Database_ERD.png
@@ -45,7 +45,7 @@ p_roll_calls <- t_roll_calls %>%
     n_present = yea+nay,
     pct_of_present = yea/n_present,
     final_vote = ifelse(grepl("third", roll_call_desc, ignore.case = TRUE), "Y", "N")
-    ) %>%
+  ) %>%
   select(-chamber_id)
 
 # remove all non-legislators
@@ -66,16 +66,16 @@ hist_leg_sessions <- t_legislator_sessions %>%
 # for user-entered info on legislator termination, see https://docs.google.com/spreadsheets/d/1woSZBU5bOfTGFKtuaYg2xT8jCo314RVlSpMrSARWl1c/edit?gid=0#gid=0
 calc_leg_terminated <- 
   user_legislator_events %>% 
-    filter (event =="terminated") %>%
-    left_join(hist_leg_sessions,by = c('chamber','district_number','last_name')) %>%
-    mutate (termination_date = date, temp_name = last_name) %>%
-    select (people_id, termination_date, temp_name) %>%
-    group_by(people_id) %>%
-    summarize(
-      termination_date = max(termination_date, na.rm = TRUE),  # or min(termination_date) depending on your need
-      temp_name = first(temp_name)  # or any other method to select a name
-    ) %>%
-    ungroup()
+  filter (event =="terminated") %>%
+  left_join(hist_leg_sessions,by = c('chamber','district_number','last_name')) %>%
+  mutate (termination_date = date, temp_name = last_name) %>%
+  select (people_id, termination_date, temp_name) %>%
+  group_by(people_id) %>%
+  summarize(
+    termination_date = max(termination_date, na.rm = TRUE),  # or min(termination_date) depending on your need
+    temp_name = first(temp_name)  # or any other method to select a name
+  ) %>%
+  ungroup()
 
 p_legislators <- hist_leg_sessions %>%
   left_join(p_sessions %>% select(session, session_id), by = "session") %>%  #so we can arrange by session
@@ -85,9 +85,8 @@ p_legislators <- hist_leg_sessions %>%
   ungroup() %>%
   left_join(calc_leg_terminated, by="people_id") %>%
   select(-role,-role_id,-party_id,-district, -committee_id, -committee_sponsor, -state_federal, -session, -temp_name) %>%
-  left_join(t_myfloridahouse %>% select(district_number, last_name, mfh_member_id), 
-            by = c("district_number", "last_name")) %>%
-  mutate(mfh_member_id = ifelse(chamber == 'House', mfh_member_id, NA))
+  left_join(t_legislator_ids %>% select(district_number, last_name, member_id,chamber), 
+            by = c("district_number", "last_name","chamber"))
 
 p_legislator_votes <- t_legislator_votes %>%
   inner_join(hist_leg_sessions %>%
@@ -138,9 +137,22 @@ get_demographics <- function(prefix, source_label, year) {
 }
 
 # get 2022 CVAP and 2022 ACS, then bind into one table
-calc_hist_district_demo_cvap <- get_demographics("V_22_CVAP_", "CVAP", 2022)
-calc_hist_district_demo_acs <- get_demographics("T_22_ACS_", "ACS", 2022)
-hist_district_demo <- rbind(calc_hist_district_demo_cvap, calc_hist_district_demo_acs)
+demo_prefixes <- grep("^(T|V)_\\d{2}_(ACS|CVAP|CENS)_Total$", names(calc_daves_districts_combined), value = TRUE)
+# Now extract just the prefix (everything up to and including the last underscore before Total)
+demo_prefixes <- gsub("Total$", "", demo_prefixes)  # removes "Total" but leaves trailing "_"
+
+parse_source_label_year <- function(prefix) {
+  # e.g., prefix: "T_22_ACS_" or "V_22_CVAP_"
+  parts <- unlist(strsplit(gsub("_$", "", prefix), "_"))
+  year <- as.integer(parts[2])
+  source_label <- parts[3]
+  list(year = year, source_label = source_label)
+}
+list_df_demos <- lapply(demo_prefixes, function(prefix) {
+  info <- parse_source_label_year(prefix)
+  get_demographics(prefix, info$source_label, info$year)
+})
+hist_district_demo <- do.call(rbind, list_df_demos)
 
 ##############################################
 #                                            #  
@@ -165,7 +177,8 @@ get_election_results <- function(prefix, source_label, is_include) {
 }
 
 # get election results, then bind into one table
-list_str_elections <- c("16_PRES", "18_GOV", "20_PRES", "22_GOV")
+election_prefixes <- grep("^E_.*_Dem$", names(calc_daves_districts_combined), value = TRUE)
+list_str_elections <- gsub("^E_(.*)_Dem$", "\\1", election_prefixes)
 list_df_elections <- lapply(list_str_elections, function(type_year) {
   prefix <- paste0("E_", type_year, "_")
   get_election_results(prefix, type_year)
@@ -189,10 +202,10 @@ calc_rc01_by_party <- p_legislator_votes %>%
   mutate(
     n_total=sum(Yea,Nay,NV,Absent,na.rm = TRUE),
     n_present=sum(Yea,Nay)
-    ) %>%
+  ) %>%
   mutate(
     party_pct_of_present = Yea/(n_present),
-    ) %>%
+  ) %>%
   select(party,roll_call_id,party_pct_of_present, n_present)
 
 # primary key is roll_call_id
@@ -248,7 +261,7 @@ calc_votes02_w_partisan_stats <- calc_votes01_both_parties_present %>%
       (vote_with_dem_majority & party == "D")|
         (vote_with_gop_majority & party == "R")
       , 1, 0)
-    )
+  )
 
 ##################################################
 #                                                #  
@@ -309,3 +322,4 @@ p_roll_calls <- p_roll_calls %>%
     R_pct_of_present = R,
     D_pct_of_present = D
   )
+

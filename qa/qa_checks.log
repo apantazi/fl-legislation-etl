@@ -14,10 +14,10 @@
 #
 ############################################
 
-[1] "1170 roll calls in raw parsed data,"
+[1] "3008 roll calls in raw parsed data,"
 [1] "0 of these with missing date or no votes"
 
-[1] "20110 legislator-votes in raw parsed data,"
+[1] "100694 legislator-votes in raw parsed data,"
 [1] "7 of these are tied to roll calls with no 'present' (aye or nay) votes from either party."
 
 ############################################
@@ -26,12 +26,12 @@
 #
 ############################################
 
-[1] "Of 20,110 legislator-votes in raw parsed data:"
-[1] "44 were categorized as 'Other.' Of these:"
+[1] "Of 100,694 legislator-votes in raw parsed data:"
+[1] "171 were categorized as 'Other.' Of these:"
 [1] "0 absent"
 [1] "0 no vote"
-[1] "44 undefined because legislator's own party split their vote equally"
-[1] "0 undefined because opposition party split their vote equally"
+[1] "168 undefined because legislator's own party split their vote equally"
+[1] "3 undefined because opposition party split their vote equally"
 [1] "0 unexplained"
 
 ############################################
@@ -40,7 +40,7 @@
 #
 ############################################
 
-[1] "160 legislators and 160 incumbent legislators in p_legislators."
+[1] "162 legislators and 162 incumbent legislators in p_legislators."
 [1] "160 districts in p_districts, of which 160 have an incumbent legislator."
 
 ############################################
@@ -51,20 +51,20 @@
 
 For party loyalty tiebreakers, legislators are ranked based on number of votes counted in party loyalty metric.
 To review all loyalty ranks, see qa_loyalty_ranks.csv. Here are the first five:
-  chamber party rank_partisan_leg_D rank_partisan_leg_R legislator_name district_number leg_party_loyalty
-1   House     D                   1                  NA   Anna Eskamani              42                 1
-2   House     D                   2                  NA    Ashley Gantt             109                 1
-3   House     D                   3                  NA    Angela Nixon              13                 1
-4   House     D                   4                  NA   Marie Woodson             105                 1
-5   House     D                   5                  NA   Lindsay Cross              60                 1
-6   House     D                   6                  NA     Dianne Hart              63                 1
+  chamber party rank_partisan_leg_D rank_partisan_leg_R         legislator_name district_number leg_party_loyalty
+1   House     D                   1                  NA            Angela Nixon              13         1.0000000
+2   House     D                   2                  NA            Dotie Joseph             108         1.0000000
+3   House     D                   3                  NA Felicia Simone Robinson             104         0.9887640
+4   House     D                   4                  NA             Dianne Hart              63         0.9873418
+5   House     D                   5                  NA         Jennifer Harris              44         0.9759036
+6   House     D                   6                  NA  Michele Rayner-Goolsby              62         0.9753086
   leg_n_votes_denom_loyalty
-1                        23
-2                        21
-3                        18
-4                        18
-5                        17
-6                        16
+1                        88
+2                        74
+3                        89
+4                        79
+5                        83
+6                        81
 
 ############################################
 #
@@ -72,10 +72,10 @@ To review all loyalty ranks, see qa_loyalty_ranks.csv. Here are the first five:
 #
 ############################################
 
-[1] "20,110 legislator votes."
-[1] "20,083 legislator votes in calc_votes01_both_parties_present."
-[1] "20,083 legislator votes in calc_votes02_w_partisan_stats."
-[1] "20,083 legislator votes in calc_votes03_categorized."
+[1] "100,694 legislator votes."
+[1] "100,667 legislator votes in calc_votes01_both_parties_present."
+[1] "100,667 legislator votes in calc_votes02_w_partisan_stats."
+[1] "100,667 legislator votes in calc_votes03_categorized."
 [1] "4 roll calls had no votes for one or both parties"
 [1] "This accounts for 27 legislator-votes removed, because they couldn't be weighted for partisan alignment."
 [1] "Including 7 legislator-votes removed, because neither party voted."
@@ -87,9 +87,9 @@ To review all loyalty ranks, see qa_loyalty_ranks.csv. Here are the first five:
 #
 ############################################
 
-[1] "1170 roll calls."
-[1] "2340 roll calls by party in calc_rc01_by_party. We'd expect two records per roll call, or 2340 records."
+[1] "3008 roll calls."
+[1] "6016 roll calls by party in calc_rc01_by_party. We'd expect two records per roll call, or 6016 records."
 [1] "5 records where no party members are present for a given roll call."
 [1] "See qa_rc_party_none_present.csv to review those records."
 
-[1] "1170 roll calls in calc_rc02_partisanship"
+[1] "3008 roll calls in calc_rc02_partisanship"

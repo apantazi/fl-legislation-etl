@@ -1,11 +1,11 @@
 ################################
 #                              #  
-# 02_parse_legiscan.R          #
+# 02a_raw_parse_legiscan.R          #
 #                              #
 ################################
 # parses JSON data requested from LegiScan
 # adapted from code originally written by Andrew Pantazi
-# June 2024
+# June 2025
 
 ################################
 #                              #  
@@ -19,10 +19,10 @@ setwd(script_dir)
 
 # Prompt the user for start year (default: 2023)
 
-setting_parse_start_year <- readline(prompt = paste("Enter the start year (default is 2023, range 2010 to 2025): "))
+setting_parse_start_year <- readline(prompt = paste("Enter the start year (default is 2025, range 2010 to 2025): "))
 
 if (setting_parse_start_year == "") {
-  setting_parse_start_year <- 2023
+  setting_parse_start_year <- 2025
 } else {
   setting_parse_start_year <- as.integer(setting_parse_start_year)
 }
@@ -81,14 +81,18 @@ parse_bills <- function(bill_json_paths) {
 extract_bill <- function(input_bill_path, pb) {
   pb$tick()
   
-  session_regex <- "(\\d{4}-\\d{4}_[^/]+_Session)"
-  session_info <- regmatches(input_bill_path, regexpr(session_regex, input_bill_path))
-  
   bill_data <- jsonlite::fromJSON(input_bill_path, simplifyVector = FALSE)
   bill <- bill_data$bill
   
   # Handle missing fields with NA using `ifelse` and `is.null`
   safe_get <- function(x, default = NA) ifelse(is.null(x), default, x)
+  session_id <- safe_get(bill$session$session_id)
+  session_name <- safe_get(bill$session$session_name)
+  session_title <- safe_get(bill$session$session_title)
+  
+  session_regex <- "(\\d{4}-\\d{4}_[^/]+)"
+  matches <- regmatches(input_bill_path, regexpr(session_regex, input_bill_path))
+  session_info <- ifelse(length(matches) > 0, matches, NA_character_)
   
   bill_meta <- list(
     number = safe_get(bill$bill_number),
@@ -106,8 +110,61 @@ extract_bill <- function(input_bill_path, pb) {
     status_date = safe_get(bill$status_date)
   )
   
+  bill_texts <- lapply(bill$texts, function(text) {
+    data.frame(
+      doc_id = text$doc_id,
+      bill_id = bill$bill_id,
+      date = text$date,
+      type = text$type,
+      url = text$url,
+      stringsAsFactors = FALSE
+    )
+  })
+  
   return (list(meta = bill_meta))
 }
+
+
+options(scipen = 999) # numeric values in precise format
+
+parse_years <- as.character(setting_parse_start_year:setting_parse_end_year)
+parse_pattern <- paste0("/(",paste(parse_years,collapse="|"),")")
+
+base_dir <- "../data-raw/legiscan/fl/"
+all_json_paths <- list.files(path = base_dir, pattern = "\\.json$", full.names = TRUE, recursive = TRUE)
+filtered_json_paths <- grep(parse_pattern, all_json_paths, value=TRUE)
+text_paths_bills <- filtered_json_paths[grepl("/bill/", filtered_json_paths, ignore.case = TRUE)]
+text_paths_legislators <- filtered_json_paths[grepl("/people/", filtered_json_paths, ignore.case = TRUE)]
+text_paths_votes <- filtered_json_paths[grepl("/vote/", filtered_json_paths, ignore.case = TRUE)]
+
+
+
+# Example logic after parsing all bills
+t_bill_texts <- bind_rows(
+  lapply(text_paths_bills, function(bill_file) {
+    bill_data <- jsonlite::fromJSON(bill_file, simplifyVector = FALSE)
+    bill_id <- bill_data$bill$bill_id
+    texts <- bill_data$bill$texts
+    if (is.null(texts) || length(texts) == 0) return(NULL)
+    
+    # if it's not a list (i.e., only one text), wrap in a list
+    if (!is.list(texts) || !is.null(names(texts))) {
+      texts <- list(texts)
+    }
+    
+    map_dfr(texts, function(txt) {
+      # Defensive: ensure these fields exist
+      data.frame(
+        doc_id = txt$doc_id %||% NA,
+        bill_id = bill_id,
+        date = txt$date %||% NA,
+        type = txt$type %||% NA,
+        url = txt$url %||% NA,
+        stringsAsFactors = FALSE
+      )
+    })
+  })
+)
 
 
 
@@ -136,9 +193,9 @@ extract_people <- function(input_people_json_path, pb) {
   pb$tick()
   
   # Extract session info from file path using a defined regex
-  session_regex <- "(\\d{4}-\\d{4}_[^/]+_Session)"
+  session_regex <- "(\\d{4}-\\d{4}_[^/]+)"
   matches <- regmatches(input_people_json_path, regexpr(session_regex, input_people_json_path))
-  session_info <- ifelse(length(matches) > 0, matches, NA)
+  session_info <- ifelse(length(matches) > 0, matches, NA_character_)
   
   people_data <- jsonlite::fromJSON(input_people_json_path)
   people <- people_data[["person"]]
@@ -179,8 +236,10 @@ parse_roll_calls <- function (vote_json_paths) {
 extract_roll_call <- function(input_vote_path, pb) {
   pb$tick()
   
-  session_regex <- "(\\d{4}-\\d{4}_[^/]+_Session)"
-  session_info <- regmatches(input_vote_path, regexpr(session_regex, input_vote_path))
+  session_regex <- "(\\d{4}-\\d{4}_[^/]+)"
+  matches <- regmatches(input_vote_path, regexpr(session_regex, input_vote_path))
+  session_info <- ifelse(length(matches) > 0, matches, NA_character_)
+  
   
   roll_call_data <- jsonlite::fromJSON(input_vote_path, simplifyVector = FALSE)
   roll_call <- roll_call_data$roll_call
@@ -235,19 +294,6 @@ extract_votes <- function(votes, roll_call_id, session_info, pb) {
 # 2) set options and local vars   #
 #                                 #
 ###################################
-
-options(scipen = 999) # numeric values in precise format
-
-parse_years <- as.character(setting_parse_start_year:setting_parse_end_year)
-parse_pattern <- paste0("/(",paste(parse_years,collapse="|"),")")
-
-base_dir <- "../data-raw/legiscan/FL/"
-all_json_paths <- list.files(path = base_dir, pattern = "\\.json$", full.names = TRUE, recursive = TRUE)
-filtered_json_paths <- grep(parse_pattern, all_json_paths, value=TRUE)
-text_paths_bills <- filtered_json_paths[grepl("/bill/", filtered_json_paths, ignore.case = TRUE)]
-text_paths_legislators <- filtered_json_paths[grepl("/people/", filtered_json_paths, ignore.case = TRUE)]
-text_paths_votes <- filtered_json_paths[grepl("/vote/", filtered_json_paths, ignore.case = TRUE)]
-
 
 
 ########################################

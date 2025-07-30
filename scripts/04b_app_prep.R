@@ -1,6 +1,6 @@
 #################################
 #                               #  
-# 04A_APP_PREP.R                #
+# 04B_APP_PREP.R                #
 #                               #
 #################################
 # 7/14/24 RR
@@ -24,7 +24,7 @@ app01_vote_patterns <- qry_leg_votes %>%
   left_join(qry_bills %>% select('bill_id','bill_desc'), by='bill_id') %>%
   left_join(qry_legislators_incumbent %>% select('people_id','district_number','chamber', 'last_name', 'ballotpedia', 'rank_partisan_leg_D', 'rank_partisan_leg_R')) %>%
   left_join(qry_roll_calls %>% select('roll_call_id','D_pct_of_present','R_pct_of_present')) %>%
-  select(roll_call_id, legislator_name, last_name, chamber, partisan_vote_type, session_year, final_vote, party, bill_number, roll_call_desc, bill_title, roll_call_date, bill_desc, bill_url, pct_of_total, pct_of_present, vote_text, legislator_name, bill_id, district_number, D_pct_of_present,R_pct_of_present, ballotpedia, 'rank_partisan_leg_D', 'rank_partisan_leg_R') %>%
+  select(roll_call_id, legislator_name, last_name, chamber,people_id, partisan_vote_type, session_year, final_vote, party, bill_number, roll_call_desc, bill_title, roll_call_date, bill_desc, bill_url, pct_of_total, pct_of_present, vote_text, legislator_name, bill_id, district_number, D_pct_of_present,R_pct_of_present, ballotpedia, 'rank_partisan_leg_D', 'rank_partisan_leg_R') %>%
   filter(pct_of_present != 0 & pct_of_present != 1)
 
 #determine which roll calls had dissension within Republicans or Democrats. These will be displayed on the heatmap.
@@ -116,10 +116,15 @@ app03_district_context <- qry_legislators_incumbent %>%
   select (
     people_id,party,legislator_name,last_name,ballotpedia,district_number,chamber,termination_date, setting_party_loyalty,leg_party_loyalty,leg_n_votes_denom_loyalty,
     leg_n_votes_party_line_partisan,leg_n_votes_party_line_bipartisan,leg_n_votes_cross_party,leg_n_votes_absent_nv,leg_n_votes_independent, leg_n_votes_other,
-    rank_partisan_leg_R, rank_partisan_leg_D,
-    mfh_member_id
+    leg_party_independence,            # mean share of “against both” votes
+    leg_n_votes_independent,           # raw count
+    rank_independent_all,              # 1 = most independent in chamber
+    rank_independent_R, rank_independent_D,
+    rank_partisan_leg_R, rank_partisan_leg_D#,
+    #    mfh_member_id
   ) %>%
-  left_join(qry_districts)
+  left_join(qry_districts) %>% 
+  distinct(people_id, legislator_name, chamber, .keep_all = TRUE)
 
 app03_district_context_state <- qry_state_summary
 

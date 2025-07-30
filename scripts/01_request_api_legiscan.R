@@ -1,5 +1,5 @@
-# REQUEST-API-LEGISCAN.R
-# This module requests any Florida datasets accessible from LegiScan via API that haven't already been retrieved
+# 01_REQUEST_API_LEGISCAN.R
+# This module requests any florida datasets accessible from LegiScan via API that haven't already been retrieved
 
 library(legiscanrr) # Interface with the LegiScan API for accessing legislative data / devtools::install_github("fanghuiz/legiscanrr")
 
@@ -60,18 +60,31 @@ if (file.exists(existing_datasets_file)) {
 #get list of datasets
 list_datasets_fl <- legiscanrr::get_dataset_list("fl") 
 
+# Extract new hashes from LegiScan list of lists
 new_hashes <- sapply(list_datasets_fl, function(x) x$dataset_hash)
-if (is.list(existing_datasets)) {
-  # Assuming each element of the list has a 'dataset_hash' field
-  existing_datasets <- data.frame(dataset_hash = sapply(existing_datasets, function(x) x$dataset_hash))
-}
-if (nrow(existing_datasets) > 0) {
-  existing_hashes <- existing_datasets$dataset_hash
+
+# Make sure existing_datasets is a data.frame with $dataset_hash as a character vector
+if (file.exists(existing_datasets_file)) {
+  tryCatch({
+    existing_datasets <- readRDS(existing_datasets_file)
+    if (is.list(existing_datasets) && !is.data.frame(existing_datasets)) {
+      # Handle legacy list-of-lists format
+      existing_hashes <- sapply(existing_datasets, function(x) x$dataset_hash)
+      existing_datasets <- data.frame(dataset_hash = as.character(existing_hashes), stringsAsFactors = FALSE)
+    }
+  }, error = function(e) {
+    warning("Error reading existing datasets file. Proceeding with an empty list.")
+    existing_datasets <- data.frame(dataset_hash = character())
+  })
 } else {
-  existing_hashes <- character(0)  # Create an empty character vector
+  existing_datasets <- data.frame(dataset_hash = character())
 }
 
-datasets_to_download <- list_datasets_fl[!new_hashes %in% existing_hashes]
+existing_hashes <- as.character(existing_datasets$dataset_hash)
+
+# Identify which datasets are new (hash not in existing)
+to_download_idx <- which(!new_hashes %in% existing_hashes)
+datasets_to_download <- list_datasets_fl[to_download_idx]
 
 if (length(datasets_to_download) > 0) {
   cat("Found", length(datasets_to_download), "new or updated datasets.\n")

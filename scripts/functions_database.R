@@ -12,10 +12,20 @@
 config <- config::get()
 password_db <- config::get("postgres_pwd")
 
-setting_env <- readline(prompt = "Please select the environment ('staging' or 'production'): ")
-while (!(setting_env %in% c("staging", "production"))) {
-  setting_env <- readline(prompt = "Invalid input. Please enter 'staging' or 'production': ")
+
+setting_env <- readline(prompt = "Please select the environment ('staging' or 'production') [default: staging]: ")
+
+if (setting_env == "") {
+  setting_env <- "staging"
 }
+
+while (!(setting_env %in% c("staging", "production"))) {
+  setting_env <- readline(prompt = "Invalid input. Please enter 'staging' or 'production' [default: staging]: ")
+  if (setting_env == "") {
+    setting_env <- "staging"
+  }
+}
+
 print(paste("ETL pipeline is switched to the", setting_env, "environment."))
 
 use_docker <- readline(prompt = "Do you want to use Docker to manage your Postgres database? (Y/N): ")
@@ -135,15 +145,15 @@ if (toupper(use_docker) == "Y") {
     
     if (length(db_exists) > 0 && trimws(db_exists[1]) == "1") {
       print(paste("Database", db_name, "already exists."))
-      } else {
-        print(paste("Database", db_name, "does not exist. Creating database..."))
-        create_db_cmd <- paste0(
-          "docker exec -i -u postgres ", db_container,
-          " psql -U postgres -c \"CREATE DATABASE ", db_name, ";\""
-          )
-        system(create_db_cmd)
-        Sys.sleep(2) # Give Postgres a moment
-        }
+    } else {
+      print(paste("Database", db_name, "does not exist. Creating database..."))
+      create_db_cmd <- paste0(
+        "docker exec -i -u postgres ", db_container,
+        " psql -U postgres -c \"CREATE DATABASE ", db_name, ";\""
+      )
+      system(create_db_cmd)
+      Sys.sleep(2) # Give Postgres a moment
+    }
     
     psql_command <- paste0(
       "docker exec -i -u postgres ", db_container,
@@ -204,15 +214,16 @@ if (toupper(use_docker) == "Y") {
 #                                      #
 ########################################
 
-
 attempt_connection <- function() {
-  # Prompt for password
-  if (is.null(password_db)) { password_db <- readline(
-    prompt="Make sure ye've fired up the Postgres server and hooked up to the database.
-     Now, what be the secret code to yer treasure chest o' data?: ")
+  # Prompt for password if config value is missing or empty string
+  pw <- password_db
+  if (is.null(pw) || pw == "") {
+    pw <- readline(prompt = "Enter Postgres password (leave blank to use value from config.yml): ")
+    # If still blank, try pulling from config again
+    if (pw == "") {
+      pw <- config::get("postgres_pwd")
+    }
   }
-  
-  
   con <- tryCatch(
     dbConnect(
       RPostgres::Postgres(),
@@ -220,16 +231,15 @@ attempt_connection <- function() {
       host = "localhost",
       port = as.integer(db_port),
       user = "postgres",
-      password = password_db
+      password = pw
     ),
     error = function(e) {
-      message("Connection failed: ", e$message, " Make sure ye've fired up the Postgres server and hooked up to the database.")
+      message("Connection failed: ", e$message, " Make sure you've fired up the Postgres server and hooked up to the database.")
       return(NULL)
     }
   )
   return(con)
 }
-
 
 
 write_table <- function(df, con, schema_name, table_name, chunk_size = 1000) {

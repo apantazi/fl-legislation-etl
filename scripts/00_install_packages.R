@@ -1,5 +1,5 @@
-# INSTALL-PACKAGES.R
-# 6/11/24
+# 00_install_packages.R
+# 6/17/25
 # only need to run this once for initial R setup on my local computer
 # may need to recreate as a requirements file once pushing this database onto Azure
 
@@ -12,18 +12,14 @@ install_if_needed <- function(packages) {
 # List of CRAN packages to install
 cran_packages <- c(
   "tidyverse",
-#  "tidytext",
-#  "pscl",
-#  "wnominate",
-#  "oc",
   "jsonlite",
-#  "SnowballC",
   "future.apply",
   "RPostgres",
   "progress",
   "dplyr",
   "lubridate",
-  "conflicted"
+  "conflicted",
+  "qs"
 )
 
 # Install CRAN packages if needed
