@@ -1,4 +1,0 @@
-default:
-  api_key_legiscan: "f84888da59cb493ffe4885707c185fee"
-
-  postgres_pwd: "cowford"
