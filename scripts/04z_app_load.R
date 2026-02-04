@@ -3,12 +3,8 @@
 # This script takes data that's already been extracted and transformed from LegiScan and other sources
 # and writes it into the Postgres database fl_leg_votes
 
-#set working directory to the location of current script, in case this is run independently
-script_dir <- dirname(rstudioapi::getActiveDocumentContext()$path)
-setwd(script_dir)
-
 ########################################
-#                                      #  
+#                                      #
 # 1) connect to Postgres server        #
 #                                      #
 ########################################
@@ -23,7 +19,7 @@ if (!is.null(con) && dbIsValid(con)) {
 }
 
 #############################################
-#                                           #  
+#                                           #
 # 2) write app queries to Postgres and test #
 #                                           #
 #############################################
@@ -45,7 +41,7 @@ list_tables <- c(
   "app02_leg_activity",
   "app03_district_context",
   "app03_district_context_state"#,
-#  "app04_bill_lookup"
+  #  "app04_bill_lookup"
   # "viz_partisanship",
   # "viz_partisan_senate_d",
   # "viz_partisan_senate_r"
@@ -65,7 +61,7 @@ write_tables_in_list(con, schema_name, list_tables, primary_keys)
 dbDisconnect(con)
 
 #############################################
-#                                           #  
+#                                           #
 # export queries data to CSV                 #
 #                                           #
 #############################################
@@ -75,7 +71,7 @@ list_export_df <- list(
   app02_leg_activity = app02_leg_activity,
   app03_district_context = app03_district_context,
   app03_district_context_state = app03_district_context_state,
-#  app04_bill_lookup = app04_bill_lookup,
+  #  app04_bill_lookup = app04_bill_lookup,
   calc_elections_weighted = calc_elections_weighted,
   qry_bills = qry_bills,
   qry_leg_votes = qry_leg_votes,
@@ -95,7 +91,7 @@ for (name in names(list_export_df)) {
 }
 
 ##########################################
-#                                        #  
+#                                        #
 # export to QS                          #
 #                                        #
 ##########################################
@@ -108,7 +104,7 @@ for (name in names(list_export_df)) {
 qs::qsave(list_export_df, "../data-app/all_data.qs")
 
 ##########################################
-#                                        #  
+#                                        #
 # export QA results to csv               #
 #                                        #
 ##########################################

@@ -2,11 +2,8 @@
 # 7/6/24 RR
 # this script retrieves user-entered data and reads downloaded csvs
 
-#reset working directory in case this script is run independently from etl main
-setwd(script_dir <- dirname(rstudioapi::getActiveDocumentContext()$path))
-
 ########################################
-#                                      #  
+#                                      #
 # 1) read Google Sheets user-entered   #
 #                                      #
 ########################################
@@ -16,7 +13,7 @@ user_legislator_events <- read_sheet("https://docs.google.com/spreadsheets/d/1wo
 user_bill_categories <- read_sheet("https://docs.google.com/spreadsheets/d/1ivNJS9F6TyBjTr_D3OmUKxN0YCEM9ugLbJRteID6Q24/edit?usp=drive_link")
 
 ########################################
-#                                      #  
+#                                      #
 # 2) read downloaded csvs              #
 #                                      #
 ########################################
@@ -25,7 +22,7 @@ t_daves_districts_house <- read.csv("../data-raw/daves/t_daves_districts_house.c
 t_daves_districts_senate <- read.csv("../data-raw/daves/t_daves_districts_senate.csv")
 
 ########################################
-#                                      #  
+#                                      #
 # 3) read scraped_data                 #
 #                                      #
 ########################################

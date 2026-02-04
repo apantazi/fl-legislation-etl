@@ -1,0 +1,25 @@
+ETL Pipeline Benchmark Results
+==============================
+Date: 2026-02-03 11:12:40.523447 
+Environment: staging 
+Years: 2025 - 2025 
+Skip DB: TRUE 
+
+Results:
+                   stage  time_seconds memory_delta_mb  status
+1 02a_raw_parse_legiscan 127.759933949    23.381118774 SUCCESS
+2      02b_raw_read_csvs   3.524230957     3.501594543 SUCCESS
+3           02z_raw_load   0.001290083     0.006683350   ERROR
+4            03a_process   1.295942783    48.420669556 SUCCESS
+5       03z_process_load   0.004317045     0.007247925   ERROR
+6       04a_app_settings   2.092304945     3.339248657 WARNING
+7           04b_app_prep   0.026760817     0.003959656   ERROR
+8    04c_app_bill_lookup            NA              NA SKIPPED
+9           04z_app_load   1.260648012     0.041900635   ERROR
+
+
+Top 3 Slowest:
+                   stage time_seconds memory_delta_mb
+1 02a_raw_parse_legiscan   127.759934       23.381119
+2      02b_raw_read_csvs     3.524231        3.501595
+4            03a_process     1.295943       48.420670

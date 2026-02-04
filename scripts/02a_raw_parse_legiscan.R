@@ -1,5 +1,5 @@
 ################################
-#                              #  
+#                              #
 # 02a_raw_parse_legiscan.R          #
 #                              #
 ################################
@@ -8,49 +8,67 @@
 # June 2025
 
 ################################
-#                              #  
+#                              #
 # 1a) configure parse settings #
 #                              #
 ################################
 
-script_dir <- dirname(rstudioapi::getActiveDocumentContext()$path)
-setwd(script_dir)
+# Detect available years from the legiscan data folder
+legiscan_data_dir <- "../data-raw/legiscan/FL"
+if (dir.exists(legiscan_data_dir)) {
+  session_folders <- list.dirs(legiscan_data_dir, recursive = FALSE, full.names = FALSE)
+  # Extract years from folder names (format: YEAR-SESSION_NAME)
+  available_years <- as.integer(sub("-.*", "", session_folders))
+  available_years <- sort(unique(available_years[!is.na(available_years)]))
+  
+  if (length(available_years) > 0) {
+    min_year <- min(available_years)
+    max_year <- max(available_years)
+  } else {
+    # Fallback if no folders found
+    min_year <- 2010
+    max_year <- as.integer(format(Sys.Date(), "%Y"))
+  }
+} else {
+  # Fallback if directory doesn't exist
+  min_year <- 2010
+  max_year <- as.integer(format(Sys.Date(), "%Y"))
+}
 
+cat("Available data years:", min_year, "to", max_year, "\n")
 
-# Prompt the user for start year (default: 2023)
-
-setting_parse_start_year <- readline(prompt = paste("Enter the start year (default is 2025, range 2010 to 2025): "))
+# Prompt the user for start year (default: max_year)
+setting_parse_start_year <- readline(prompt = paste0("Enter the start year (default is ", max_year, ", range ", min_year, " to ", max_year, "): "))
 
 if (setting_parse_start_year == "") {
-  setting_parse_start_year <- 2025
+  setting_parse_start_year <- max_year
 } else {
   setting_parse_start_year <- as.integer(setting_parse_start_year)
 }
 
 # Ensure the input is valid
-while (is.na(setting_parse_start_year) || setting_parse_start_year < 2010 || setting_parse_start_year > 2025) {
-  setting_parse_start_year <- as.integer(readline(prompt = paste("Invalid input. Enter a valid start year (2010 to 2025): ")))
+while (is.na(setting_parse_start_year) || setting_parse_start_year < min_year || setting_parse_start_year > max_year) {
+  setting_parse_start_year <- as.integer(readline(prompt = paste0("Invalid input. Enter a valid start year (", min_year, " to ", max_year, "): ")))
 }
 
-# Prompt the user for end year (default: 2025)
-setting_parse_end_year <- readline(prompt = paste("Enter the end year (default is 2025, range", setting_parse_start_year, "to 2025): "))
+# Prompt the user for end year (default: max_year)
+setting_parse_end_year <- readline(prompt = paste0("Enter the end year (default is ", max_year, ", range ", setting_parse_start_year, " to ", max_year, "): "))
 
 if (setting_parse_end_year == "") {
-  setting_parse_end_year <- 2025
+  setting_parse_end_year <- max_year
 } else {
   setting_parse_end_year <- as.integer(setting_parse_end_year)
 }
 
-
 # Ensure the input is valid
-while (is.na(setting_parse_end_year) || setting_parse_end_year < setting_parse_start_year || setting_parse_end_year > 2025) {
-  setting_parse_end_year <- as.integer(readline(prompt = paste("Invalid input. Enter a valid end year (", setting_parse_start_year, "to 2025): ")))
+while (is.na(setting_parse_end_year) || setting_parse_end_year < setting_parse_start_year || setting_parse_end_year > max_year) {
+  setting_parse_end_year <- as.integer(readline(prompt = paste0("Invalid input. Enter a valid end year (", setting_parse_start_year, " to ", max_year, "): ")))
 }
 
 cat("Parse settings: Start Year =", setting_parse_start_year, "End Year =", setting_parse_end_year, "\n")
 
 ################################
-#                              #  
+#                              #
 # 1) define parsing functions  #
 #                              #
 ################################
@@ -64,15 +82,15 @@ parse_bills <- function(bill_json_paths) {
     total = length(bill_json_paths), clear = FALSE, width = 100
   )
   pb$tick(0)
-  
+
   output_list <- lapply(bill_json_paths, extract_bill, pb)
-  
+
   meta_list <- lapply(output_list, `[[`, "meta")
   xx_list <- lapply(output_list, `[[`, "xx")
-  
+
   meta_df <- tibble::as_tibble(data.table::rbindlist(meta_list, fill = TRUE))
   xx_df <- tibble::as_tibble(data.table::rbindlist(xx_list, fill = TRUE))
-  
+
   return(list(meta = meta_df, xx = xx_df))
 }
 
@@ -80,36 +98,36 @@ parse_bills <- function(bill_json_paths) {
 # helper function to extract bill metadata and votes for parse_bills
 extract_bill <- function(input_bill_path, pb) {
   pb$tick()
-  
+
   bill_data <- jsonlite::fromJSON(input_bill_path, simplifyVector = FALSE)
   bill <- bill_data$bill
-  
+
   # Handle missing fields with NA using `ifelse` and `is.null`
   safe_get <- function(x, default = NA) ifelse(is.null(x), default, x)
   session_id <- safe_get(bill$session$session_id)
   session_name <- safe_get(bill$session$session_name)
   session_title <- safe_get(bill$session$session_title)
-  
+
   session_regex <- "(\\d{4}-\\d{4}_[^/]+)"
   matches <- regmatches(input_bill_path, regexpr(session_regex, input_bill_path))
   session_info <- ifelse(length(matches) > 0, matches, NA_character_)
-  
+
   bill_meta <- list(
     number = safe_get(bill$bill_number),
     bill_id = safe_get(bill$bill_id),
     session_id = safe_get(bill$session_id),
     session = session_info,
-    #session_string = session_info,
+    # session_string = session_info,
     session_name = safe_get(bill$session$session_name),
     url = safe_get(bill$url),
-    state_link = safe_get(bill$state_link), #RR added b/c it's not tracked in votes JSON
+    state_link = safe_get(bill$state_link), # RR added b/c it's not tracked in votes JSON
     title = safe_get(bill$title),
     type = safe_get(bill$type),
     description = safe_get(bill$description),
     status = safe_get(bill$status),
     status_date = safe_get(bill$status_date)
   )
-  
+
   bill_texts <- lapply(bill$texts, function(text) {
     data.frame(
       doc_id = text$doc_id,
@@ -120,19 +138,19 @@ extract_bill <- function(input_bill_path, pb) {
       stringsAsFactors = FALSE
     )
   })
-  
-  return (list(meta = bill_meta))
+
+  return(list(meta = bill_meta))
 }
 
 
 options(scipen = 999) # numeric values in precise format
 
 parse_years <- as.character(setting_parse_start_year:setting_parse_end_year)
-parse_pattern <- paste0("/(",paste(parse_years,collapse="|"),")")
+parse_pattern <- paste0("/(", paste(parse_years, collapse = "|"), ")")
 
-base_dir <- "../data-raw/legiscan/fl/"
+base_dir <- here("data-raw", "legiscan", "fl")
 all_json_paths <- list.files(path = base_dir, pattern = "\\.json$", full.names = TRUE, recursive = TRUE)
-filtered_json_paths <- grep(parse_pattern, all_json_paths, value=TRUE)
+filtered_json_paths <- grep(parse_pattern, all_json_paths, value = TRUE)
 text_paths_bills <- filtered_json_paths[grepl("/bill/", filtered_json_paths, ignore.case = TRUE)]
 text_paths_legislators <- filtered_json_paths[grepl("/people/", filtered_json_paths, ignore.case = TRUE)]
 text_paths_votes <- filtered_json_paths[grepl("/vote/", filtered_json_paths, ignore.case = TRUE)]
@@ -145,13 +163,15 @@ t_bill_texts <- bind_rows(
     bill_data <- jsonlite::fromJSON(bill_file, simplifyVector = FALSE)
     bill_id <- bill_data$bill$bill_id
     texts <- bill_data$bill$texts
-    if (is.null(texts) || length(texts) == 0) return(NULL)
-    
+    if (is.null(texts) || length(texts) == 0) {
+      return(NULL)
+    }
+
     # if it's not a list (i.e., only one text), wrap in a list
     if (!is.list(texts) || !is.null(names(texts))) {
       texts <- list(texts)
     }
-    
+
     map_dfr(texts, function(txt) {
       # Defensive: ensure these fields exist
       data.frame(
@@ -169,21 +189,21 @@ t_bill_texts <- bind_rows(
 
 
 #######################################################################################
-#unpacks Legiscan's ls_people table from JSON into a dataframe
-#adds "session" field (e.g. "2023-2024_Regular_Session") based on file pathname
-#note that legislators$session tracks a once-per-session snapshot as accessed via jsons in API, but it's possible that some legislator info such as roles can change continuously
-parse_legislator_sessions <- function (people_json_paths) {
+# unpacks Legiscan's ls_people table from JSON into a dataframe
+# adds "session" field (e.g. "2023-2024_Regular_Session") based on file pathname
+# note that legislators$session tracks a once-per-session snapshot as accessed via jsons in API, but it's possible that some legislator info such as roles can change continuously
+parse_legislator_sessions <- function(people_json_paths) {
   pb <- progress::progress_bar$new(
     format = "  parsing people jsons into legislator-sessions [:bar] :percent in :elapsed.",
     total = length(people_json_paths), clear = FALSE, width = 100
   )
   pb$tick(0)
-  
+
   # run extract_people_meta for each file, combine results into output_df, then return output_df
   output_list <- lapply(people_json_paths, extract_people, pb)
   output_df <- data.table::rbindlist(output_list, fill = TRUE)
   output_df <- tibble::as_tibble(data.table::setDF(output_df))
-  
+
   return(output_df)
 }
 
@@ -191,43 +211,43 @@ parse_legislator_sessions <- function (people_json_paths) {
 # helper function to extract people-sessions data and votes for parse_legislator_sessions
 extract_people <- function(input_people_json_path, pb) {
   pb$tick()
-  
+
   # Extract session info from file path using a defined regex
   session_regex <- "(\\d{4}-\\d{4}_[^/]+)"
   matches <- regmatches(input_people_json_path, regexpr(session_regex, input_people_json_path))
   session_info <- ifelse(length(matches) > 0, matches, NA_character_)
-  
+
   people_data <- jsonlite::fromJSON(input_people_json_path)
   people <- people_data[["person"]]
-  
+
   # Append session info as a new column
   people$session <- session_info
-  
-  return (people) # return people_meta
+
+  return(people) # return people_meta
 }
 
 
 
 #######################################################################################
-#unpacks Legiscan's votes info from JSON into two dataframes
+# unpacks Legiscan's votes info from JSON into two dataframes
 # 1) votes$meta
 # 2) votes$legislators
-#adds "session" field (e.g. "2023-2024_Regular_Session") based on file pathname
-parse_roll_calls <- function (vote_json_paths) {
+# adds "session" field (e.g. "2023-2024_Regular_Session") based on file pathname
+parse_roll_calls <- function(vote_json_paths) {
   pb <- progress::progress_bar$new(
     format = "  parsing vote jsons into roll calls and leg-votes [:bar] :percent in :elapsed.",
     total = length(vote_json_paths), clear = FALSE, width = 100
   )
   pb$tick(0)
-  
+
   output_list <- lapply(vote_json_paths, extract_roll_call, pb)
-  
+
   meta_list <- lapply(output_list, `[[`, "meta")
   votes_list <- lapply(output_list, `[[`, "votes")
-  
+
   meta_df <- tibble::as_tibble(data.table::rbindlist(meta_list, fill = TRUE))
   votes_df <- tibble::as_tibble(data.table::rbindlist(votes_list, fill = TRUE))
-  
+
   return(list(meta = meta_df, votes = votes_df))
 }
 
@@ -235,18 +255,18 @@ parse_roll_calls <- function (vote_json_paths) {
 # helper function to extract roll call metadata and votes for parse_roll_calls
 extract_roll_call <- function(input_vote_path, pb) {
   pb$tick()
-  
+
   session_regex <- "(\\d{4}-\\d{4}_[^/]+)"
   matches <- regmatches(input_vote_path, regexpr(session_regex, input_vote_path))
   session_info <- ifelse(length(matches) > 0, matches, NA_character_)
-  
-  
+
+
   roll_call_data <- jsonlite::fromJSON(input_vote_path, simplifyVector = FALSE)
   roll_call <- roll_call_data$roll_call
-  
+
   # Handle missing fields with NA using `ifelse` and `is.null`
   safe_get <- function(x, default = NA) ifelse(is.null(x), default, x)
-  
+
   roll_call_meta_df <- list(
     roll_call_id = safe_get(roll_call$roll_call_id),
     bill_id = safe_get(roll_call$bill_id),
@@ -262,27 +282,29 @@ extract_roll_call <- function(input_vote_path, pb) {
     chamber = safe_get(roll_call$chamber),
     chamber_id = safe_get(roll_call$chamber_id)
   )
-  
+
   # Convert the date field to a proper date format
-  #roll_call_meta_df$date <- as.Date(roll_call_meta_df$date, format="%Y-%m-%d")
-  
+  # roll_call_meta_df$date <- as.Date(roll_call_meta_df$date, format="%Y-%m-%d")
+
   votes_df <- extract_votes(roll_call$votes, roll_call$roll_call_id, session_info, pb)
-  
+
   return(list(meta = roll_call_meta_df, votes = votes_df))
 }
 
 #####
 # sub-helper function to extract bill-votes for extract_bill
 extract_votes <- function(votes, roll_call_id, session_info, pb) {
-  if (is.null(votes)) return(NULL)
+  if (is.null(votes)) {
+    return(NULL)
+  }
   do.call(rbind, lapply(votes, function(vote) {
     # Convert the vote list to a data frame
     vote_df <- as.data.frame(vote, stringsAsFactors = FALSE)
-    
+
     # Add roll-call-level info
     vote_df$roll_call_id <- roll_call_id
     vote_df$session <- session_info
-    
+
     return(vote_df)
   }))
 }
@@ -290,32 +312,40 @@ extract_votes <- function(votes, roll_call_id, session_info, pb) {
 
 
 ###################################
-#                                 #  
+#                                 #
 # 2) set options and local vars   #
 #                                 #
 ###################################
 
 
 ########################################
-#                                      #  
+#                                      #
 # 3) parse json files into dataframes  #
 #                                      #
 ########################################
 
 # parse bill jsons as "bills" (pk = bill_id)
-#need to get session_year in a subsequent stage AFTER session_name has already been determined
+# need to get session_year in a subsequent stage AFTER session_name has already been determined
 t_bills <- parse_bills(text_paths_bills)$meta %>%
   mutate(
     session_year = as.numeric(str_extract(session_name, "\\d{4}")), # Extract year
     two_year_period = case_when(
       session_year < 2011 ~ "2010 or earlier",
-      session_year %% 2 == 0 ~ paste(session_year - 1, session_year, sep="-"),
-      TRUE ~ paste(session_year, session_year + 1, sep="-")
+      session_year %% 2 == 0 ~ paste(session_year - 1, session_year, sep = "-"),
+      TRUE ~ paste(session_year, session_year + 1, sep = "-")
     )
   )
 
 # parse people jsons as "legislator_sessions" (pk = people_id, session)
 t_legislator_sessions <- parse_legislator_sessions(text_paths_legislators) # one record per legislator per session, to reflect potentially changing roles
+t_legislator_sessions$bio <- sapply(t_legislator_sessions$bio, function(x) {
+  if (is.null(x) || length(x) == 0) {
+    return(NA_character_)
+  } else {
+    # as.character handles situations where x might be a number or string
+    return(as.character(x[1])) 
+  }
+})
 
 # parse vote jsons as "roll calls" (pk = roll_call_id) and "legislator votes" (pk = roll_call_id, people_id)
 temp_roll_calls_parsed <- parse_roll_calls(text_paths_votes)

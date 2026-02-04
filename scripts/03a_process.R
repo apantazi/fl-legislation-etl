@@ -61,7 +61,8 @@ hist_leg_sessions <- t_legislator_sessions %>%
       role == "Sen" ~ "Senate",
       role == "Rep" ~ "House",
       TRUE ~ role
-    ))
+    )) %>%
+  distinct(people_id, session, .keep_all = TRUE)
 
 # for user-entered info on legislator termination, see https://docs.google.com/spreadsheets/d/1woSZBU5bOfTGFKtuaYg2xT8jCo314RVlSpMrSARWl1c/edit?gid=0#gid=0
 calc_leg_terminated <- 

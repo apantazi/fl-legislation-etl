@@ -28,6 +28,7 @@ list_tables <- c(
   "t_bills",
   "t_roll_calls"
 )
+
 write_tables_in_list(con, schema_name, list_tables)
 
 ###############################
