@@ -1,0 +1,23 @@
+Package: USLegislationETL
+Title: US State Legislation ETL Pipeline
+Version: 0.1.0
+Authors@R: person("First", "Last", email = "first.last@example.com", role = c("aut", "cre"))
+Description: A generalized ETL pipeline to request, parse, and process US state legislation data using the LegiScan API. Refactored from a Florida-specific implementation.
+License: MIT
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.3.1
+Imports: 
+    dplyr,
+    tidyr,
+    purrr,
+    stringr,
+    jsonlite,
+    data.table,
+    tibble,
+    progress,
+    config,
+    here,
+    legiscanrr
+Remotes: 
+    fanghuiz/legiscanrr
