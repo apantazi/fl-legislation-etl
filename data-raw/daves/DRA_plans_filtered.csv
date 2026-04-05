@@ -1,413 +1,101 @@
 stateCode,year,nDistricts,planType,description,title,id,thumbnail,pendingCourtApproval,url,filename
 AK,2022,40,lower,AK 2022 State House,AK 2022 State House,00c40e22-b9d4-4be4-b83c-0fe653360f1c,NA,FALSE,https://davesredistricting.org/maps#viewmap::00c40e22-b9d4-4be4-b83c-0fe653360f1c,AK_2022_lower.csv
 AK,2022,20,upper,AK 2022 State Senate,AK 2022 State Senate,bdb0da36-3ec9-42ab-8971-643d667dbf6b,NA,FALSE,https://davesredistricting.org/maps#viewmap::bdb0da36-3ec9-42ab-8971-643d667dbf6b,AK_2022_upper.csv
-AL,2022,7,congress,AL 2022 Congressional,AL 2022 Congressional,b1cfc3f6-27df-498d-a147-0664d75fea88,NA,NA,https://davesredistricting.org/maps#viewmap::b1cfc3f6-27df-498d-a147-0664d75fea88,AL_2022_congress.csv
 AL,2022,105,lower,AL 2022 State House,AL 2022 State House,642e8d2a-248c-4191-a88a-a6cdad508cdb,NA,NA,https://davesredistricting.org/maps#viewmap::642e8d2a-248c-4191-a88a-a6cdad508cdb,AL_2022_lower.csv
 AL,2022,35,upper,AL 2022 State Senate,AL 2022 State Senate,b694ea80-20d6-45fb-a0e2-09ddaa2880d5,NA,NA,https://davesredistricting.org/maps#viewmap::b694ea80-20d6-45fb-a0e2-09ddaa2880d5,AL_2022_upper.csv
-AL,2024,7,congress,AL 2024 Congressional,AL 2024 Congressional,e164e6f9-b758-4c9e-b6bb-332a1386c0cd,NA,NA,https://davesredistricting.org/maps#viewmap::e164e6f9-b758-4c9e-b6bb-332a1386c0cd,AL_2024_congress.csv
-AR,2022,4,congress,AR 2022 Congressional,AR 2022 Congressional,fa3434ec-4f52-48de-947b-5998b6937bf0,NA,NA,https://davesredistricting.org/maps#viewmap::fa3434ec-4f52-48de-947b-5998b6937bf0,AR_2022_congress.csv
 AR,2022,100,lower,AR 2022 State House,AR 2022 State House,583730d5-1254-4dca-8f73-850940804307,NA,NA,https://davesredistricting.org/maps#viewmap::583730d5-1254-4dca-8f73-850940804307,AR_2022_lower.csv
 AR,2022,35,upper,AR 2022 State Senate,AR 2022 State Senate,083cee53-0d0c-43af-ace1-863ccd3a2fe5,NA,NA,https://davesredistricting.org/maps#viewmap::083cee53-0d0c-43af-ace1-863ccd3a2fe5,AR_2022_upper.csv
-AZ,2022,9,congress,AZ 2022 Congressional,AZ 2022 Congressional,4ee8ecf2-14b7-4a8d-99bc-82fa633a9305,NA,NA,https://davesredistricting.org/maps#viewmap::4ee8ecf2-14b7-4a8d-99bc-82fa633a9305,AZ_2022_congress.csv
 AZ,2022,30,upper,AZ 2022 State Legislature,AZ 2022 State Legislature,72e34ca5-9ae1-4ddd-96f0-697bd261294e,NA,NA,https://davesredistricting.org/maps#viewmap::72e34ca5-9ae1-4ddd-96f0-697bd261294e,AZ_2022_upper.csv
-CA,2022,52,congress,CA 2022 Congressional,CA 2022 Congressional,fc9d2d06-7c7f-451c-92cb-122127a79c29,NA,NA,https://davesredistricting.org/maps#viewmap::fc9d2d06-7c7f-451c-92cb-122127a79c29,CA_2022_congress.csv
 CA,2022,80,lower,CA 2022 State House,CA 2022 State House,43cea5ab-ef0a-4946-b3e2-c3f2aaf73cf1,NA,NA,https://davesredistricting.org/maps#viewmap::43cea5ab-ef0a-4946-b3e2-c3f2aaf73cf1,CA_2022_lower.csv
 CA,2022,40,upper,CA 2022 State Senate,CA 2022 State Senate,f0a4ed9d-205f-4122-abab-fa3c75b6b050,NA,NA,https://davesredistricting.org/maps#viewmap::f0a4ed9d-205f-4122-abab-fa3c75b6b050,CA_2022_upper.csv
-CA,2026,52,congress,CA 2026 Congressional,CA 2026 Congressional,9ba47178-511a-4c42-889f-aa4eeda01df6,NA,NA,https://davesredistricting.org/maps#viewmap::9ba47178-511a-4c42-889f-aa4eeda01df6,CA_2026_congress.csv
-CO,2022,8,congress,CO 2022 Congressional,CO 2022 Congressional,39f44408-23f7-439d-b7eb-923da58b63df,NA,NA,https://davesredistricting.org/maps#viewmap::39f44408-23f7-439d-b7eb-923da58b63df,CO_2022_congress.csv
 CO,2022,65,lower,CO 2022 State House,CO 2022 State House,dee1f8ad-23c1-497b-859c-6d1a9293bbd5,NA,NA,https://davesredistricting.org/maps#viewmap::dee1f8ad-23c1-497b-859c-6d1a9293bbd5,CO_2022_lower.csv
 CO,2022,35,upper,CO 2022 State Senate,CO 2022 State Senate,9b5ec272-1fba-4a7a-ac6c-f2dcb4c6d0ae,NA,NA,https://davesredistricting.org/maps#viewmap::9b5ec272-1fba-4a7a-ac6c-f2dcb4c6d0ae,CO_2022_upper.csv
-CT,2022,5,congress,CT 2022 Congressional,CT 2022 Congressional,707f203c-ce98-4de8-b150-a2605136e015,NA,NA,https://davesredistricting.org/maps#viewmap::707f203c-ce98-4de8-b150-a2605136e015,CT_2022_congress.csv
 CT,2022,151,lower,CT 2022 State House,CT 2022 State House,2e38109d-9987-46e3-9ff0-dd6c3caa59e8,NA,NA,https://davesredistricting.org/maps#viewmap::2e38109d-9987-46e3-9ff0-dd6c3caa59e8,CT_2022_lower.csv
 CT,2022,36,upper,CT 2022 State Senate,CT 2022 State Senate,fc9e83c0-59e2-4dea-b0cf-d2fff1c0b8a3,NA,NA,https://davesredistricting.org/maps#viewmap::fc9e83c0-59e2-4dea-b0cf-d2fff1c0b8a3,CT_2022_upper.csv
 DC,2022,8,upper,Wards for 2022 Council,DC 2022 Council,0085842e-3e38-4a72-9df2-7374a1f5250e,NA,NA,https://davesredistricting.org/maps#viewmap::0085842e-3e38-4a72-9df2-7374a1f5250e,DC_2022_upper.csv
 DE,2022,41,lower,DE 2022 State House,DE 2022 State House,f3acc27c-28b6-4e3a-a3f3-f5027ab59466,NA,NA,https://davesredistricting.org/maps#viewmap::f3acc27c-28b6-4e3a-a3f3-f5027ab59466,DE_2022_lower.csv
 DE,2022,21,upper,DE 2022 State Senate,DE 2022 State Senate,735ff37c-3bd7-4a57-8961-b3ebf6c079f0,NA,NA,https://davesredistricting.org/maps#viewmap::735ff37c-3bd7-4a57-8961-b3ebf6c079f0,DE_2022_upper.csv
-FL,2022,28,congress,FL 2022 Congressional,FL 2022 Congressional,3a6791b9-a186-4691-a95c-5d51dbb3be1c,NA,NA,https://davesredistricting.org/maps#viewmap::3a6791b9-a186-4691-a95c-5d51dbb3be1c,FL_2022_congress.csv
 FL,2022,120,lower,FL 2022 State House,FL 2022 State House,488c9284-a2c4-4846-9d7d-08af9d98a6c5,NA,NA,https://davesredistricting.org/maps#viewmap::488c9284-a2c4-4846-9d7d-08af9d98a6c5,FL_2022_lower.csv
 FL,2022,40,upper,FL 2022 State Senate,FL 2022 State Senate,91f2ce50-b3c1-4d74-87f2-d3a9fa078129,NA,NA,https://davesredistricting.org/maps#viewmap::91f2ce50-b3c1-4d74-87f2-d3a9fa078129,FL_2022_upper.csv
-GA,2022,14,congress,GA 2022 Congressional,GA 2022 Congressional,3a370cc7-f820-4af4-8fca-a27ec52502b7,NA,NA,https://davesredistricting.org/maps#viewmap::3a370cc7-f820-4af4-8fca-a27ec52502b7,GA_2022_congress.csv
-GA,2022,180,lower,GA 2022 State House,GA 2022 State House,041f73c7-8f4f-48c5-a5ff-cb059e692827,NA,NA,https://davesredistricting.org/maps#viewmap::041f73c7-8f4f-48c5-a5ff-cb059e692827,GA_2022_lower.csv
-GA,2022,56,upper,GA 2022 State Senate,GA 2022 State Senate,f1249844-4b84-45e6-9ca6-e13f6ddddb0d,NA,NA,https://davesredistricting.org/maps#viewmap::f1249844-4b84-45e6-9ca6-e13f6ddddb0d,GA_2022_upper.csv
-GA,2024,14,congress,GA 2024 Congressional,GA 2024 Congressional,e2864750-49da-49dd-b0a4-f5930c339af1,NA,NA,https://davesredistricting.org/maps#viewmap::e2864750-49da-49dd-b0a4-f5930c339af1,GA_2024_congress.csv
 GA,2024,180,lower,GA 2024 State House,GA 2024 State House,b14b9be1-e73b-4f26-b34e-26a788ad9931,NA,NA,https://davesredistricting.org/maps#viewmap::b14b9be1-e73b-4f26-b34e-26a788ad9931,GA_2024_lower.csv
 GA,2024,56,upper,GA 2024 State Senate,GA 2024 State Senate,2bab4178-725d-4c55-961a-de0a6f5ffcce,NA,NA,https://davesredistricting.org/maps#viewmap::2bab4178-725d-4c55-961a-de0a6f5ffcce,GA_2024_upper.csv
-HI,2022,2,congress,HI 2022 Congressional,HI 2022 Congressional,021708d3-fda3-45b0-ae4b-9362a4f23fe9,NA,NA,https://davesredistricting.org/maps#viewmap::021708d3-fda3-45b0-ae4b-9362a4f23fe9,HI_2022_congress.csv
 HI,2022,51,lower,HI 2022 State House,HI 2022 State House,6e4f9c2e-6a11-4848-adab-22f3113bef79,NA,NA,https://davesredistricting.org/maps#viewmap::6e4f9c2e-6a11-4848-adab-22f3113bef79,HI_2022_lower.csv
 HI,2022,25,upper,HI 2022 State Senate,HI 2022 State Senate,c4d580e8-5bfd-4656-820d-b58c7ccfe92c,NA,NA,https://davesredistricting.org/maps#viewmap::c4d580e8-5bfd-4656-820d-b58c7ccfe92c,HI_2022_upper.csv
-IA,2022,4,congress,IA 2022 Congressional,IA 2022 Congressional,628d5e9a-bd35-4248-aa8c-73af095e0135,NA,NA,https://davesredistricting.org/maps#viewmap::628d5e9a-bd35-4248-aa8c-73af095e0135,IA_2022_congress.csv
 IA,2022,100,lower,IA 2022 State House,IA 2022 State House,3bba1647-f4a4-4374-8021-a8e4aeb6f15a,NA,NA,https://davesredistricting.org/maps#viewmap::3bba1647-f4a4-4374-8021-a8e4aeb6f15a,IA_2022_lower.csv
 IA,2022,50,upper,IA 2022 State Senate,IA 2022 State Senate,0e81cf3d-648d-4851-b14b-0ee893f92610,NA,NA,https://davesredistricting.org/maps#viewmap::0e81cf3d-648d-4851-b14b-0ee893f92610,IA_2022_upper.csv
-ID,2022,2,congress,ID 2022 Congressional,ID 2022 Congressional,ebc8cec8-b919-4a66-9b42-9cf5bf7e02a1,NA,NA,https://davesredistricting.org/maps#viewmap::ebc8cec8-b919-4a66-9b42-9cf5bf7e02a1,ID_2022_congress.csv
 ID,2022,35,upper,ID 2022 State Legislature,ID 2022 State Legislature,a56da372-79a4-48e7-9fd5-b689d0ccb602,NA,NA,https://davesredistricting.org/maps#viewmap::a56da372-79a4-48e7-9fd5-b689d0ccb602,ID_2022_upper.csv
-IL,2022,17,congress,IL 2022 Congressional,IL 2022 Congressional,8a4586ad-4c58-489b-828c-4477cfd0ce88,NA,NA,https://davesredistricting.org/maps#viewmap::8a4586ad-4c58-489b-828c-4477cfd0ce88,IL_2022_congress.csv
 IL,2022,118,lower,IL 2022 State House,IL 2022 State House,19bc2a13-2ad1-455a-a7cb-4182ff7c6f6f,NA,NA,https://davesredistricting.org/maps#viewmap::19bc2a13-2ad1-455a-a7cb-4182ff7c6f6f,IL_2022_lower.csv
 IL,2022,59,upper,IL 2022 State Senate,IL 2022 State Senate,8cd5c7ba-6e69-42a7-89e1-3806a2a05e64,NA,NA,https://davesredistricting.org/maps#viewmap::8cd5c7ba-6e69-42a7-89e1-3806a2a05e64,IL_2022_upper.csv
-IN,2022,9,congress,IN 2022 Congressional,IN 2022 Congressional,c08c9df0-9756-4c5a-a7e7-01ff03bbb170,NA,NA,https://davesredistricting.org/maps#viewmap::c08c9df0-9756-4c5a-a7e7-01ff03bbb170,IN_2022_congress.csv
 IN,2022,100,lower,IN 2022 State House,IN 2022 State House,db849782-86e9-4293-a492-3e17d7cfceab,NA,NA,https://davesredistricting.org/maps#viewmap::db849782-86e9-4293-a492-3e17d7cfceab,IN_2022_lower.csv
 IN,2022,50,upper,IN 2022 State Senate,IN 2022 State Senate,f2d2e4a3-f50d-4f77-bc5d-027ba0e2717e,NA,NA,https://davesredistricting.org/maps#viewmap::f2d2e4a3-f50d-4f77-bc5d-027ba0e2717e,IN_2022_upper.csv
-KS,2022,4,congress,KS 2022 Congressional,KS 2022 Congressional,2ea884cd-5687-48b4-879a-4f780d3de1cf,NA,NA,https://davesredistricting.org/maps#viewmap::2ea884cd-5687-48b4-879a-4f780d3de1cf,KS_2022_congress.csv
 KS,2022,125,lower,KS 2022 State House,KS 2022 State House,781f29f1-259e-4235-8b14-85137bc38893,NA,NA,https://davesredistricting.org/maps#viewmap::781f29f1-259e-4235-8b14-85137bc38893,KS_2022_lower.csv
 KS,2022,40,upper,KS 2022 State Senate,KS 2022 State Senate,2bc2f97f-a285-4596-9fcd-6108056b229f,NA,NA,https://davesredistricting.org/maps#viewmap::2bc2f97f-a285-4596-9fcd-6108056b229f,KS_2022_upper.csv
-KY,2022,6,congress,KY 2022 Congressional,KY 2022 Congressional,0ec1616e-7ed6-4f84-b20d-dcc51221b2bf,NA,NA,https://davesredistricting.org/maps#viewmap::0ec1616e-7ed6-4f84-b20d-dcc51221b2bf,KY_2022_congress.csv
 KY,2022,100,lower,KY 2022 State House,KY 2022 State House,8eed4db7-46cd-4e09-a179-c0a7e821a963,NA,NA,https://davesredistricting.org/maps#viewmap::8eed4db7-46cd-4e09-a179-c0a7e821a963,KY_2022_lower.csv
 KY,2022,38,upper,KY 2022 State Senate,KY 2022 State Senate,8ef6d39b-ae52-4587-8ed1-88b781dd4300,NA,NA,https://davesredistricting.org/maps#viewmap::8ef6d39b-ae52-4587-8ed1-88b781dd4300,KY_2022_upper.csv
-LA,2022,6,congress,LA 2022 Congressional,LA 2022 Congressional,42873bd9-ce68-4ee1-878e-be420dbf0ee3,NA,NA,https://davesredistricting.org/maps#viewmap::42873bd9-ce68-4ee1-878e-be420dbf0ee3,LA_2022_congress.csv
 LA,2022,105,lower,LA 2022 State House,LA 2022 State House,d63b737c-a8b3-46e9-8855-aa20a728c2b5,NA,NA,https://davesredistricting.org/maps#viewmap::d63b737c-a8b3-46e9-8855-aa20a728c2b5,LA_2022_lower.csv
 LA,2022,39,upper,LA 2022 State Senate,LA 2022 State Senate,12eedba5-68de-4ab4-a3bb-7f59d9268041,NA,NA,https://davesredistricting.org/maps#viewmap::12eedba5-68de-4ab4-a3bb-7f59d9268041,LA_2022_upper.csv
-LA,2024,6,congress,LA 2024 Congressional,LA 2024 Congressional,2ecbe5cd-461e-41e9-a954-2368bbe8b0a2,NA,NA,https://davesredistricting.org/maps#viewmap::2ecbe5cd-461e-41e9-a954-2368bbe8b0a2,LA_2024_congress.csv
-MA,2022,9,congress,MA 2022 Congressional,MA 2022 Congressional,791f8174-e00d-4baf-9b0a-206a298eb28b,NA,NA,https://davesredistricting.org/maps#viewmap::791f8174-e00d-4baf-9b0a-206a298eb28b,MA_2022_congress.csv
 MA,2022,160,lower,MA 2022 State House,MA 2022 State House,f4bfa2f3-1e73-4e0b-a237-cc2aa2e611b8,NA,NA,https://davesredistricting.org/maps#viewmap::f4bfa2f3-1e73-4e0b-a237-cc2aa2e611b8,MA_2022_lower.csv
 MA,2022,40,upper,MA 2022 State Senate,MA 2022 State Senate,b32decd8-3ed9-4ab2-876b-c92cfa798e33,NA,NA,https://davesredistricting.org/maps#viewmap::b32decd8-3ed9-4ab2-876b-c92cfa798e33,MA_2022_upper.csv
-MD,2022,8,congress,MD 2022 Congressional,MD 2022 Congressional,a365ecbd-db5f-4c84-a77f-90310c6a6c1a,NA,NA,https://davesredistricting.org/maps#viewmap::a365ecbd-db5f-4c84-a77f-90310c6a6c1a,MD_2022_congress.csv
 MD,2022,71,lower,MD 2022 State House,MD 2022 State House,4cf1f21b-2347-457a-bbca-f299c7a8cb2b,NA,NA,https://davesredistricting.org/maps#viewmap::4cf1f21b-2347-457a-bbca-f299c7a8cb2b,MD_2022_lower.csv
 MD,2022,47,upper,MD 2022 State Senate,MD 2022 State Senate,92ad6e43-2394-4957-b30a-828ca424a034,NA,NA,https://davesredistricting.org/maps#viewmap::92ad6e43-2394-4957-b30a-828ca424a034,MD_2022_upper.csv
-ME,2022,2,congress,ME 2022 Congressional,ME 2022 Congressional,91042741-7e4e-423f-8a96-313236f71ac1,NA,NA,https://davesredistricting.org/maps#viewmap::91042741-7e4e-423f-8a96-313236f71ac1,ME_2022_congress.csv
 ME,2022,151,lower,ME 2022 State House,ME 2022 State House,0ceefdda-ed1c-45e2-9f4a-e887394b5985,NA,NA,https://davesredistricting.org/maps#viewmap::0ceefdda-ed1c-45e2-9f4a-e887394b5985,ME_2022_lower.csv
 ME,2022,35,upper,ME 2022 State Senate,ME 2022 State Senate,9916fa38-8d7a-498b-beb7-af2e530453c7,NA,NA,https://davesredistricting.org/maps#viewmap::9916fa38-8d7a-498b-beb7-af2e530453c7,ME_2022_upper.csv
-MI,2022,13,congress,MI 2022 Congressional,MI 2022 Congressional,287ace43-1a66-4686-b596-949f578971a8,NA,NA,https://davesredistricting.org/maps#viewmap::287ace43-1a66-4686-b596-949f578971a8,MI_2022_congress.csv
-MI,2022,110,lower,MI 2022 State House,MI 2022 State House,8f2d562d-9d7f-4d3b-992e-5c52debd8f08,NA,NA,https://davesredistricting.org/maps#viewmap::8f2d562d-9d7f-4d3b-992e-5c52debd8f08,MI_2022_lower.csv
-MI,2022,38,upper,MI 2022 State Senate,MI 2022 State Senate,7563fcf7-de01-411a-aa51-c56cf76340b0,NA,NA,https://davesredistricting.org/maps#viewmap::7563fcf7-de01-411a-aa51-c56cf76340b0,MI_2022_upper.csv
 MI,2024,110,lower,MI 2024 State House,MI 2024 State House,e24c9c82-a8de-4706-9ebb-91181592c37f,NA,NA,https://davesredistricting.org/maps#viewmap::e24c9c82-a8de-4706-9ebb-91181592c37f,MI_2024_lower.csv
 MI,2026,38,upper,MI 2026 State Senate,MI 2026 State Senate,4cd32ab3-57e5-4bd7-9825-ed19122d14c8,NA,NA,https://davesredistricting.org/maps#viewmap::4cd32ab3-57e5-4bd7-9825-ed19122d14c8,MI_2026_upper.csv
-MN,2022,8,congress,MN 2022 Congressional,MN 2022 Congressional,4b212b88-2b8b-48aa-b2d2-e2f9980ac884,NA,NA,https://davesredistricting.org/maps#viewmap::4b212b88-2b8b-48aa-b2d2-e2f9980ac884,MN_2022_congress.csv
 MN,2022,134,lower,MN 2022 State House,MN 2022 State House,0e589052-0df8-4b8a-bede-c8e9fcc8814c,NA,NA,https://davesredistricting.org/maps#viewmap::0e589052-0df8-4b8a-bede-c8e9fcc8814c,MN_2022_lower.csv
 MN,2022,67,upper,MN 2022 State Senate,MN 2022 State Senate,8d55ed9f-d825-4a8a-95e4-864cbeede612,NA,NA,https://davesredistricting.org/maps#viewmap::8d55ed9f-d825-4a8a-95e4-864cbeede612,MN_2022_upper.csv
-MN,2022,8,congress,MN 2022 Congressional,MN 2022 Congressional,eeb51954-eced-4c47-b041-20ce307a22b5,NA,NA,https://davesredistricting.org/maps#viewmap::eeb51954-eced-4c47-b041-20ce307a22b5,MN_2022_congress.csv
-MN,2022,134,lower,MN 2022 State House,MN 2022 State House,e24abe92-7cbf-406a-aadc-8c8da64cded6,NA,NA,https://davesredistricting.org/maps#viewmap::e24abe92-7cbf-406a-aadc-8c8da64cded6,MN_2022_lower.csv
-MN,2022,67,upper,MN 2022 State Senate,MN 2022 State Senate,edf127e5-daea-4672-8f9f-ba08d11344fc,NA,NA,https://davesredistricting.org/maps#viewmap::edf127e5-daea-4672-8f9f-ba08d11344fc,MN_2022_upper.csv
-MO,2022,8,congress,MO 2022 Congressional,MO 2022 Congressional,68b2b598-69cd-430e-bee2-1dc4b76705f6,NA,NA,https://davesredistricting.org/maps#viewmap::68b2b598-69cd-430e-bee2-1dc4b76705f6,MO_2022_congress.csv
 MO,2022,163,lower,MO 2022 State House,MO 2022 State House,ebb632d0-2569-4a2a-81f6-1d8d6adc0d5e,NA,NA,https://davesredistricting.org/maps#viewmap::ebb632d0-2569-4a2a-81f6-1d8d6adc0d5e,MO_2022_lower.csv
 MO,2022,34,upper,MO 2022 State Senate,MO 2022 State Senate,8d25c96a-2a78-40b2-b2f0-c504ecaa6762,NA,NA,https://davesredistricting.org/maps#viewmap::8d25c96a-2a78-40b2-b2f0-c504ecaa6762,MO_2022_upper.csv
-MO,2026,8,congress,MO 2026 Congressional,MO 2026 Congressional,84069d4a-8b18-470e-97e3-897ddb4b2428,NA,NA,https://davesredistricting.org/maps#viewmap::84069d4a-8b18-470e-97e3-897ddb4b2428,MO_2026_congress.csv
-MS,2022,4,congress,MS 2022 Congressional,MS 2022 Congressional,2a63d0b3-58db-4e59-9b3b-436b221e078a,NA,NA,https://davesredistricting.org/maps#viewmap::2a63d0b3-58db-4e59-9b3b-436b221e078a,MS_2022_congress.csv
-MS,2022,122,lower,MS 2022 State House,MS 2022 State House,f8554517-7286-461a-9cfa-892b3d4731f7,NA,NA,https://davesredistricting.org/maps#viewmap::f8554517-7286-461a-9cfa-892b3d4731f7,MS_2022_lower.csv
-MS,2022,52,upper,MS 2022 State Senate,MS 2022 State Senate,f3908ec6-949f-444b-9fd5-7b2173abcb6e,NA,NA,https://davesredistricting.org/maps#viewmap::f3908ec6-949f-444b-9fd5-7b2173abcb6e,MS_2022_upper.csv
-MS,2025,122,lower,MS 2025 State House,MS 2025 State House,207ee204-8093-4d3d-b9fe-f226dc4b47ab,NA,NA,https://davesredistricting.org/maps#viewmap::207ee204-8093-4d3d-b9fe-f226dc4b47ab,MS_2025_lower.csv
-MS,2025,52,upper,MS 2025 State Senate,MS 2025 State Senate,35ad63a3-a7d0-4d71-88e2-18232383d3b7,NA,NA,https://davesredistricting.org/maps#viewmap::35ad63a3-a7d0-4d71-88e2-18232383d3b7,MS_2025_upper.csv
 MS,2025.1,122,lower,MS 2025 State House,MS 2025 State House,2f9cd385-813e-4c81-a474-7d74d2d5ed51,NA,NA,https://davesredistricting.org/maps#viewmap::2f9cd385-813e-4c81-a474-7d74d2d5ed51,MS_2025.1_lower.csv
 MS,2025.1,52,upper,MS 2025 State Senate,MS 2025 State Senate,5cd7f259-4e1b-4da5-9352-f50ead4494d0,NA,NA,https://davesredistricting.org/maps#viewmap::5cd7f259-4e1b-4da5-9352-f50ead4494d0,MS_2025.1_upper.csv
-MT,2022,2,congress,MT 2022 Congressional,MT 2022 Congressional,66ff2b64-826d-48a9-bbe4-08afa4c10873,NA,NA,https://davesredistricting.org/maps#viewmap::66ff2b64-826d-48a9-bbe4-08afa4c10873,MT_2022_congress.csv
 MT,2022,100,lower,MT 2022 State House,MT 2022 State House,9cbcae13-e8cf-47fb-bf43-cd44f3dd05b9,NA,NA,https://davesredistricting.org/maps#viewmap::9cbcae13-e8cf-47fb-bf43-cd44f3dd05b9,MT_2022_lower.csv
 MT,2022,50,upper,MT 2022 State Senate,MT 2022 State Senate,def19658-4d7c-4d36-a9c8-6d22ed5bf6ec,NA,NA,https://davesredistricting.org/maps#viewmap::def19658-4d7c-4d36-a9c8-6d22ed5bf6ec,MT_2022_upper.csv
-NC,2022,14,congress,NC 2022 Congressional,NC 2022 Congressional,6e8268a4-3b9b-4140-8f99-e3544a2f0816,NA,NA,https://davesredistricting.org/maps#viewmap::6e8268a4-3b9b-4140-8f99-e3544a2f0816,NC_2022_congress.csv
-NC,2022,120,lower,NC 2022 State House,NC 2022 State House,e4b677ba-541f-40bd-ad9f-ba8707515f7d,NA,NA,https://davesredistricting.org/maps#viewmap::e4b677ba-541f-40bd-ad9f-ba8707515f7d,NC_2022_lower.csv
-NC,2022,50,upper,NC 2022 State Senate,NC 2022 State Senate,8288b613-df48-45a7-9bd1-5d9f9ca3d685,NA,NA,https://davesredistricting.org/maps#viewmap::8288b613-df48-45a7-9bd1-5d9f9ca3d685,NC_2022_upper.csv
-NC,2024,14,congress,NC 2024 Congressional,NC 2024 Congressional,4f133eac-adb1-4bb4-a7fe-92aa8a5f1ed4,NA,NA,https://davesredistricting.org/maps#viewmap::4f133eac-adb1-4bb4-a7fe-92aa8a5f1ed4,NC_2024_congress.csv
 NC,2024,120,lower,NC 2024 State House,NC 2024 State House,42841eaa-3a00-49ce-ba28-77726707251a,NA,NA,https://davesredistricting.org/maps#viewmap::42841eaa-3a00-49ce-ba28-77726707251a,NC_2024_lower.csv
 NC,2024,50,upper,NC 2024 State Senate,NC 2024 State Senate,9157bd00-cfbb-4d32-9b01-ce7f38e53d1f,NA,NA,https://davesredistricting.org/maps#viewmap::9157bd00-cfbb-4d32-9b01-ce7f38e53d1f,NC_2024_upper.csv
-NC,2026,14,congress,NC 2026 Congressional,NC 2026 Congressional,95fee9e1-2c0b-49a4-95b2-6a92aa185c61,NA,NA,https://davesredistricting.org/maps#viewmap::95fee9e1-2c0b-49a4-95b2-6a92aa185c61,NC_2026_congress.csv
-ND,2022,47,upper,ND 2022 State Senate,ND 2022 State Senate,93075ffd-76b7-4374-ad3c-b0eb3d94efd3,NA,NA,https://davesredistricting.org/maps#viewmap::93075ffd-76b7-4374-ad3c-b0eb3d94efd3,ND_2022_upper.csv
-ND,2022,49,lower,ND 2022 State House,ND 2022 State House,3dae0952-0a39-4b93-99c7-d18f67b95bb7,NA,NA,https://davesredistricting.org/maps#viewmap::3dae0952-0a39-4b93-99c7-d18f67b95bb7,ND_2022_lower.csv
 ND,2024,47,upper,ND 2024 State Senate,ND 2024 State Senate,0493b6e8-10fb-4def-be5e-f5ed0ff3f963,NA,NA,https://davesredistricting.org/maps#viewmap::0493b6e8-10fb-4def-be5e-f5ed0ff3f963,ND_2024_upper.csv
 ND,2024,49,lower,ND 2024 State House,ND 2024 State House,16edefb5-c6c7-4cdf-822a-a6a714f7e52f,NA,NA,https://davesredistricting.org/maps#viewmap::16edefb5-c6c7-4cdf-822a-a6a714f7e52f,ND_2024_lower.csv
-NE,2022,3,congress,NE 2022 Congressional,NE 2022 Congressional,9de1188c-2169-4c5a-a4f3-76179d22b279,NA,NA,https://davesredistricting.org/maps#viewmap::9de1188c-2169-4c5a-a4f3-76179d22b279,NE_2022_congress.csv
 NE,2022,49,upper,NE 2022 State Senate,NE 2022 State Senate,ab1f2fef-b979-4431-844a-98d93a4d6730,NA,NA,https://davesredistricting.org/maps#viewmap::ab1f2fef-b979-4431-844a-98d93a4d6730,NE_2022_upper.csv
-NH,2022,2,congress,NH 2022 Congressional,NH 2022 Congressional,a1a2b285-f862-402c-9e89-b45791a46473,NA,NA,https://davesredistricting.org/maps#viewmap::a1a2b285-f862-402c-9e89-b45791a46473,NH_2022_congress.csv
 NH,2022,164,lower,NH 2022 State House,NH 2022 State House,dfddaed1-5a76-4ca7-8a11-ddc533ea9f6e,NA,NA,https://davesredistricting.org/maps#viewmap::dfddaed1-5a76-4ca7-8a11-ddc533ea9f6e,NH_2022_lower.csv
 NH,2022,24,upper,NH 2022 State Senate,NH 2022 State Senate,15bf8903-0c56-4536-9265-7b7177726a73,NA,NA,https://davesredistricting.org/maps#viewmap::15bf8903-0c56-4536-9265-7b7177726a73,NH_2022_upper.csv
-NJ,2022,12,congress,NJ 2022 Congressional,NJ 2022 Congressional,6ff0b024-2e5d-4e9b-ba0e-56f6de17ea80,NA,NA,https://davesredistricting.org/maps#viewmap::6ff0b024-2e5d-4e9b-ba0e-56f6de17ea80,NJ_2022_congress.csv
 NJ,2022,40,upper,NJ 2022 State Legislatures,NJ 2022 State Legislatures,61388384-5d1f-4f3b-9669-31e485b781f1,NA,NA,https://davesredistricting.org/maps#viewmap::61388384-5d1f-4f3b-9669-31e485b781f1,NJ_2022_upper.csv
-NM,2022,3,congress,NM 2022 Congressional,NM 2022 Congressional,ec1c76cd-f59f-445b-8f24-fbffb0e8bdf5,NA,NA,https://davesredistricting.org/maps#viewmap::ec1c76cd-f59f-445b-8f24-fbffb0e8bdf5,NM_2022_congress.csv
 NM,2022,70,lower,NM 2022 State House,NM 2022 State House,5e00bd63-7008-4b5e-b570-db5ba1d36785,NA,NA,https://davesredistricting.org/maps#viewmap::5e00bd63-7008-4b5e-b570-db5ba1d36785,NM_2022_lower.csv
 NM,2022,42,upper,NM 2022 State Senate,NM 2022 State Senate,11c9cc63-8521-4785-89f3-58b5e4359507,NA,NA,https://davesredistricting.org/maps#viewmap::11c9cc63-8521-4785-89f3-58b5e4359507,NM_2022_upper.csv
-NV,2022,4,congress,NV 2022 Congressional,NV 2022 Congressional,eb89e40d-595f-485f-9a43-d1bbdd6d0cb4,NA,NA,https://davesredistricting.org/maps#viewmap::eb89e40d-595f-485f-9a43-d1bbdd6d0cb4,NV_2022_congress.csv
 NV,2022,42,lower,NV 2022 State House,NV 2022 State House,2a33203f-8725-48dc-ba1b-478bd6012a58,NA,NA,https://davesredistricting.org/maps#viewmap::2a33203f-8725-48dc-ba1b-478bd6012a58,NV_2022_lower.csv
 NV,2022,21,upper,NV 2022 State Senate,NV 2022 State Senate,99808524-5012-4119-91ce-973ba647806b,NA,NA,https://davesredistricting.org/maps#viewmap::99808524-5012-4119-91ce-973ba647806b,NV_2022_upper.csv
-NY,2022,26,congress,NY 2022 Congressional,NY 2022 Congressional,395a7fbe-fa32-47fc-993d-e07d36baff72,NA,FALSE,https://davesredistricting.org/maps#viewmap::395a7fbe-fa32-47fc-993d-e07d36baff72,NY_2022_congress.csv
 NY,2022,150,lower,NY 2022 State House,NY 2022 State House,1933abca-db19-40f9-808d-17dd90642cdc,NA,NA,https://davesredistricting.org/maps#viewmap::1933abca-db19-40f9-808d-17dd90642cdc,NY_2022_lower.csv
 NY,2022,63,upper,NY 2022 State Senate,NY 2022 State Senate,bb78268d-ea3c-46a1-a484-c192a6c0e15d,NA,FALSE,https://davesredistricting.org/maps#viewmap::bb78268d-ea3c-46a1-a484-c192a6c0e15d,NY_2022_upper.csv
-NY,2024,26,congress,NY 2024 Congressional,NY 2024 Congressional,948da7ae-d2f9-48d8-a04a-433f5ff88fcd,NA,FALSE,https://davesredistricting.org/maps#viewmap::948da7ae-d2f9-48d8-a04a-433f5ff88fcd,NY_2024_congress.csv
-OH,2022,15,congress,OH 2022 Congressional,OH 2022 Congressional,64d56870-70ea-4f4d-b667-9a4fd60ac511,NA,FALSE,https://davesredistricting.org/maps#viewmap::64d56870-70ea-4f4d-b667-9a4fd60ac511,OH_2022_congress.csv
-OH,2022,99,lower,OH 2022 State House,OH 2022 State House,90de759b-f81d-44c0-a019-d2714a38cc3a,NA,FALSE,https://davesredistricting.org/maps#viewmap::90de759b-f81d-44c0-a019-d2714a38cc3a,OH_2022_lower.csv
-OH,2022,33,upper,OH 2022 State Senate,OH 2022 State Senate,6eba71b1-18a1-48d1-99c9-62afba432253,NA,FALSE,https://davesredistricting.org/maps#viewmap::6eba71b1-18a1-48d1-99c9-62afba432253,OH_2022_upper.csv
 OH,2024,99,lower,OH 2024 State House,OH 2024 State House,194951e2-47e3-4ce2-9317-f15dbf42ff70,NA,FALSE,https://davesredistricting.org/maps#viewmap::194951e2-47e3-4ce2-9317-f15dbf42ff70,OH_2024_lower.csv
 OH,2024,33,upper,OH 2024 State Senate,OH 2024 State Senate,12110497-58f6-416f-a13d-100dcbd88450,NA,FALSE,https://davesredistricting.org/maps#viewmap::12110497-58f6-416f-a13d-100dcbd88450,OH_2024_upper.csv
-OH,2026,15,congress,OH 2026 Congressional,OH 2026 Congressional,db6559b0-8923-471b-b219-152ba0decd9b,NA,NA,https://davesredistricting.org/maps#viewmap::db6559b0-8923-471b-b219-152ba0decd9b,OH_2026_congress.csv
-OK,2022,5,congress,OK 2022 Congressional,OK 2022 Congressional,f726bcb3-b750-44b2-9d0b-e2df90fe6fa5,NA,NA,https://davesredistricting.org/maps#viewmap::f726bcb3-b750-44b2-9d0b-e2df90fe6fa5,OK_2022_congress.csv
 OK,2022,101,lower,OK 2022 State House,OK 2022 State House,a4a178b9-581b-4591-bcf9-13e18bd850ea,NA,NA,https://davesredistricting.org/maps#viewmap::a4a178b9-581b-4591-bcf9-13e18bd850ea,OK_2022_lower.csv
 OK,2022,48,upper,OK 2022 State Senate,OK 2022 State Senate,0fa6fe25-9db7-4777-a150-d2309188823f,NA,NA,https://davesredistricting.org/maps#viewmap::0fa6fe25-9db7-4777-a150-d2309188823f,OK_2022_upper.csv
-OR,2022,6,congress,OR 2022 Congressional,OR 2022 Congressional,9b2b545f-5cd2-4e0d-a9b9-cc3915a4750f,NA,NA,https://davesredistricting.org/maps#viewmap::9b2b545f-5cd2-4e0d-a9b9-cc3915a4750f,OR_2022_congress.csv
 OR,2022,60,lower,OR 2022 State House,OR 2022 State House,c572dfa0-276b-4a76-8531-06669d885f27,NA,NA,https://davesredistricting.org/maps#viewmap::c572dfa0-276b-4a76-8531-06669d885f27,OR_2022_lower.csv
 OR,2022,30,upper,OR 2022 State Senate,OR 2022 State Senate,a5aadfab-0234-489a-a4df-cc008a844926,NA,NA,https://davesredistricting.org/maps#viewmap::a5aadfab-0234-489a-a4df-cc008a844926,OR_2022_upper.csv
-PA,2022,17,congress,PA 2022 Congressional,PA 2022 Congressional,b0a94d77-5d99-41c5-bc01-5859a6e1f3e6,NA,NA,https://davesredistricting.org/maps#viewmap::b0a94d77-5d99-41c5-bc01-5859a6e1f3e6,PA_2022_congress.csv
 PA,2022,203,lower,PA 2022 State House,PA 2022 State House,12a18072-adf1-48ac-a9d1-12280567b824,NA,NA,https://davesredistricting.org/maps#viewmap::12a18072-adf1-48ac-a9d1-12280567b824,PA_2022_lower.csv
 PA,2022,50,upper,PA 2022 State Senate,PA 2022 State Senate,317011f0-6bcd-4df6-a1ee-435a92640426,NA,NA,https://davesredistricting.org/maps#viewmap::317011f0-6bcd-4df6-a1ee-435a92640426,PA_2022_upper.csv
-RI,2022,2,congress,RI 2022 Congressional,RI 2022 Congressional,cffbb279-824c-47b8-90c7-3070378e37ae,NA,NA,https://davesredistricting.org/maps#viewmap::cffbb279-824c-47b8-90c7-3070378e37ae,RI_2022_congress.csv
 RI,2022,75,lower,RI 2022 State House,RI 2022 State House,90ec6599-f715-4a3a-b50b-5858788046ac,NA,NA,https://davesredistricting.org/maps#viewmap::90ec6599-f715-4a3a-b50b-5858788046ac,RI_2022_lower.csv
 RI,2022,38,upper,RI 2022 State Senate,RI 2022 State Senate,2aab93a2-7e15-4047-87a8-02b0deb3eb4e,NA,NA,https://davesredistricting.org/maps#viewmap::2aab93a2-7e15-4047-87a8-02b0deb3eb4e,RI_2022_upper.csv
-SC,2022,7,congress,SC 2022 Congressional,SC 2022 Congressional,839561a1-8c15-4c4b-ab56-3275d68092f9,NA,NA,https://davesredistricting.org/maps#viewmap::839561a1-8c15-4c4b-ab56-3275d68092f9,SC_2022_congress.csv
 SC,2022,46,upper,SC 2022 State Senate,SC 2022 State Senate,7c9df455-6865-4f9e-8172-7c1a26ab28b9,NA,NA,https://davesredistricting.org/maps#viewmap::7c9df455-6865-4f9e-8172-7c1a26ab28b9,SC_2022_upper.csv
-SC,2022,124,lower,SC 2022 State House,SC 2022 State House,f886f454-bdf5-463e-823e-7dfe56c8bbdd,NA,NA,https://davesredistricting.org/maps#viewmap::f886f454-bdf5-463e-823e-7dfe56c8bbdd,SC_2022_lower.csv
 SC,2024,124,lower,SC 2024 State House,SC 2024 State House,1e28dcaf-fe98-47a0-a2b7-76f890b6c62a,NA,NA,https://davesredistricting.org/maps#viewmap::1e28dcaf-fe98-47a0-a2b7-76f890b6c62a,SC_2024_lower.csv
 SD,2022,37,lower,SD 2022 State House,SD 2022 State House,364d2cd2-893a-4582-910c-9d91ffcd5c2a,NA,NA,https://davesredistricting.org/maps#viewmap::364d2cd2-893a-4582-910c-9d91ffcd5c2a,SD_2022_lower.csv
 SD,2022,35,upper,SD 2022 State Senate,SD 2022 State Senate,0a226808-0b1c-4049-800b-612e18674828,NA,NA,https://davesredistricting.org/maps#viewmap::0a226808-0b1c-4049-800b-612e18674828,SD_2022_upper.csv
-TN,2022,9,congress,TN 2022 Congressional,TN 2022 Congressional,9185d1ce-1556-46ab-9628-6749769d0262,NA,NA,https://davesredistricting.org/maps#viewmap::9185d1ce-1556-46ab-9628-6749769d0262,TN_2022_congress.csv
 TN,2022,99,lower,TN 2022 State House,TN 2022 State House,c0ed8258-ce44-4eec-9736-2cc3b86a9d16,NA,NA,https://davesredistricting.org/maps#viewmap::c0ed8258-ce44-4eec-9736-2cc3b86a9d16,TN_2022_lower.csv
 TN,2022,33,upper,TN 2022 State Senate,TN 2022 State Senate,62c62bed-a104-4afc-9286-9b3915b45f58,NA,NA,https://davesredistricting.org/maps#viewmap::62c62bed-a104-4afc-9286-9b3915b45f58,TN_2022_upper.csv
-TX,2022,38,congress,TX 2022 Congressional,TX 2022 Congressional,1c2c1e0d-2fd1-43a8-a039-73e7023124d1,NA,NA,https://davesredistricting.org/maps#viewmap::1c2c1e0d-2fd1-43a8-a039-73e7023124d1,TX_2022_congress.csv
 TX,2022,150,lower,TX 2022 State House,TX 2022 State House,e74af879-6ba8-4a5c-b946-0b9364aae40b,NA,NA,https://davesredistricting.org/maps#viewmap::e74af879-6ba8-4a5c-b946-0b9364aae40b,TX_2022_lower.csv
 TX,2022,31,upper,TX 2022 State Senate,TX 2022 State Senate,94b33bee-887d-4170-b154-80aa55c8fe5b,NA,NA,https://davesredistricting.org/maps#viewmap::94b33bee-887d-4170-b154-80aa55c8fe5b,TX_2022_upper.csv
-TX,2026,38,congress,TX 2026 Congressional,TX 2026 Congressional,1ea6b752-99fa-4bbb-8c4e-3110234ac5e6,NA,NA,https://davesredistricting.org/maps#viewmap::1ea6b752-99fa-4bbb-8c4e-3110234ac5e6,TX_2026_congress.csv
-UT,2022,4,congress,UT 2022 Congressional,UT 2022 Congressional,b4d46a7e-4366-4f6c-ac54-ff6640d4e13f,NA,NA,https://davesredistricting.org/maps#viewmap::b4d46a7e-4366-4f6c-ac54-ff6640d4e13f,UT_2022_congress.csv
 UT,2022,75,lower,UT 2022 State House,UT 2022 State House,927e8547-08f9-43e3-8abc-68a7faf89d71,NA,NA,https://davesredistricting.org/maps#viewmap::927e8547-08f9-43e3-8abc-68a7faf89d71,UT_2022_lower.csv
 UT,2022,29,upper,UT 2022 State Senate,UT 2022 State Senate,cfd457c9-6d3e-496d-9377-4b68de384a57,NA,NA,https://davesredistricting.org/maps#viewmap::cfd457c9-6d3e-496d-9377-4b68de384a57,UT_2022_upper.csv
-UT,2026,4,congress,UT 2026 Congressional,UT 2026 Congressional,6837b2c1-45d1-42e7-a66d-7f3f1aa1b0b1,NA,NA,https://davesredistricting.org/maps#viewmap::6837b2c1-45d1-42e7-a66d-7f3f1aa1b0b1,UT_2026_congress.csv
-VA,2022,11,congress,VA 2022 Congressional,VA 2022 Congressional,bc930c25-236f-46a7-bbe9-d8d77e21d011,NA,NA,https://davesredistricting.org/maps#viewmap::bc930c25-236f-46a7-bbe9-d8d77e21d011,VA_2022_congress.csv
 VA,2022,100,lower,VA 2022 State House,VA 2022 State House,fa427b6b-e057-43e9-8000-9d1ae319870e,NA,NA,https://davesredistricting.org/maps#viewmap::fa427b6b-e057-43e9-8000-9d1ae319870e,VA_2022_lower.csv
 VA,2022,40,upper,VA 2022 State Senate,VA 2022 State Senate,1b489a5a-f457-428d-b552-9ede8ceb9b99,NA,NA,https://davesredistricting.org/maps#viewmap::1b489a5a-f457-428d-b552-9ede8ceb9b99,VA_2022_upper.csv
 VT,2022,104,lower,VT 2022 State House,VT 2022 State House,b627a7e1-8c66-4425-80f4-2f2958381ee0,NA,NA,https://davesredistricting.org/maps#viewmap::b627a7e1-8c66-4425-80f4-2f2958381ee0,VT_2022_lower.csv
 VT,2022,13,upper,VT 2022 State Senate,VT 2022 State Senate,1cdffaa1-c558-45d1-83f3-8d1dd5f7f203,NA,NA,https://davesredistricting.org/maps#viewmap::1cdffaa1-c558-45d1-83f3-8d1dd5f7f203,VT_2022_upper.csv
-WA,2022,10,congress,WA 2022 Congressional,WA 2022 Congressional,3dd8f07d-8f9b-4905-a155-573bdc084b06,NA,NA,https://davesredistricting.org/maps#viewmap::3dd8f07d-8f9b-4905-a155-573bdc084b06,WA_2022_congress.csv
 WA,2022,49,upper,WA 2022 State Legislatures,WA 2022 State Legislatures,3e3c5f5c-3a83-4847-b1d8-5328fb3b9e31,NA,NA,https://davesredistricting.org/maps#viewmap::3e3c5f5c-3a83-4847-b1d8-5328fb3b9e31,WA_2022_upper.csv
 WA,2024,49,upper,WA 2024 State Legislatures,WA 2024 State Legislatures,bab1e382-9bf0-4d3f-84df-7310e9b04184,NA,NA,https://davesredistricting.org/maps#viewmap::bab1e382-9bf0-4d3f-84df-7310e9b04184,WA_2024_upper.csv
-WI,2022,8,congress,WI 2022 Congressional,WI 2022 Congressional,aa64c8f5-837c-474f-819f-6eaa1094d776,NA,NA,https://davesredistricting.org/maps#viewmap::aa64c8f5-837c-474f-819f-6eaa1094d776,WI_2022_congress.csv
-WI,2022,99,lower,WI 2022 State House,WI 2022 State House,6a8a362d-0c59-4d81-aea3-28cba004b502,NA,NA,https://davesredistricting.org/maps#viewmap::6a8a362d-0c59-4d81-aea3-28cba004b502,WI_2022_lower.csv
-WI,2022,33,upper,WI 2022 State Senate,WI 2022 State Senate,cb8ed0b5-013f-4b1a-ba49-1b03445416c9,NA,NA,https://davesredistricting.org/maps#viewmap::cb8ed0b5-013f-4b1a-ba49-1b03445416c9,WI_2022_upper.csv
 WI,2024,99,lower,WI 2024 State House,WI 2024 State House,c4f3821b-51c4-4f41-99d8-c4c9d67e116f,NA,NA,https://davesredistricting.org/maps#viewmap::c4f3821b-51c4-4f41-99d8-c4c9d67e116f,WI_2024_lower.csv
 WI,2024,33,upper,WI 2024 State Senate,WI 2024 State Senate,1d0da539-5574-428f-8f96-6238b9509ea6,NA,NA,https://davesredistricting.org/maps#viewmap::1d0da539-5574-428f-8f96-6238b9509ea6,WI_2024_upper.csv
-WV,2022,2,congress,WV 2022 Congressional,WV 2022 Congressional,aaaa571f-f204-4cbe-bcf1-404db0519d36,NA,NA,https://davesredistricting.org/maps#viewmap::aaaa571f-f204-4cbe-bcf1-404db0519d36,WV_2022_congress.csv
 WV,2022,67,lower,WV 2022 State House,WV 2022 State House,bd6eb9ac-ac94-465f-82d6-4e086307d5e5,NA,NA,https://davesredistricting.org/maps#viewmap::bd6eb9ac-ac94-465f-82d6-4e086307d5e5,WV_2022_lower.csv
 WV,2022,17,upper,WV 2022 State Senate,WV 2022 State Senate,c3ca956f-0b1d-4750-894d-b2e9dadc642c,NA,NA,https://davesredistricting.org/maps#viewmap::c3ca956f-0b1d-4750-894d-b2e9dadc642c,WV_2022_upper.csv
 WY,2022,62,lower,WY 2022 State House,WY 2022 State House,483d3157-343b-451f-9a0e-aebef749205f,NA,NA,https://davesredistricting.org/maps#viewmap::483d3157-343b-451f-9a0e-aebef749205f,WY_2022_lower.csv
 WY,2022,31,upper,WY 2022 State Senate,WY 2022 State Senate,e2618faf-bad1-4bb1-9a85-7e1c2ccdef91,NA,NA,https://davesredistricting.org/maps#viewmap::e2618faf-bad1-4bb1-9a85-7e1c2ccdef91,WY_2022_upper.csv
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
-,,,,,,,,,,
 ,,,,,,,,,,
 ,,,,,,,,,,
 ,,,,,,,,,,

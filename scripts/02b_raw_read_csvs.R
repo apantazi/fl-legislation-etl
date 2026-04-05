@@ -17,9 +17,8 @@ user_bill_categories <- read_sheet("https://docs.google.com/spreadsheets/d/1ivNJ
 # 2) read downloaded csvs              #
 #                                      #
 ########################################
-
-t_daves_districts_house <- read.csv("../data-raw/daves/t_daves_districts_house.csv")
-t_daves_districts_senate <- read.csv("../data-raw/daves/t_daves_districts_senate.csv")
+t_daves_districts_house <- read.csv("../downloads/FL_2022_lower.csv")
+t_daves_districts_senate <- read.csv("../downloads/FL_2022_upper.csv")
 
 ########################################
 #                                      #

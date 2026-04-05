@@ -8,6 +8,7 @@ data-app/archive
 docs/archive/
 scripts/archive/
 .ipynb_checkpoints/config-checkpoint.yml
+browser_profile/
 
 # remove R project files
 fl-leg-etl.Rproj
